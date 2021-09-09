@@ -19,11 +19,11 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from upload.views import image_upload
+from mainsite.views import main_site
 
 urlpatterns = [
     url(r'^admin', admin.site.urls),
-    url("", image_upload, name="upload"),
+    url("", main_site, name="main_site"),
 ]
 
 if bool(settings.DEBUG):

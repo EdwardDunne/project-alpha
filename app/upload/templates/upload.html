@@ -7,9 +7,8 @@
   <form action="{% url "upload" %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
-    <img src="{% static 'img/connor.png' %}"/><br><br>
-    <input type="file" name="image_file" disabled>
-    <input type="submit" value="submit" disabled />
+    <input type="file" name="image_file">
+    <input type="submit" value="submit" />
   </form>
 
   {% if image_url %}
