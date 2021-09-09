@@ -1,17 +1,26 @@
 {% block content %}
 {% load static %}
-
-  
-  <h3>Hi Connor!</h3>
-
-  <form action="{% url "main_site" %}" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-
-    <img src="{% static 'img/connor.png' %}"/><br><br>
-  </form>
-
-  {% if image_url %}
-    <p>File uploaded at: <a href="{{ image_url }}">{{ image_url }}</a></p>
-  {% endif %}
+<html>
+    <head>
+        <link rel="stylesheet" href="{% static 'css/mainsite.css'%}">
+    </head>
+    <body>
+        <div id="header-banner"></div>
+        <div class="top-image-container">
+            <img src="{% static 'img/anime-sunset.png' %}"/>
+        </div>
+        <div class="main-content-container">
+            <div class="content-block">
+                <div class="internal-block block-float-right"><h3>Fabiolaaaaaa Osorio!!!</h3></div>
+            </div>
+            <div class="content-block">
+                <div class="internal-block block-float-left"></div>
+            </div>
+            <div class="content-block">
+                <div class="internal-block block-float-right"></div>
+            </div>
+        </div>
+    </body>
+</html>
 
 {% endblock %}
