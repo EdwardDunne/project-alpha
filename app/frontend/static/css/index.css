@@ -121,6 +121,10 @@ html, body {
     opacity: 0.0;
 }
 
+.honeycomb-cell.buffer {
+    opacity: 0.0;
+}
+
 .honeycomb-cell:hover .honeycomb-cell__title {
     opacity: 0;
 }
@@ -165,3 +169,15 @@ html, body {
         margin-right: 4.5%;
     }
 }
+
+/* .parallax {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background-image: 
+        url(../images/blue-mountains-background.jpg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-position: 50% 50%;
+    background-size: cover;
+} */
