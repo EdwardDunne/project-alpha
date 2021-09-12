@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import RoomJoinPage from "./RoomJoinPage";
 import RoomCreatePage from "./CreateRoomPage";
+import HexMenu from "./HexMenu";
 import { 
     BrowserRouter as Router, 
     Switch, 
@@ -18,7 +19,7 @@ export default class HomePage extends Component {
         return (
             <Router>
                 <Switch>
-                    <Route exact path="/"><p>This is the home page</p></Route>
+                    <Route exact path="/" component={HexMenu} />
                     <Route path="/join" component={RoomJoinPage} />
                     <Route path="/create" component={RoomCreatePage} />
                 </Switch>
