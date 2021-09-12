@@ -114,7 +114,7 @@ html, body {
 .honeycomb-cell::after {
     background: #424242;
     opacity: 0.5;
-    transition: opacity 350ms;
+    transition: background 350ms;
 }
 
 .honeycomb-cell.buffer::after {
@@ -130,7 +130,7 @@ html, body {
 }
 
 .honeycomb-cell:hover::after {
-    opacity: 0;
+    background: rgba(66, 66, 66, 0);
 }
 
 .honeycomb__placeholder {
