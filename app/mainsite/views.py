@@ -16,26 +16,26 @@ def main_site(request):
 def dunneweb_login(request):
     print('This is a login attemp')
     if request.user.is_authenticated:
-        return JsonResponse({'success': 'true'})
+        return JsonResponse({'success': True})
 
     req = json.loads(request.body)
     if not req:
-        return JsonResponse({'success': 'false'})
+        return JsonResponse({'success': False})
 
     username = req.get('username', None)
     password = req.get('password', None)
     if not username or not password:
-        return JsonResponse({'success': 'false'})
+        return JsonResponse({'success': False})
 
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
-        return JsonResponse({'success': 'true'})
+        return JsonResponse({'success': True})
     else:
         # Return an 'invalid login' error message.
         print('not a valid user')
         return JsonResponse({
-            'success': 'false',
+            'success': False,
             'error': 'invalid user'
         })
 
@@ -43,13 +43,13 @@ def dunneweb_login(request):
     
 
 @csrf_exempt
-@login_required(login_url='/api/login')
+@login_required
 def dunneweb_logout(request):
     print('This is a logout attemp')
     req = json.loads(request.body)
     logout(request)
 
-    return JsonResponse({'success': 'true'})
+    return JsonResponse({'success': True})
 
 
 @csrf_exempt
@@ -62,6 +62,6 @@ def test_view(request):
         'four': '4'
     }
     return JsonResponse({
-        'success': 'true',
+        'success': True,
         'data': data
     })
