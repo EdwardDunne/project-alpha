@@ -43,7 +43,7 @@ def dunneweb_login(request):
     
 
 @csrf_exempt
-@login_required
+@login_required(login_url='/api/login')
 def dunneweb_logout(request):
     print('This is a logout attemp')
     req = json.loads(request.body)
@@ -52,7 +52,7 @@ def dunneweb_logout(request):
     return JsonResponse({'success': 'true'})
 
 
-
+@csrf_exempt
 @login_required
 def test_view(request):
     data = {

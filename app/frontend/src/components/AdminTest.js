@@ -73,6 +73,18 @@ export default function AdminTest(props) {
         navigate('/');
     }
 
+    function testView(event) {
+        event.preventDefault();
+        let base_url = `${window.location.origin}/api/test-view`;
+
+        ApiService.post(base_url).then(resp => {
+            console.log(resp.success);
+            console.log(resp.data);
+        }).catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+
     return (
         <>
         <div>This is the admin test page</div>
@@ -86,6 +98,8 @@ export default function AdminTest(props) {
         <button style={LOGIN_BTN_STYLES} onClick={e => checkAuth(e)}>Check Auth</button>
 
         <button style={LOGIN_BTN_STYLES} onClick={e => pageChange(e)}>Test Page Change</button>
+
+        <button style={LOGIN_BTN_STYLES} onClick={e => testView(e)}>Test View</button>
         </>
     );
 }
