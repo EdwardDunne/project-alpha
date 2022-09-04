@@ -1,5 +1,7 @@
 import React, { Component, useState } from "react";
 import ApiService from "../services/ApiService.js";
+import Auth from "../services/Auth.js";
+import { useNavigate } from 'react-router-dom';
 
 
 const LOGIN_BTN_STYLES = {
@@ -18,10 +20,12 @@ const LOGIN_BTN_STYLES = {
     cursor: 'pointer'
 }
 
-export default function AdminTest() {
+export default function AdminTest(props) {
 
     const [username, setUsername] = useState(null);
     const [password, setPassword] = useState(null);
+
+    let navigate = useNavigate();
 
     function loginClicked(event) {
         event.preventDefault();
@@ -33,7 +37,9 @@ export default function AdminTest() {
         };
 
         ApiService.post(base_url, data).then(resp => {
-            alert(resp.resp);
+            console.log(resp.success);
+            if(resp.success)
+                Auth.login();
         }).catch((error) => {
             console.error('Error:', error);
         });
@@ -49,10 +55,20 @@ export default function AdminTest() {
         };
 
         ApiService.post(base_url, data).then(resp => {
-            alert(resp.resp);
+            console.log(resp.success);
+            if(resp.success)
+                Auth.logout();
         }).catch((error) => {
-            console.error('Error:', error);
+            console.error(error);
         });
+    }
+
+    function checkAuth(event) {
+        alert(Auth.isAuthenticated());
+    }
+
+    function pageChange(event) {
+        navigate('/');
     }
 
     return (
@@ -64,6 +80,10 @@ export default function AdminTest() {
             <input type="submit" value="Login" style={LOGIN_BTN_STYLES}/>
         </form>
         <button style={LOGIN_BTN_STYLES} onClick={e => logoutClicked(e)}>Logout</button>
+
+        <button style={LOGIN_BTN_STYLES} onClick={e => checkAuth(e)}>Check Auth</button>
+
+        <button style={LOGIN_BTN_STYLES} onClick={e => pageChange(e)}>Test Page Change</button>
         </>
     );
 }

@@ -8,11 +8,6 @@ from .serializers import RoomSerializer
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 import json
-# from .models import Room
-
-# class RoomView(generics.ListAPIView):
-#     queryset = Room.objects.all()
-#     serializer_class = RoomSerializer
 
 def main_site(request):
     return render(request, "mainsite.html")
@@ -20,35 +15,53 @@ def main_site(request):
 @csrf_exempt
 def dunneweb_login(request):
     print('This is a login attemp')
+    if request.user.is_authenticated:
+        return JsonResponse({'success': 'true'})
+
     req = json.loads(request.body)
+    if not req:
+        return JsonResponse({'success': 'false'})
 
-    print(request.user.is_authenticated)
+    username = req.get('username', None)
+    password = req.get('password', None)
+    if not username or not password:
+        return JsonResponse({'success': 'false'})
 
-    username = req.get('username')
-    password = req.get('password')
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
-        # Redirect to a success page.
-        return JsonResponse({'resp': 'LOGIN SUCCESS!'})
+        return JsonResponse({'success': 'true'})
     else:
         # Return an 'invalid login' error message.
         print('not a valid user')
-        return JsonResponse({'resp': 'LOGIN FAILURE!'})
+        return JsonResponse({
+            'success': 'false',
+            'error': 'invalid user'
+        })
 
 
     
 
 @csrf_exempt
+@login_required
 def dunneweb_logout(request):
     print('This is a logout attemp')
     req = json.loads(request.body)
     logout(request)
 
-    return JsonResponse({'resp': 'LOGOUT SUCCESS!'})
+    return JsonResponse({'success': 'true'})
 
 
 
 @login_required
 def test_view(request):
-    return JsonResponse({'resp': 'TEST VIEW SUCCESS!'})
+    data = {
+        'one': '1',
+        'two': '2',
+        'three': '3',
+        'four': '4'
+    }
+    return JsonResponse({
+        'success': 'true',
+        'data': data
+    })
