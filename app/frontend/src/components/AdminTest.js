@@ -29,7 +29,7 @@ export default function AdminTest(props) {
 
     function loginClicked(event) {
         event.preventDefault();
-        let base_url = `${window.location.origin}/api/login`
+        let base_url = `${window.location.origin}/api/login`;
 
         let data = {
             username: username,
@@ -47,7 +47,9 @@ export default function AdminTest(props) {
 
     function logoutClicked(event) {
         event.preventDefault();
-        let base_url = `${window.location.origin}/api/logout`
+        let base_url = `${window.location.origin}/api/logout`;
+
+        console.log(base_url);
 
         let data = {
             username: username,
