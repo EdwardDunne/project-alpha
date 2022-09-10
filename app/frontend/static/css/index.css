@@ -22,14 +22,39 @@ html, body {
     font-family: 'Roboto';
 }
 
+/* HEADER STYLES */
+
 #header {
     position: fixed;
     top: 0px;
     left: 0px;
     display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100vw;
     height: 50px;
     background: #00000063;
+}
+
+#header #header-left, #header #header-right {
+    width: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+}
+
+#header-right {
+    justify-content: flex-end;
+}
+
+#header #sign-in-btn {
+    background: #4848d2;
+    padding: 7px 15px;
+    border-radius: 15px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
 }
 
 #main {

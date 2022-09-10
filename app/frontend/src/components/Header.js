@@ -18,8 +18,13 @@ export default function Header() {
   return (
     <>
     <div id="header">
-      <Link to="/admin-test">Admin Test</Link>
-      <Link to="/">Hex Homepage</Link>
+      <div id="header-left">
+        <Link to="/admin-test">Admin Test</Link>
+        <Link to="/">Hex Homepage</Link>
+      </div>
+      <div id="header-right">
+        <div id="sign-in-btn">SIGN IN</div>
+      </div>
     </div>
     </>
   )

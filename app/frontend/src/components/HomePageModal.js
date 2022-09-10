@@ -24,9 +24,9 @@ export default function HomePageModal({ open, children, onClose, modalType }) {
             { children }
             </>
         );
-      }
+    }
       
-      function OtherContent() {
+    function OtherContent() {
         return (
             <>
             <button onClick={onClose}>Close Modal</button>
@@ -34,7 +34,7 @@ export default function HomePageModal({ open, children, onClose, modalType }) {
             { children }
             </>
         );
-      }
+    }
 
     let modalContent;
     switch(modalType) {

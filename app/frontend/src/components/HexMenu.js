@@ -12,7 +12,7 @@ import {
     fb_hex_img,
     ig_hex_img,
     comics_hex_img
- } from '../images'
+} from '../images'
 
 
 export default function HexMenu() {
@@ -44,7 +44,6 @@ export default function HexMenu() {
     }
 
     function checkAuth(event) {
-        console.log('HERE');
         alert(Auth.isAuthenticated());
     }
 
