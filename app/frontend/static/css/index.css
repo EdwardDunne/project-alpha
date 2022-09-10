@@ -70,16 +70,42 @@ html, body {
     width: 100%;
 }
 
+.honeycomb-cell.comics-hex {
+    flex: 0 1 250px;
+    list-style: none;
+    width: 13%;
+    height: 10%;
+    max-width: 140px;
+    max-height: 90px;
+    min-width: 135px;
+    min-height: 80px;
+    margin: 5% 12.5px 25px;
+    position: fixed;
+    top: 10%;
+    right: 10%;
+    padding: 0.5em;
+    text-align: center;
+    z-index: 1;
+}
+
+.comics-hex .honeycomb-cell__title {
+    font-size: 190%;
+}
+
 .honeycomb-cell {
     flex: 0 1 250px;
     max-width: 20vw;
-    max-height: 125px;
+    max-height: 135px;
     height: 12vw;
     margin: 5% 12.5px 25px;
     position: relative;
     padding: 0.5em;
     text-align: center;
     z-index: 1;
+}
+
+.honeycomb-cell:not(.buffer) {
+    cursor: pointer;
 }
 
 .honeycomb-cell.mid-first {
@@ -105,6 +131,7 @@ html, body {
     font-weight: 700;
     font-size: 3vw;
     transition: opacity 350ms;
+    text-shadow: 2px 2px 8px #00000052;
 }
 
 .honeycomb-cell__title > small {
@@ -155,7 +182,8 @@ html, body {
 }
 
 .honeycomb-cell:hover .honeycomb-cell__title {
-    opacity: 0;
+    /* opacity: 0; */
+    text-shadow: 2px 2px 8px #000000;
 }
 
 .honeycomb-cell:not(.buffer):hover::before {
@@ -203,8 +231,34 @@ html, body {
     }
 }
 
+@media only screen and (max-height: 800px) and (min-width: 600px) {
+    .honeycomb-cell {
+        flex: 0 1 250px;
+        max-width: 16%;
+        max-height: 100px;
+        height: 18vw;
+        margin: 5% 0.7% 10px;
+        position: relative;
+        padding: 0.5em;
+        text-align: center;
+        z-index: 1;
+    }
+
+    .honeycomb-cell.mid-first {
+        margin-left: 19%;
+    }
+
+    .honeycomb-cell.mid-last {
+        margin-right: 19%;
+    }
+
+    .honeycomb-cell__title {
+        font-size: 2.2vw;
+    }
+}
+
 @media only screen and (min-width: 1361px) {
     .honeycomb-cell__title {
-        font-size: 37px;
+        font-size: 30px;
     }
 }

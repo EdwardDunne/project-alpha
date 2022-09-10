@@ -5,6 +5,7 @@ import contact_hex_img from './hex-images/contact-hex-img.webp';
 import art_hex_img from './hex-images/art-hex-img.jpeg';
 import fb_hex_img from './hex-images/fb-hex-img.jpeg';
 import ig_hex_img from './hex-images/ig-hex-img.webp';
+import comics_hex_img from './hex-images/comics-hex-img.jpg';
 
 export {
     matrix_hex_img,
@@ -13,5 +14,6 @@ export {
     contact_hex_img,
     art_hex_img,
     fb_hex_img,
-    ig_hex_img
+    ig_hex_img,
+    comics_hex_img
   };

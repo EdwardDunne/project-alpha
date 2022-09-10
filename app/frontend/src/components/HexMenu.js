@@ -10,7 +10,8 @@ import {
     contact_hex_img,
     art_hex_img,
     fb_hex_img,
-    ig_hex_img
+    ig_hex_img,
+    comics_hex_img
  } from '../images'
 
 
@@ -90,6 +91,11 @@ export default function HexMenu() {
             </li>
             <li class="honeycomb-cell honeycomb__placeholder"></li>
         </ul>
+
+        <li class="honeycomb-cell comics-hex" onClick={e => hexClicked('instagram')}>
+            <img class="honeycomb-cell__image" src={comics_hex_img} />
+            <div class="honeycomb-cell__title">Comics</div>
+        </li>
         </>
     );
 }
