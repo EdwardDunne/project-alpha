@@ -3,23 +3,6 @@ import ApiService from "../services/ApiService.js";
 import Auth from "../services/Auth.js";
 import { useNavigate } from 'react-router-dom';
 
-
-const LOGIN_BTN_STYLES = {
-    // position: 'fixed',
-    // top: '10px',
-    // right: '60px',
-    background: '#4848d2',
-    padding: '11px',
-    zIndex: 1000,
-    borderRadius: '10px',
-    color: 'white',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: '30px',
-    cursor: 'pointer'
-}
-
 export default function AdminTest(props) {
 
     const [username, setUsername] = useState(null);
@@ -73,6 +56,18 @@ export default function AdminTest(props) {
         navigate('/');
     }
 
+    function testMarvelApi(event) {
+        event.preventDefault();
+        let base_url = `${window.location.origin}/api/test-marvel`;
+
+        ApiService.post(base_url).then(resp => {
+            console.log(resp.success);
+            console.log(resp.data);
+        }).catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+
     function testView(event) {
         event.preventDefault();
         let base_url = `${window.location.origin}/api/test-view`;
@@ -91,15 +86,15 @@ export default function AdminTest(props) {
         <form onSubmit={e => loginClicked(e)}>
             <input type="text" name="username" onChange={e => setUsername(e.target.value)}></input>
             <input type="password" name="username" onChange={e => setPassword(e.target.value)}></input>
-            <input type="submit" value="Login" style={LOGIN_BTN_STYLES}/>
+            <input type="submit" value="Login" className="admin-page-btn"/>
         </form>
-        <button style={LOGIN_BTN_STYLES} onClick={e => logoutClicked(e)}>Logout</button>
-
-        <button style={LOGIN_BTN_STYLES} onClick={e => checkAuth(e)}>Check Auth</button>
-
-        <button style={LOGIN_BTN_STYLES} onClick={e => pageChange(e)}>Test Page Change</button>
-
-        <button style={LOGIN_BTN_STYLES} onClick={e => testView(e)}>Test View</button>
+        <button className="admin-page-btn" onClick={e => logoutClicked(e)}>Logout</button>
+        <div className="admin-btn-panel">
+            <button className="admin-page-btn" onClick={e => checkAuth(e)}>Check Auth</button>
+            <button className="admin-page-btn" onClick={e => pageChange(e)}>Test Page Change</button>
+            <button className="admin-page-btn" onClick={e => testView(e)}>Test View</button>
+            <button className="admin-page-btn" onClick={e => testMarvelApi(e)}>Test Marvel Api</button>
+        </div>
         </>
     );
 }

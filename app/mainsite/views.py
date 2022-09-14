@@ -1,12 +1,11 @@
 from django.contrib.auth import authenticate, login, logout
-from http.client import HTTPResponse
 from django.shortcuts import render
-from rest_framework import generics
-from rest_framework.decorators import api_view
-from django.http import HttpResponse, JsonResponse
-from .serializers import RoomSerializer
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+import time
+import hashlib
+import requests
 import json
 
 def main_site(request):
@@ -51,6 +50,29 @@ def dunneweb_logout(request):
 
     return JsonResponse({'success': True})
 
+# Initial attemp to request data from the marvel api
+@csrf_exempt
+@login_required
+def test_marvel_api(request):
+    ts = time.time()
+    public_key = 'fd5bebe5ddaf4f55674f77786602fb94'
+    private_key = 'fd2ca66abb1e674e35ee6a2f3bbbb50a5a9b6456'
+    hash = hashlib.md5('{}{}{}'.format(ts, private_key, public_key).encode()).hexdigest()
+
+    headers = {
+        'Accept': '*/*'
+    }
+    url = 'http://gateway.marvel.com/v1/public/comics?ts={}&apikey={}&hash={}'.format(ts, public_key, hash)
+
+    response = requests.get(url, headers=headers)
+    res_data = response.json()
+
+    print(res_data)
+
+    return JsonResponse({
+        'success': True,
+        'data': res_data
+    })
 
 @csrf_exempt
 @login_required
