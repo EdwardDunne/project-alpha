@@ -1,6 +1,6 @@
 // API SERVICE
 
-const ApiService = {
+const HttpService = {
 
     // POST method:
     post: async function(url = '', data = {}) {
@@ -41,4 +41,4 @@ const ApiService = {
     }
 };
 
-export default ApiService;
+export default HttpService;

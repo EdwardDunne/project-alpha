@@ -1,8 +1,10 @@
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from .utils import get_hash_for_marvel_api
 import time
 import hashlib
 import requests
@@ -36,10 +38,7 @@ def dunneweb_login(request):
         return JsonResponse({
             'success': False,
             'error': 'invalid user'
-        })
-
-
-    
+        }) 
 
 @csrf_exempt
 @login_required
@@ -54,17 +53,16 @@ def dunneweb_logout(request):
 @csrf_exempt
 @login_required
 def test_marvel_api(request):
-    ts = time.time()
-    public_key = 'fd5bebe5ddaf4f55674f77786602fb94'
-    private_key = 'fd2ca66abb1e674e35ee6a2f3bbbb50a5a9b6456'
-    hash = hashlib.md5('{}{}{}'.format(ts, private_key, public_key).encode()).hexdigest()
-
-    headers = {
-        'Accept': '*/*'
+    timestamp = time.time()
+    headers = { 'Accept': '*/*' }
+    url = 'http://gateway.marvel.com/v1/public/comics'
+    payload = {
+        'ts': timestamp,
+        'apikey': settings.MARVEL_API_PUBLIC_KEY,
+        'hash': get_hash_for_marvel_api(timestamp)
     }
-    url = 'http://gateway.marvel.com/v1/public/comics?ts={}&apikey={}&hash={}'.format(ts, public_key, hash)
 
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, params=payload)
     res_data = response.json()
 
     print(res_data)
@@ -76,14 +74,29 @@ def test_marvel_api(request):
 
 @csrf_exempt
 @login_required
-def test_view(request):
-    data = {
-        'one': '1',
-        'two': '2',
-        'three': '3',
-        'four': '4'
+def get_marvel_omnibuses(request):
+    timestamp = time.time()
+    headers = { 'Accept': '*/*' }
+    url = 'http://gateway.marvel.com/v1/public/comics'
+    payload = {
+        'ts': timestamp,
+        'apikey': settings.MARVEL_API_PUBLIC_KEY,
+        'hash': get_hash_for_marvel_api(timestamp),
+        'format': 'hardcover',
+        'formatType': 'collection'
     }
+
+    response = requests.get(url, headers=headers, params=payload)
+    res_data = response.json()
+
+    print(res_data['data']['total'])
+
+    for book in res_data['data']['results']:
+        title = book['title']
+        if 'omnibus' in title.lower() or book['pageCount'] > 500:
+            print(book['title'])
+
     return JsonResponse({
         'success': True,
-        'data': data
+        'data': res_data
     })

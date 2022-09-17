@@ -1,19 +1,38 @@
 from django.db import models
-import string
-import random
 
-def generate_unique_code():
-    length = 6
-    while True:
-        code = ''.join(random.choices(string.ascii_uppercase, k=length))
-        if Room.objects.filter(code=code).count() == 0:
-            break
-    return code
+class Book(models.Model):
+    DC = 'DC'
+    MARVEL = 'MA'
+    IMAGE = 'IM'
+    PUBLISHERS = [
+        (DC, 'DC Comics'),
+        (MARVEL, 'Marvel'),
+        (IMAGE, 'Image'),
+    ]
+    publisher = models.CharField(
+        max_length=2,
+        choices=PUBLISHERS,
+        default=MARVEL,
+    )
 
-# Test Model
-# class Room(models.Model):
-#     code = models.CharField(max_length=8, default="", unique=True)
-#     host = models.CharField(max_length=50, unique=True)
-#     guest_can_pause = models.BooleanField(null=False, default=False)
-#     votes_to_skip = models.IntegerField(null=False, default=1)
-#     created_at = models.DateTimeField(auto_now_add=True)
+    OMNIBUS = 'OM'
+    HARDCOVER = 'HA'
+    TRADE_PAPERBACK = 'TPB'
+    FORMATS = [
+        (OMNIBUS, 'Omnibus'),
+        (HARDCOVER, 'Hardcover'),
+        (TRADE_PAPERBACK, 'Trade Paperback'),
+    ]
+    format = models.CharField(
+        max_length=3,
+        choices=FORMATS,
+        default=OMNIBUS,
+    )
+
+    marvel_id = models.IntegerField(null=True)
+    title = models.CharField(max_length=128)
+    description = models.TextField(null=True, blank=True)
+    price = models.FloatField(null=True)
+    thumbnail_url = models.CharField(max_length=256, null=True, blank=True)
+    author = models.CharField(max_length=64, null=True, blank=True)
+    isbn = models.IntegerField(null=True)

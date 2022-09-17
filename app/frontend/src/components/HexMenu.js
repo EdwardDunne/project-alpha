@@ -1,6 +1,6 @@
 import React, { Component, useState } from "react";
 import HomePageModal from "./homePageModal";
-import ApiService from "../services/ApiService.js";
+import HttpService from "../services/HttpService.js";
 import Auth from "../services/Auth.js";
 
 import { 
@@ -40,7 +40,7 @@ export default function HexMenu() {
     function hexClicked(type) {
         setIsOpen(true);
         setModalType(type);
-        console.log(ApiService.dunneweb_is_logged_in);
+        console.log(HttpService.dunneweb_is_logged_in);
     }
 
     function checkAuth(event) {

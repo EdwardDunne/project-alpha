@@ -1,13 +1,13 @@
 import React from 'react'
 import { Link } from "react-router-dom";
-import ApiService from "../services/ApiService.js";
+import HttpService from "../services/HttpService.js";
 import Auth from "../services/Auth.js";
 
 export default function Header() {
 
   // Check if this session is already authenticated
   let login_url = `${window.location.origin}/api/login`
-  ApiService.post(login_url).then(resp => {
+  HttpService.post(login_url).then(resp => {
     console.log(resp.success);
     if(resp.success)
         Auth.login();

@@ -1,5 +1,5 @@
 import React, { Component, useState } from "react";
-import ApiService from "../services/ApiService.js";
+import HttpService from "../services/HttpService.js";
 import Auth from "../services/Auth.js";
 import { useNavigate } from 'react-router-dom';
 
@@ -19,7 +19,7 @@ export default function AdminTest(props) {
             password: password,
         };
 
-        ApiService.post(base_url, data).then(resp => {
+        HttpService.post(base_url, data).then(resp => {
             console.log(resp.success);
             if(resp.success)
                 Auth.login();
@@ -39,7 +39,7 @@ export default function AdminTest(props) {
             password: password,
         };
 
-        ApiService.post(base_url, data).then(resp => {
+        HttpService.post(base_url, data).then(resp => {
             console.log(resp.success);
             if(resp.success)
                 Auth.logout();
@@ -60,7 +60,7 @@ export default function AdminTest(props) {
         event.preventDefault();
         let base_url = `${window.location.origin}/api/test-marvel`;
 
-        ApiService.post(base_url).then(resp => {
+        HttpService.post(base_url).then(resp => {
             console.log(resp.success);
             console.log(resp.data);
         }).catch((error) => {
@@ -68,11 +68,11 @@ export default function AdminTest(props) {
         });
     }
 
-    function testView(event) {
+    function getMarvelOmnis(event) {
         event.preventDefault();
-        let base_url = `${window.location.origin}/api/test-view`;
+        let base_url = `${window.location.origin}/api/get-marvel-omnis`;
 
-        ApiService.post(base_url).then(resp => {
+        HttpService.post(base_url).then(resp => {
             console.log(resp.success);
             console.log(resp.data);
         }).catch((error) => {
@@ -92,7 +92,7 @@ export default function AdminTest(props) {
         <div className="admin-btn-panel">
             <button className="admin-page-btn" onClick={e => checkAuth(e)}>Check Auth</button>
             <button className="admin-page-btn" onClick={e => pageChange(e)}>Test Page Change</button>
-            <button className="admin-page-btn" onClick={e => testView(e)}>Test View</button>
+            <button className="admin-page-btn" onClick={e => getMarvelOmnis(e)}>Get Marvel Omnis</button>
             <button className="admin-page-btn" onClick={e => testMarvelApi(e)}>Test Marvel Api</button>
         </div>
         </>
