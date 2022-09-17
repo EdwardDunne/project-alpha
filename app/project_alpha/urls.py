@@ -22,7 +22,8 @@ from api.views import RoomView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('api.urls')),
+    path('api-auth/', include('rest_framework.urls')),
+    path('api/', include('mainsite.urls')),
     path('', include('frontend.urls'))
 ]
 

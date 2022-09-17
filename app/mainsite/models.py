@@ -1,4 +1,14 @@
 from django.db import models
+from django.contrib.auth.models import User
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=256, default='')
+    last_name = models.CharField(max_length=256, default='')
+    email = models.CharField(max_length=128, default='')
+
+    def __str__(self):
+        return self.first_name
 
 class Book(models.Model):
     DC = 'DC'

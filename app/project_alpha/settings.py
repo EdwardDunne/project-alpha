@@ -43,10 +43,12 @@ INSTALLED_APPS = [
     'frontend.apps.FrontendConfig',
     'mainsite.apps.MainsiteConfig',
     'rest_framework',
+    'corsheaders',
     'django_extensions',
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -61,7 +63,7 @@ ROOT_URLCONF = 'project_alpha.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'frontend')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -138,3 +140,14 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 MARVEL_API_PUBLIC_KEY = 'fd5bebe5ddaf4f55674f77786602fb94'
 MARVEL_API_PRIVATE_KEY = 'fd2ca66abb1e674e35ee6a2f3bbbb50a5a9b6456'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISIION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
+
+CORS_ORIGIN_ALLOW_ALL = True

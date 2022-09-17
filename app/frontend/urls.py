@@ -3,6 +3,5 @@ from .views import index
 
 urlpatterns = [
     path('', index),
-    path('admin-test', index),
-    path('api/', include('mainsite.urls'))
+    path('admin-test', index)
 ]

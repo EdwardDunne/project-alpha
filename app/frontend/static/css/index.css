@@ -48,14 +48,16 @@ html, body {
     justify-content: flex-end;
 }
 
-#header #sign-in-btn {
+#header .header-btn {
     background: #4848d2;
     padding: 7px 15px;
     border-radius: 15px;
     font-weight: bold;
     color: white;
     cursor: pointer;
+    margin: 5px;
 }
+
 
 #main {
     position: fixed;
