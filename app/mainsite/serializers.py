@@ -1,7 +1,14 @@
 from rest_framework import serializers
-# from .models import Room
+from django.contrib.auth.models import User
+from mainsite.models import UserProfile
 
-class RoomSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        # model = Room
-        fields = ('id', 'code', 'host', 'guest_can_pause', 'votes_to_skip', 'created_at')
+        model = User
+        fields = ('id', 'username',)
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = '__all__'

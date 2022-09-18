@@ -8,14 +8,64 @@ from django.contrib.auth.decorators import login_required
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions
+from django.contrib import auth
 from .utils import get_hash_for_marvel_api
 from django.contrib.auth.models import User
 from mainsite.models import UserProfile
+from .serializers import UserSerializer, UserProfileSerializer
 import time
 import requests
 import json
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
+class GetCSRFToken(APIView):
+    permission_classes = (permissions.AllowAny, )
 
+    def get(self, request, format=None):
+        return Response({'success': 'CSRF cookie set'})
+
+@method_decorator(csrf_protect, name='dispatch')
+class CheckAuthenticatedView(APIView):
+    def get(self, request, format=None):
+        try:
+            isAuthenticated = request.user.is_authenticated
+
+            if isAuthenticated:
+                return Response({'isAuthenticated': 'success'})
+            else:
+                return Response({'isAuthenticated': 'error'})
+        except:
+            return Response({'error':'Something went wrong with checking authentication'})
+
+@method_decorator(csrf_protect, name='dispatch')
+class LoginView(APIView):
+    permission_classes = (permissions.AllowAny, )
+
+    def post(self, request, format=None):
+        data = self.request.data
+
+        username = data['username']
+        password = data['password']
+
+        try:
+            user = auth.authenticate(username=username, password=password)
+
+            if user is not None:
+                auth.login(request, user)
+                return Response({ 'success': 'User Authenticated', 'username': username })
+            else:
+                return Response({ 'error': 'Error Authentiocating' })
+        except:
+            return Response({ 'error': 'Something went wrong when logging in' })
+
+
+class LogoutView(APIView):
+    def post(self, request, format=None):
+        try:
+            auth.logout(request)
+            return Response({ 'success': 'Logged Out' })
+        except:
+            return Response({ 'error': 'Something went wrong when logging out' })
 
 @method_decorator(csrf_protect, name='dispatch')
 class SignupView(APIView):
@@ -28,29 +78,82 @@ class SignupView(APIView):
         password = data['password']
         re_password = data['re_password']
 
-        if password == re_password:
-            if User.objects.filter(username=username).exists():
-                return Response({'error':'Username already exists'})
-            else:
-                if len(password) < 6:
-                    return Response({'error':'Password must be at least 6 characters'})
+        try:
+            if password == re_password:
+                if User.objects.filter(username=username).exists():
+                    return Response({'error':'Username already exists'})
                 else:
-                    user = User.objects.create_user(username=username, password=password)
-                    user.save()
-                    user = User.objects.get(username=username)
+                    if len(password) < 6:
+                        return Response({'error':'Password must be at least 6 characters'})
+                    else:
+                        user = User.objects.create_user(username=username, password=password)
+                        user.save()
+                        user = User.objects.get(id=user.id)
 
-                    user_profile = UserProfile(user=user, first_name='', last_name='', email='')
-                    user_profile.save()
-                    return Response({'success': 'User created successfully'})
-        else:
-            return Response({'error':'Passwords do not match'})
+                        user_profile = UserProfile(user=user, first_name='', last_name='', email='')
+                        user_profile.save()
+                        return Response({'success': 'User created successfully'})
+            else:
+                return Response({'error':'Passwords do not match'})
+        except:
+            return Response({'error':'Something went wrong with registering account'})
 
-@method_decorator(ensure_csrf_cookie, name='dispatch')
-class GetCSRFToken(APIView):
+class DeleteAccountView(APIView):
+    def delete(self, request, format=None):
+        user = self.request.user
+
+        try:
+            user = User.objects.filter(id=user.id).delete()
+            return Response({'success': 'User deleted successfully'})
+        except:
+            return Response({'error': 'Something went wrong when trying to delete user'})
+
+class GetUsersView(APIView):
     permission_classes = (permissions.AllowAny, )
 
     def get(self, request, format=None):
-        return Response({'success': 'CSRF cookie set'})
+        users = User.objects.all()
+        users = UserSerializer(users, many=True)
+
+        return Response(users.data)
+
+class GetUserProfileView(APIView):
+    def get(self, request, format=None):
+        try:
+            user = self.request.user
+            user = User.objects.get(id=user.id)
+
+            user_profile = UserProfile.objects.get(user=user)
+            user_profile = UserProfileSerializer(user_profile)
+
+            return Response({'profile': user_profile.data, 'username': str(user.username)})
+        except:
+            return Response({'error': 'Something went wrong when retrieving user profile'})
+
+class UpdateUserProfileView(APIView):
+    def put(self, request, format=None):
+        try:
+            user = self.request.user
+
+            data = self.request.data
+            first_name = data['first_name']
+            last_name = data['last_name']
+            email = data['email']
+
+            user = User.objects.get(id=user.id)
+            UserProfile.objects.filter(user=user).update(
+                first_name=first_name,
+                last_name=last_name,
+                email=email
+            )
+            
+            user_profile = UserProfile.objects.get(user=user)
+            user_profile = UserProfileSerializer(user_profile)
+            return Response({'profile': user_profile.data, 'username': str(user.username)})
+        except:
+            return Response({'error': 'Something went wrong when updating user profile'})
+
+
 
 @csrf_exempt
 def dunneweb_login(request):

@@ -2,6 +2,7 @@ import React, { Component, useState } from "react";
 import HttpService from "../services/HttpService.js";
 import Auth from "../services/Auth.js";
 import { useNavigate } from 'react-router-dom';
+import LoginForm from "./LoginForm.js";
 
 export default function AdminTest(props) {
 
@@ -12,7 +13,7 @@ export default function AdminTest(props) {
 
     function loginClicked(event) {
         event.preventDefault();
-        let base_url = `${window.location.origin}/api/login`;
+        let base_url = `${window.location.origin}/api/login-old`;
 
         let data = {
             username: username,
@@ -30,7 +31,7 @@ export default function AdminTest(props) {
 
     function logoutClicked(event) {
         event.preventDefault();
-        let base_url = `${window.location.origin}/api/logout`;
+        let base_url = `${window.location.origin}/api/logout-old`;
 
         console.log(base_url);
 
@@ -82,12 +83,7 @@ export default function AdminTest(props) {
 
     return (
         <>
-        <div>This is the admin test page</div>
-        <form onSubmit={e => loginClicked(e)}>
-            <input type="text" name="username" onChange={e => setUsername(e.target.value)}></input>
-            <input type="password" name="username" onChange={e => setPassword(e.target.value)}></input>
-            <input type="submit" value="Login" className="admin-page-btn"/>
-        </form>
+        <LoginForm />
         <button className="admin-page-btn" onClick={e => logoutClicked(e)}>Logout</button>
         <div className="admin-btn-panel">
             <button className="admin-page-btn" onClick={e => checkAuth(e)}>Check Auth</button>
