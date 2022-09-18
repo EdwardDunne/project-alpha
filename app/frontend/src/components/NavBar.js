@@ -16,7 +16,7 @@ export default function NavBar({ children }) {
     return (
     <nav className="navbar navbar-expand-lg bg-light">
         <div className="container-fluid">
-            <Link className="navbar-brand" exact to="/">Dunne Web</Link>
+            <Link className="navbar-brand" to="/">Dunne Web</Link>
             <button 
                 className="navbar-toggler" 
                 type="button" 
@@ -31,10 +31,10 @@ export default function NavBar({ children }) {
             <div className="collapse navbar-collapse" id="navbarNav">
                 <ul className="navbar-nav">
                     <li className="nav-item">
-                        <NavLink className="nav-link" exact to="/">Home</NavLink>
+                        <NavLink className="nav-link" to="/">Home</NavLink>
                     </li>
                     <li className="nav-item">
-                        <NavLink className="nav-link" exact to="/admin-test">AdminTest</NavLink>
+                        <NavLink className="nav-link" to="/admin-test">AdminTest</NavLink>
                     </li>
                     { guestLinks }
                 </ul>
