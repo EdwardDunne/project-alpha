@@ -87,11 +87,9 @@ class SignupView(APIView):
                         return Response({'error':'Password must be at least 6 characters'})
                     else:
                         user = User.objects.create_user(username=username, password=password)
-                        user.save()
                         user = User.objects.get(id=user.id)
+                        UserProfile.objects.create(user=user, first_name='', last_name='', email='')
 
-                        user_profile = UserProfile(user=user, first_name='', last_name='', email='')
-                        user_profile.save()
                         return Response({'success': 'User created successfully'})
             else:
                 return Response({'error':'Passwords do not match'})

@@ -1,7 +1,20 @@
 import React, { Fragment } from 'react'
 import { Link, NavLink } from 'react-router-dom'
+import { connect } from 'react-redux';
+import { logout } from '../actions/auth';
 
-export default function NavBar({ children }) {
+const NavBar = ({ isAuthenticated, logout }) => {
+    const authLinks = (
+        <Fragment>
+            <li className="nav-item">
+                <NavLink className="nav-link" to="/dashboard">Dashboard</NavLink>
+            </li>
+            <li className="nav-item">
+                <a className="nav-link" onClick={logout} href='#!'>Logout</a>
+            </li>
+        </Fragment>
+    );
+
     const guestLinks = (
         <Fragment>
             <li className="nav-item">
@@ -36,10 +49,16 @@ export default function NavBar({ children }) {
                     <li className="nav-item">
                         <NavLink className="nav-link" to="/admin-test">AdminTest</NavLink>
                     </li>
-                    { guestLinks }
+                    { isAuthenticated ? authLinks : guestLinks }
                 </ul>
             </div>
         </div>
     </nav>
     )
 }
+
+const mapStateToProps = state => ({
+    isAuthenticated: state.auth.isAuthenticated
+})
+
+export default connect(mapStateToProps, { logout })(NavBar)

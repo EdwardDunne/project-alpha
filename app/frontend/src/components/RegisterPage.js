@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { register } from '../actions/auth';
 import CSRFToken from './CSRFToken';
 
-const RegisterPage = ({ register }) => {
+const RegisterPage = ({ register, isAuthenticated }) => {
 
     const [formData, setFormData] = useState({
         username: '',
@@ -27,7 +27,9 @@ const RegisterPage = ({ register }) => {
         }
     }
 
-    if (accountCreated)
+    if (isAuthenticated)
+        return <Navigate to='/dashboard' />;
+    else if (accountCreated)
         return <Navigate to='/login' />;
 
     return (
@@ -83,4 +85,8 @@ const RegisterPage = ({ register }) => {
     );
 }
 
-export default connect(null, { register })(RegisterPage)
+const mapStateToProps = state => ({
+    isAuthenticated: state.auth.isAuthenticated
+});
+
+export default connect(mapStateToProps, { register })(RegisterPage)

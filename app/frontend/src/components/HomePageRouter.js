@@ -3,6 +3,7 @@ import HexMenu from "./HexMenu";
 import AdminTest from "./AdminTest";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
+import DashboardPage from "./DashboardPage";
 import {
     Routes,
     Route,
@@ -15,6 +16,7 @@ export default function HomePageRouter() {
             <Route path="/admin-test" element={<AdminTest />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
         </Routes>
     )
 }
