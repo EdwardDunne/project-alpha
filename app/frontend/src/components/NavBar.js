@@ -3,27 +3,37 @@ import { Link, NavLink } from 'react-router-dom'
 import { connect } from 'react-redux';
 import { logout } from '../actions/auth';
 
-const NavBar = ({ isAuthenticated, logout }) => {
+const NavBar = ({ isAuthenticated, is_staff, logout }) => {
+    
+    const adminTestLink = (
+        <>
+            <li className="nav-item">
+                <NavLink className="nav-link" to="/admin-test">AdminTest</NavLink>
+            </li>
+        </>
+    )
+    
     const authLinks = (
-        <Fragment>
+        <>
+            { is_staff ? adminTestLink : ''}
             <li className="nav-item">
                 <NavLink className="nav-link" to="/dashboard">Dashboard</NavLink>
             </li>
             <li className="nav-item">
                 <a className="nav-link" onClick={logout} href='#!'>Logout</a>
             </li>
-        </Fragment>
+        </>
     );
 
     const guestLinks = (
-        <Fragment>
+        <>
             <li className="nav-item">
                 <NavLink className="nav-link" to="/login">Login</NavLink>
             </li>
             <li className="nav-item">
                 <NavLink className="nav-link" to="/register">Register</NavLink>
             </li>
-        </Fragment>
+        </>
     );
 
     return (
@@ -46,9 +56,6 @@ const NavBar = ({ isAuthenticated, logout }) => {
                     <li className="nav-item">
                         <NavLink className="nav-link" to="/">Home</NavLink>
                     </li>
-                    <li className="nav-item">
-                        <NavLink className="nav-link" to="/admin-test">AdminTest</NavLink>
-                    </li>
                     { isAuthenticated ? authLinks : guestLinks }
                 </ul>
             </div>
@@ -58,7 +65,8 @@ const NavBar = ({ isAuthenticated, logout }) => {
 }
 
 const mapStateToProps = state => ({
-    isAuthenticated: state.auth.isAuthenticated
+    isAuthenticated: state.auth.isAuthenticated,
+    is_staff: state.profile.is_staff
 })
 
 export default connect(mapStateToProps, { logout })(NavBar)

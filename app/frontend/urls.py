@@ -6,4 +6,5 @@ urlpatterns = [
     path('admin-test', index),
     path('login', index),
     path('register', index),
+    path('dashboard', index)
 ]

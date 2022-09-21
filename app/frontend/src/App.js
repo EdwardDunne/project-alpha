@@ -1,6 +1,5 @@
-import React, { Component } from "react";
+import React from "react";
 import HomePageRouter from "./components/HomePageRouter";
-import Header from "./components/Header";
 import ReactDOM from "react-dom/client";
 import NavBar from "./components/NavBar";
 import { BrowserRouter } from "react-router-dom";
@@ -8,15 +7,13 @@ import { BrowserRouter } from "react-router-dom";
 import { Provider } from 'react-redux';
 import store from './store';
 
-export default function App() {
+const App = () => {
+
     return (
-        <>
-            <Provider store={store}>
-                {/* <Header /> */}
-                <NavBar />
-                <HomePageRouter />
-            </Provider>
-        </>
+        <Provider store={store}>
+            <NavBar />
+            <HomePageRouter />
+        </Provider>
     )
 }
 
@@ -28,3 +25,5 @@ root.render(
         <App />
     </BrowserRouter>
 );
+
+export default App;

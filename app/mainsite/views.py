@@ -24,7 +24,6 @@ class GetCSRFToken(APIView):
     def get(self, request, format=None):
         return Response({'success': 'CSRF cookie set'})
 
-@method_decorator(csrf_protect, name='dispatch')
 class CheckAuthenticatedView(APIView):
     def get(self, request, format=None):
         try:
@@ -52,7 +51,7 @@ class LoginView(APIView):
 
             if user is not None:
                 auth.login(request, user)
-                return Response({ 'success': 'User Authenticated', 'username': username })
+                return Response({ 'success': 'User Authenticated' })
             else:
                 return Response({ 'error': 'Error Authentiocating' })
         except:
@@ -124,7 +123,10 @@ class GetUserProfileView(APIView):
             user_profile = UserProfile.objects.get(user=user)
             user_profile = UserProfileSerializer(user_profile)
 
-            return Response({'profile': user_profile.data, 'username': str(user.username)})
+            return Response({
+                'profile': user_profile.data, 
+                'username': str(user.username), 
+                'is_staff': user.is_staff})
         except:
             return Response({'error': 'Something went wrong when retrieving user profile'})
 
