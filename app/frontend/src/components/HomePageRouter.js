@@ -9,10 +9,11 @@ import { load_user } from "../actions/profile";
 import { connect } from 'react-redux';
 import {
     Routes,
-    Route,
+    Route
 } from "react-router-dom";
+import PrivateRoute from "../hoc/PrivateRoute";
 
-const HomePageRouter = ({ checkAuthenticated, load_user }) => {
+const HomePageRouter = ({ checkAuthenticated, load_user, isAuthenticated }) => {
     useEffect(() => {
         checkAuthenticated();
         load_user();
@@ -21,12 +22,22 @@ const HomePageRouter = ({ checkAuthenticated, load_user }) => {
     return (
         <Routes>
             <Route exact path="/" element={<HexMenu />}/>
-            <Route path="/admin-test" element={<AdminTest />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/admin-test" element={
+                <PrivateRoute>
+                    <AdminTest />
+                </PrivateRoute>} />
+            <Route path="/dashboard" element={
+                <PrivateRoute>
+                    <DashboardPage />
+                </PrivateRoute>} />
         </Routes>
     )
 }
 
-export default connect(null, { checkAuthenticated, load_user })(HomePageRouter);
+const mapStateToProps = state => ({
+    isAuthenticated: state.auth.isAuthenticated
+})
+
+export default connect(mapStateToProps, { checkAuthenticated, load_user })(HomePageRouter);

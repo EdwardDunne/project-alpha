@@ -96,7 +96,7 @@ class SignupView(APIView):
             return Response({'error':'Something went wrong with registering account'})
 
 class DeleteAccountView(APIView):
-    def delete(self, request, format=None):
+    def post(self, request, format=None):
         user = self.request.user
 
         try:
