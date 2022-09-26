@@ -1,5 +1,5 @@
-from django.urls import path, include
-from .views import UpdateUserProfileView, dunneweb_login, dunneweb_logout, get_marvel_omnibuses, test_marvel_api, SignupView, GetCSRFToken, LoginView, LogoutView, CheckAuthenticatedView, DeleteAccountView, GetUsersView, GetUserProfileView
+from django.urls import path
+from .views import UpdateUserProfileView, SignupView, GetCSRFToken, LoginView, LogoutView, CheckAuthenticatedView, DeleteAccountView, GetUsersView, GetUserProfileView, TestMarvelApi, MarvelOmnis
 
 urlpatterns = [
     path('csrf-cookie', GetCSRFToken.as_view()),
@@ -11,8 +11,6 @@ urlpatterns = [
     path('get-users', GetUsersView.as_view()),
     path('profile/user', GetUserProfileView.as_view()),
     path('profile/user/update', UpdateUserProfileView.as_view()),
-    path('login-old', dunneweb_login),
-    path('logout-old', dunneweb_logout),
-    path('test-marvel', test_marvel_api),
-    path('get-marvel-omnis', get_marvel_omnibuses)
+    path('test-marvel', TestMarvelApi.as_view()),
+    path('get-marvel-omnis', MarvelOmnis.as_view())
 ]

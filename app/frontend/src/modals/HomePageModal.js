@@ -1,16 +1,6 @@
-import { BorderAll } from '@material-ui/icons'
-import React from 'react'
-
-const MODAL_STYLES = {
-    position: 'fixed',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    background: '#FFF',
-    padding: '50px',
-    zIndex: 1000,
-    border: '3px solid black'
-}
+import { BorderAll } from '@material-ui/icons';
+import React from 'react';
+import ReactDom from 'react-dom';
 
 export default function HomePageModal({ open, children, onClose, modalType }) {
   
@@ -42,15 +32,17 @@ export default function HomePageModal({ open, children, onClose, modalType }) {
             modalContent = <ResumeContent/>;
             break;
         default:
-            console.log(modalType);
             modalContent = <OtherContent/>; 
             break;
     }
 
-    return (
-    <div style={MODAL_STYLES}>
-        {modalContent}
-    </div>
-    
-  )
+    return ReactDom.createPortal(
+        <>
+            <div className='modal-overlay' onClick={onClose}/>
+            <div className='hex-modal'>
+                {modalContent}
+            </div>
+        </>,
+        document.getElementById('portal')
+    )
 }

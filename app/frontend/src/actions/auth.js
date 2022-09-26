@@ -1,6 +1,7 @@
 import Cookies from 'js-cookie'
 import axios from 'axios';
 import { load_user } from './profile';
+import httpUtil from '../utils/httpUtil';
 import {
     REGISTER_SUCCESS,
     REGISTER_FAIL,
@@ -16,10 +17,7 @@ import {
 
 export const checkAuthenticated = () => async dispatch => {
     const config = {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
+        headers: httpUtil.get_headers('GET')
     };
 
     try {
@@ -52,11 +50,7 @@ export const checkAuthenticated = () => async dispatch => {
 
 export const login = (username, password) => async dispatch => {
     const config = {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-CSRFToken': Cookies.get('csrftoken')
-        }
+        headers: httpUtil.get_headers('POST')
     };
 
     const body = JSON.stringify({ username, password });
@@ -85,11 +79,7 @@ export const login = (username, password) => async dispatch => {
 
 export const logout = () => async dispatch => {
     const config = {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-CSRFToken': Cookies.get('csrftoken')
-        }
+        headers: httpUtil.get_headers('POST')
     };
 
     const body = JSON.stringify({
@@ -118,11 +108,7 @@ export const logout = () => async dispatch => {
 
 export const register = (username, password, re_password) => async dispatch => {
     const config = {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-CSRFToken': Cookies.get('csrftoken')
-        }
+        headers: httpUtil.get_headers('POST')
     };
 
     const body = JSON.stringify({ username, password, re_password });
@@ -148,11 +134,7 @@ export const register = (username, password, re_password) => async dispatch => {
 
 export const delete_account = () => async dispatch => {
     const config = {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-CSRFToken': Cookies.get('csrftoken')
-        }
+        headers: httpUtil.get_headers('POST')
     };
 
     const body = JSON.stringify({

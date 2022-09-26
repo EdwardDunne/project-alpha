@@ -1,7 +1,6 @@
 import React, { Component, useState } from "react";
 import HomePageModal from "../modals/HomePageModal";
-import HttpService from "../services/HttpService.js";
-import Auth from "../services/Auth.js";
+import ReactDom from 'react-dom';
 
 import { 
     matrix_hex_img, 
@@ -23,11 +22,6 @@ export default function HexMenu() {
     function hexClicked(type) {
         setIsOpen(true);
         setModalType(type);
-        console.log(HttpService.dunneweb_is_logged_in);
-    }
-
-    function checkAuth(event) {
-        alert(Auth.isAuthenticated());
     }
 
     return (
