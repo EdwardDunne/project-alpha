@@ -29,7 +29,6 @@ export const load_user = () => async dispatch => {
             });
         }
     } catch (error) {
-        console.error(error);
         dispatch({
             type: LOAD_USER_PROFILE_FAIL
         });
