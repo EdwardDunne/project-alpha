@@ -201,7 +201,9 @@ class MarvelOmnis(APIView):
                 'apikey': settings.MARVEL_API_PUBLIC_KEY,
                 'hash': get_hash_for_marvel_api(timestamp),
                 'format': 'hardcover',
-                'formatType': 'collection'
+                'formatType': 'collection',
+                'orderBy': 'title',
+                'offset': 20
             }
 
             response = requests.get(url, headers=headers, params=payload)
@@ -209,14 +211,18 @@ class MarvelOmnis(APIView):
 
             print(res_data['data']['total'])
 
+            omnis = []
             for book in res_data['data']['results']:
                 title = book['title']
                 if 'omnibus' in title.lower() or book['pageCount'] > 500:
                     print(book['title'])
+                    omnis.append(book)
+                    if not book['isbn']:
+                        print('MISSING ISBN')
 
             return Response({
                 'success': True,
-                'data': res_data
+                'data': omnis
             })
 
         except:
