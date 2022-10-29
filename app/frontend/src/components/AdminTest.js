@@ -3,17 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import httpUtil from '../utils/httpUtil';
 
-import { 
-    matrix_hex_img, 
-    resume_hex_img, 
-    linkedin_hex_img, 
-    contact_hex_img,
-    art_hex_img,
-    fb_hex_img,
-    ig_hex_img,
-    comics_hex_img
-} from '../images'
-
 export default function AdminTest(props) {
 
     let navigate = useNavigate();

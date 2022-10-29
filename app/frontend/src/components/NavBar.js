@@ -12,10 +12,19 @@ const NavBar = ({ isAuthenticated, is_staff, logout }) => {
             </li>
         </>
     )
+
+    const comicAdminLink = (
+        <>
+            <li className="nav-item">
+                <NavLink className="nav-link" to="/comics-admin">Comics Admin</NavLink>
+            </li>
+        </>
+    )
     
     const authLinks = (
         <>
             { is_staff ? adminTestLink : ''}
+            { is_staff ? comicAdminLink : ''}
             <li className="nav-item">
                 <NavLink className="nav-link" to="/dashboard">Dashboard</NavLink>
             </li>

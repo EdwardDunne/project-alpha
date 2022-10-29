@@ -1,6 +1,7 @@
 import React, { Component, useEffect } from "react";
 import HexMenu from "./HexMenu";
 import AdminTest from "./AdminTest";
+import ComicsAdmin from "./ComicsAdmin";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
 import DashboardPage from "./DashboardPage";
@@ -27,6 +28,10 @@ const HomePageRouter = ({ checkAuthenticated, load_user, isAuthenticated }) => {
             <Route path="/admin-test" element={
                 <PrivateRoute>
                     <AdminTest />
+                </PrivateRoute>} />
+            <Route path="/comics-admin" element={
+                <PrivateRoute>
+                    <ComicsAdmin />
                 </PrivateRoute>} />
             <Route path="/dashboard" element={
                 <PrivateRoute>

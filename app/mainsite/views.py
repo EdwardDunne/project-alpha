@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie, csrf_protect
 from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -191,11 +192,13 @@ class TestMarvelApi(APIView):
 class MarvelOmnis(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
+    @method_decorator(cache_page(60*60*2))
     def get(self, request, format=None):
         try:
             timestamp = time.time()
             headers = { 'Accept': '*/*' }
             url = 'http://gateway.marvel.com/v1/public/comics'
+            offset = 0
             payload = {
                 'ts': timestamp,
                 'apikey': settings.MARVEL_API_PUBLIC_KEY,
@@ -203,27 +206,43 @@ class MarvelOmnis(APIView):
                 'format': 'hardcover',
                 'formatType': 'collection',
                 'orderBy': 'title',
-                'offset': 20
+                'offset': offset
             }
 
             response = requests.get(url, headers=headers, params=payload)
             res_data = response.json()
 
             print(res_data['data']['total'])
+            total_results =  res_data['data']['total']
 
             omnis = []
-            for book in res_data['data']['results']:
-                title = book['title']
-                if 'omnibus' in title.lower() or book['pageCount'] > 500:
-                    print(book['title'])
-                    omnis.append(book)
-                    if not book['isbn']:
-                        print('MISSING ISBN')
+            while offset < total_results:
+                for book in res_data['data']['results']:
+                    title = book['title']
+                    if 'omnibus' in title.lower() or book['pageCount'] > 500:
+                        print(book['title'])
+                        omnis.append(book)
+                        if not book['isbn']:
+                            print('MISSING ISBN')
+                # Increment
+                offset += 20
+                timestamp = time.time()
+
+                # Update Payload
+                payload['offset'] = offset
+                payload['ts'] = timestamp
+                payload['hash'] = get_hash_for_marvel_api(timestamp)
+
+                # Make new request
+                response = requests.get(url, headers=headers, params=payload)
+                res_data = response.json()
+                print(offset)
 
             return Response({
                 'success': True,
-                'data': omnis
+                'books': omnis
             })
 
-        except:
+        except Exception as e:
+            print(e)
             return Response({'error':'Something went wrong with testing the Marvel Api'})
