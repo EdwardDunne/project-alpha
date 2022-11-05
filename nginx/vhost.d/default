@@ -7,3 +7,8 @@ location /media/ {
   alias /home/app/web/mediafiles/;
   add_header Access-Control-Allow-Origin *;
 }
+
+server {
+    server_name  www.dunneweb.com;
+    return       301 https://dunneweb.com$request_uri;
+}
