@@ -14,6 +14,7 @@ from .utils import get_hash_for_marvel_api
 from django.contrib.auth.models import User
 from mainsite.models import UserProfile
 from .serializers import UserSerializer, UserProfileSerializer
+from bs4 import BeautifulSoup
 import time
 import requests
 import json
@@ -237,6 +238,41 @@ class MarvelOmnis(APIView):
                 response = requests.get(url, headers=headers, params=payload)
                 res_data = response.json()
                 print(offset)
+
+            return Response({
+                'success': True,
+                'books': omnis
+            })
+
+        except Exception as e:
+            print(e)
+            return Response({'error':'Something went wrong with testing the Marvel Api'})
+
+class DCOmnisScarpe(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, format=None):
+        try:
+            headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0", "Accept-Encoding":"gzip, deflate", "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "DNT":"1","Connection":"close", "Upgrade-Insecure-Requests":"1"}
+            url = 'https://www.amazon.com/s?k=omnibus&i=stripbooks&rh=n%3A193766%2Cp_n_feature_eighteen_browse-bin%3A7421487011%2Cp_n_feature_nineteen_browse-bin%3A7421491011&s=date-desc-rank&dc&qid=1667757863&rnid=7421489011&ref=sr_pg_1'
+            
+            response = requests.get(url, headers=headers)
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            omnis = []
+            book_search_items = soup.find_all("div", {'class':['s-asin']})
+            for book_item in book_search_items:
+                book_title = book_item.find('h2').find('span').get_text()
+                book_img_container = book_item.find('div', {'class': 's-product-image-container'})
+                book_url = 'amazon.com' + book_img_container.find('a', {'class': 'a-link-normal'})['href']
+                book_img_url = book_img_container.find('img')['src']
+
+                omni = {
+                    'book_title': book_title,
+                    'book_img_url': book_img_url,
+                    'book_url': book_url
+                }
+                omnis.append(omni)
 
             return Response({
                 'success': True,

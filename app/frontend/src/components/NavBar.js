@@ -58,7 +58,9 @@ const NavBar = ({ isAuthenticated, is_staff, logout }) => {
                 aria-expanded="false" 
                 aria-label="Toggle navigation"
             >
-                <span className="navbar-toggler-icon"></span>
+                <span className="navbar-toggler-icon">
+                    {/* <i className="uil-bars"></i> */}
+                </span>
             </button>
             <div className="collapse navbar-collapse" id="navbarNav">
                 <ul className="navbar-nav">

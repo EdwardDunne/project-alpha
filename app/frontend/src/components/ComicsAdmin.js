@@ -8,6 +8,7 @@ export default function ComicsAdmin(props) {
     let navigate = useNavigate();
 
     const [marvelOmnis, setMarvelOmnis] = useState([]);
+    const [scrapedDCOmnis, setScrapedDCOmnis] = useState([]);
 
     useEffect(() => {
       console.log(marvelOmnis);
@@ -39,8 +40,66 @@ export default function ComicsAdmin(props) {
         setMarvelOmnis(res.data.books);
     }
 
+    const scrapeDCOmnis = async (event) => {
+        event.preventDefault();
+        const config = {
+            headers: httpUtil.get_headers('GET')
+        };
+
+        const res = await axios.get(`${window.location.origin}/api/scrape-dc-omnis`, config);
+        console.log(res);
+        setScrapedDCOmnis(res.data.books);
+    }
+
     return (
         <>
+        <div className="leftside-menu menuitem-active">
+            <div className="h-100 show" id="leftside-menu-container">
+                <div className="simplebar-wrapper" style={{"margin": "0px"}}>
+                    <div className="simplebar-mask">
+                        <div className="simplebar-offset" style={{"right": "0px", "bottom": "0px"}}>
+                            <div className="simplebar-content-wrapper" tabIndex="0" role="region" aria-label="scrollable content" style={{"height": "100%", "overflow": "hidden scroll"}}>
+                                <div className="simplebar-content" style={{"padding": "0px"}}>
+                                    <div className="leftbar-user">
+                                        <a href="pages-profile.html">
+                                            <span className="leftbar-user-name">Edward Dunne</span>
+                                        </a>
+                                    </div>
+
+                                    <ul className="side-nav">
+
+                                        <li className="side-nav-title side-nav-item">Actions</li>
+
+                                        <li className="side-nav-item" onClick={e => getMarvelOmnis(e)}>
+                                            <a href="#" className="side-nav-link">
+                                                <i className="uil-book-alt"></i>
+                                                <span> Get Marvel Omnis</span>
+                                            </a>
+                                        </li>
+
+                                        <li className="side-nav-item" onClick={e => scrapeDCOmnis(e)}>
+                                            <a href="#" className="side-nav-link">
+                                                <i className="uil-book-alt"></i>
+                                                <span> Scrape DC Omnis</span>
+                                            </a>
+                                        </li>
+                                        
+                                        <li className="side-nav-item">
+                                            <a href="#" className="side-nav-link">
+                                                <i className="uil-book-alt"></i>
+                                                <span> Scrape Marvel Omnis</span>
+                                            </a>
+                                        </li>
+
+                                    </ul>
+                                    <div className="clearfix"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div className="content-page">
             <div className="content">
 
