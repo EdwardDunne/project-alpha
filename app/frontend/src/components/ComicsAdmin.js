@@ -2,6 +2,7 @@ import React, { Component, useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import httpUtil from '../utils/httpUtil';
+import OmniDetailsModal from "../modals/OmniDetailsModal";
 
 export default function ComicsAdmin(props) {
 
@@ -10,9 +11,19 @@ export default function ComicsAdmin(props) {
     const [marvelOmnis, setMarvelOmnis] = useState([]);
     const [scrapedDCOmnis, setScrapedDCOmnis] = useState([]);
 
+    const [isOpen, setIsOpen] = useState(false);
+    const [modalType, setModalType] = useState(null);
+    const [selectedBook, setSelectedBook] = useState({});
+
     useEffect(() => {
       console.log(marvelOmnis);
     }, [marvelOmnis])
+
+    useEffect(() => {
+        for (let book of scrapedDCOmnis) {
+            // scrapeAmazonDetails(book.book_url);
+        }
+      }, [scrapedDCOmnis])
     
 
     function pageChange(event) {
@@ -51,8 +62,67 @@ export default function ComicsAdmin(props) {
         setScrapedDCOmnis(res.data.books);
     }
 
+    const scrapeAmazonDetails = async (book_url) => {
+        const config = {
+            headers: httpUtil.get_headers('POST')
+        };
+
+        const body = JSON.stringify({ book_url });
+        const res = await axios.post(`${window.location.origin}/api/scrape-amazon-details`, body, config);
+        console.log(res);
+    }
+
+    function displayOmnis(book, i, omniListType) {
+        let imgUrl = '';
+        let title = '';
+
+        switch(omniListType) {
+            case 'marvelApi':
+                imgUrl = book.thumbnail.path + '.' + book.thumbnail.extension;
+                title = book.title;
+                break;
+            case 'dcScraped':
+                imgUrl = book.book_img_url;
+                title = book.book_title;
+                break;
+            default:
+                break;
+        }
+
+        return (
+            <div className="card omni-list-card" key={i} onClick={e => omniClicked(omniListType, book)}>
+                <div className="row g-0 align-items-center">
+                    <div className="col-md-4">
+                        <img src={imgUrl} className="card-img" alt="..."/>
+                    </div>
+                    <div className="col-md-8">
+                        <div className="card-body">
+                            <h5 className="card-title">{title}</h5>
+                            <p className="card-text">{book.description}</p>
+                            {/* <p className="card-text"><small className="text-muted">Last updated 3 mins ago</small></p> */}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    function omniClicked(type, book) {
+        setIsOpen(true);
+        setModalType(type);
+        setSelectedBook(book);
+    }
+
     return (
         <>
+
+        <OmniDetailsModal 
+            open={isOpen} 
+            onClose={() => setIsOpen(false)} 
+            modalType={modalType}
+            selectedBook={selectedBook}>
+        </OmniDetailsModal>
+
         <div className="leftside-menu menuitem-active">
             <div className="h-100 show" id="leftside-menu-container">
                 <div className="simplebar-wrapper" style={{"margin": "0px"}}>
@@ -122,24 +192,8 @@ export default function ComicsAdmin(props) {
                         </div>
                     </div>
                     <div className="row">
-                        {marvelOmnis.map((book, i) => {
-                        const imgUrl = book.thumbnail.path + '.' + book.thumbnail.extension;
-                        return (
-                            <div className="card omni-list-card" key={i}>
-                                <div className="row g-0 align-items-center">
-                                    <div className="col-md-4">
-                                        <img src={imgUrl} className="card-img" alt="..."/>
-                                    </div>
-                                    <div className="col-md-8">
-                                        <div className="card-body">
-                                            <h5 className="card-title">{book.title}</h5>
-                                            <p className="card-text">{book.description}</p>
-                                            {/* <p className="card-text"><small className="text-muted">Last updated 3 mins ago</small></p> */}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>)
-                        })}
+                        {marvelOmnis.map((book, i) => { return displayOmnis(book, i, 'marvelApi') })}
+                        {scrapedDCOmnis.map((book, i) => { return displayOmnis(book, i, 'dcScraped') })}
                     </div>
                     {/* end page title */}
                     
