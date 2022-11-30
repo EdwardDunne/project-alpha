@@ -263,7 +263,7 @@ class DCOmnisScarpe(APIView):
             soup = BeautifulSoup(response.content, 'html.parser')
 
             pagination_container = soup.find('span', {'class': 's-pagination-strip'})
-            next_page_url = 'amazon.com' + pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]['href']
+            next_page_url = 'http://api.scraperapi.com?api_key=6fbe90a97851773ef3bc5527a64121b4&url=amazon.com' + pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]['href']
             
             omnis = []
             while(next_page_url):
@@ -286,7 +286,7 @@ class DCOmnisScarpe(APIView):
                 pagination_container = soup.find('span', {'class': 's-pagination-strip'})
                 last_pagination_element = pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]
                 if last_pagination_element.has_attr('href'):
-                    next_page_url = 'http://amazon.com' + pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]['href']
+                    next_page_url = 'http://api.scraperapi.com?api_key=6fbe90a97851773ef3bc5527a64121b4&url=http://amazon.com' + pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]['href']
                     response = requests.get(next_page_url, headers=headers)
                     soup = BeautifulSoup(response.content, 'html.parser')
                 else:
