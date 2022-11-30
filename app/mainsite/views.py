@@ -252,7 +252,7 @@ class MarvelOmnis(APIView):
 class DCOmnisScarpe(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
-    @method_decorator(cache_page(60*60*2))
+    @method_decorator(cache_page(60*10))
     def get(self, request, format=None):
         try:
             headers = getAmazonScrapeHeaders()
@@ -334,7 +334,8 @@ class AmazonDetailsScrape(APIView):
 
 
 def getAmazonScrapeHeaders():
-    rand = random.randrange(1,2)
+    rand = random.randint(1,2)
+    return {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", "Accept-Encoding":"gzip, deflate", "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "DNT":"1","Connection":"close", "Upgrade-Insecure-Requests":"1"}
     if rand == 1:
         return {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36','Accept-Language': 'en-US, en;q=0.5'}
     else:
