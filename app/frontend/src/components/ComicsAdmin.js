@@ -3,8 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import httpUtil from '../utils/httpUtil';
 import OmniDetailsModal from "../modals/OmniDetailsModal";
+import { get_marvel_omnis } from '../actions/comics';
+import { connect } from 'react-redux';
 
-export default function ComicsAdmin(props) {
+const ComicsAdmin = ({
+    get_marvel_omnis,
+    marvel_api_comics_global
+}) => {
 
     let navigate = useNavigate();
 
@@ -16,14 +21,18 @@ export default function ComicsAdmin(props) {
     const [selectedBook, setSelectedBook] = useState({});
 
     useEffect(() => {
-      console.log(marvelOmnis);
+        console.log(marvelOmnis);
     }, [marvelOmnis])
 
     useEffect(() => {
         for (let book of scrapedDCOmnis) {
             // scrapeAmazonDetails(book.book_url);
         }
-      }, [scrapedDCOmnis])
+    }, [scrapedDCOmnis])
+
+    useEffect(() => {
+        setMarvelOmnis(marvel_api_comics_global);
+    }, [marvel_api_comics_global]);
     
 
     function pageChange(event) {
@@ -42,13 +51,15 @@ export default function ComicsAdmin(props) {
 
     const getMarvelOmnis = async (event) => {
         event.preventDefault();
-        const config = {
-            headers: httpUtil.get_headers('GET')
-        };
+        // const config = {
+        //     headers: httpUtil.get_headers('GET')
+        // };
 
-        const res = await axios.get(`${window.location.origin}/api/get-marvel-omnis`, config);
-        console.log(res);
-        setMarvelOmnis(res.data.books);
+        // const res = await axios.get(`${window.location.origin}/api/get-marvel-omnis`, config);
+        // console.log(res);
+        // setMarvelOmnis(res.data.books);
+
+        get_marvel_omnis();
     }
 
     const scrapeDCOmnis = async (event) => {
@@ -123,96 +134,55 @@ export default function ComicsAdmin(props) {
             selectedBook={selectedBook}>
         </OmniDetailsModal>
 
-        <div className="leftside-menu menuitem-active">
-            <div className="h-100 show" id="leftside-menu-container">
-                <div className="simplebar-wrapper" style={{"margin": "0px"}}>
-                    <div className="simplebar-mask">
-                        <div className="simplebar-offset" style={{"right": "0px", "bottom": "0px"}}>
-                            <div className="simplebar-content-wrapper" tabIndex="0" role="region" aria-label="scrollable content" style={{"height": "100%", "overflow": "hidden scroll"}}>
-                                <div className="simplebar-content" style={{"padding": "0px"}}>
-                                    <div className="leftbar-user">
-                                        <a href="pages-profile.html">
-                                            <span className="leftbar-user-name">Edward Dunne</span>
-                                        </a>
-                                    </div>
-
-                                    <ul className="side-nav">
-
-                                        <li className="side-nav-title side-nav-item">Actions</li>
-
-                                        <li className="side-nav-item" onClick={e => getMarvelOmnis(e)}>
-                                            <a href="#" className="side-nav-link">
-                                                <i className="uil-book-alt"></i>
-                                                <span> Get Marvel Omnis</span>
-                                            </a>
-                                        </li>
-
-                                        <li className="side-nav-item" onClick={e => scrapeDCOmnis(e)}>
-                                            <a href="#" className="side-nav-link">
-                                                <i className="uil-book-alt"></i>
-                                                <span> Scrape DC Omnis</span>
-                                            </a>
-                                        </li>
-                                        
-                                        <li className="side-nav-item">
-                                            <a href="#" className="side-nav-link">
-                                                <i className="uil-book-alt"></i>
-                                                <span> Scrape Marvel Omnis</span>
-                                            </a>
-                                        </li>
-
-                                    </ul>
-                                    <div className="clearfix"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div id="admin-main-container">
+            <div className="admin-leftside-content" style={{"padding": "0px"}}>
+                <ul className="side-nav">
+                    <li className="side-nav-title side-nav-item">Actions</li>
+                    <li className="side-nav-item" onClick={e => getMarvelOmnis(e)}>
+                        <a href="#" className="side-nav-link">
+                            <i className="uil-book-alt"></i>
+                            <span> Get Marvel Omnis</span>
+                        </a>
+                    </li>
+                    <li className="side-nav-item" onClick={e => scrapeDCOmnis(e)}>
+                        <a href="#" className="side-nav-link">
+                            <i className="uil-book-alt"></i>
+                            <span> Scrape DC Omnis</span>
+                        </a>
+                    </li>
+                    <li className="side-nav-item">
+                        <a href="#" className="side-nav-link">
+                            <i className="uil-book-alt"></i>
+                            <span> Scrape Marvel Omnis</span>
+                        </a>
+                    </li>
+                </ul>
+                <div className="clearfix"></div>
             </div>
-        </div>
-        <div className="content-page">
-            <div className="content">
 
-                {/* Start Content */}
-                <div className="container-fluid">
-
-                    {/* start page title */}
-                    <div className="row">
-                        <div className="col-12">
-                            <div className="page-title-box">
-                                <h4 className="page-title">Comics Admin</h4>
-                            </div>
-                        </div>
+            <div className="admin-main-content">
+                    <div className="page-title-box">
+                        <h4 className="page-title">Comics Admin</h4>
                     </div>
-                    <div className="row">
-                        <div className="admin-btn-panel">
-                            <button className="btn btn-primary m-3" onClick={e => pageChange(e)}>Test Page Change</button>
-                            <button className="btn btn-primary m-3" onClick={e => getMarvelOmnis(e)}>Get Marvel Omnis</button>
-                            <button className="btn btn-primary m-3" onClick={e => testMarvelApi(e)}>Test Marvel Api</button>
-                        </div>
+                    <div className="admin-btn-panel">
+                        <button className="btn btn-primary" onClick={e => pageChange(e)}>Test Page Change</button>
+                        <button className="btn btn-primary" onClick={e => getMarvelOmnis(e)}>Get Marvel Omnis</button>
+                        <button className="btn btn-primary" onClick={e => testMarvelApi(e)}>Test Marvel Api</button>
                     </div>
-                    <div className="row">
+                    <div className="book-card-container">
                         {marvelOmnis.map((book, i) => { return displayOmnis(book, i, 'marvelApi') })}
                         {scrapedDCOmnis.map((book, i) => { return displayOmnis(book, i, 'dcScraped') })}
                     </div>
-                    {/* end page title */}
-                    
-                </div> 
-                {/* container */}
-
             </div> 
-            {/* content */}
-
-            {/* Footer Start */}
-            <footer className="footer">
-                <div className="container-fluid">
-                    <div className="row">
-                    </div>
-                </div>
-            </footer>
-            {/* end Footer */}
-
         </div>
         </>
     );
 }
+
+const mapStateToProps = state => ({
+    marvel_api_comics_global: state.comics.marvel_api_comics
+})
+
+export default connect(mapStateToProps, { 
+    get_marvel_omnis, 
+})(ComicsAdmin)

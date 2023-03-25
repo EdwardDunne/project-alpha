@@ -46,31 +46,12 @@ const NavBar = ({ isAuthenticated, is_staff, logout }) => {
     );
 
     return (
-    <nav className="navbar navbar-expand-lg bg-light">
-        <div className="container-fluid">
-            <Link className="navbar-brand" to="/">Dunne Web</Link>
-            <button 
-                className="navbar-toggler" 
-                type="button" 
-                data-bs-toggle="collapse" 
-                data-bs-target="#navbarNav" 
-                aria-controls="navbarNav" 
-                aria-expanded="false" 
-                aria-label="Toggle navigation"
-            >
-                <span className="navbar-toggler-icon">
-                    {/* <i className="uil-bars"></i> */}
-                </span>
-            </button>
-            <div className="collapse navbar-collapse" id="navbarNav">
-                <ul className="navbar-nav">
-                    <li className="nav-item">
-                        <NavLink className="nav-link" to="/">Home</NavLink>
-                    </li>
-                    { isAuthenticated ? authLinks : guestLinks }
-                </ul>
-            </div>
-        </div>
+    <nav className="navbar-container">
+        <Link className="nav-item brand" to="/">Dunne Web</Link>
+        <li className="nav-item">
+            <NavLink className="nav-link" to="/">Home</NavLink>
+        </li>
+        { isAuthenticated ? authLinks : guestLinks }
     </nav>
     )
 }
