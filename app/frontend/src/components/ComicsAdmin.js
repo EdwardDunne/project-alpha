@@ -1,10 +1,14 @@
 import React, { Component, useEffect, useState } from "react";
+// import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import httpUtil from '../utils/httpUtil';
 import OmniDetailsModal from "../modals/OmniDetailsModal";
 import { get_marvel_omnis } from '../actions/comics';
 import { connect } from 'react-redux';
+import Button from '@mui/material/Button';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
 
 const ComicsAdmin = ({
     get_marvel_omnis,
@@ -13,12 +17,18 @@ const ComicsAdmin = ({
 
     let navigate = useNavigate();
 
+    const [displayedOmnis, setDisplayedOmnis] = useState([]);
     const [marvelOmnis, setMarvelOmnis] = useState([]);
     const [scrapedDCOmnis, setScrapedDCOmnis] = useState([]);
+
+    const [selectedResultSet, setselectedResultSet] = useState('marvel-api');
 
     const [isOpen, setIsOpen] = useState(false);
     const [modalType, setModalType] = useState(null);
     const [selectedBook, setSelectedBook] = useState({});
+
+    let marvel_cgn_comics_global = []; // TEMP: need to create globaa state var
+    let dc_cgn_comics_global = []; // TEMP: need to create globaa state var
 
     useEffect(() => {
         console.log(marvelOmnis);
@@ -32,6 +42,8 @@ const ComicsAdmin = ({
 
     useEffect(() => {
         setMarvelOmnis(marvel_api_comics_global);
+        if (selectedResultSet == 'marvel-api')
+            setDisplayedOmnis(marvel_api_comics_global);
     }, [marvel_api_comics_global]);
     
 
@@ -124,6 +136,15 @@ const ComicsAdmin = ({
         setSelectedBook(book);
     }
 
+    const handleChange = ( event, newAlignment ) => {
+        setselectedResultSet(newAlignment);
+        setDisplayedOmnis(
+            newAlignment == 'marvel-api' ? marvel_api_comics_global : 
+            newAlignment == 'marvel-cgn' ? marvel_cgn_comics_global : 
+            dc_cgn_comics_global
+        );
+    };
+
     return (
         <>
 
@@ -164,14 +185,29 @@ const ComicsAdmin = ({
                     <div className="page-title-box">
                         <h4 className="page-title">Comics Admin</h4>
                     </div>
-                    <div className="admin-btn-panel">
-                        <button className="btn btn-primary" onClick={e => pageChange(e)}>Test Page Change</button>
+                    {/* <div className="admin-btn-panel">
+                        <Button variant="contained" className="btn btn-primary" onClick={e => pageChange(e)}>Test Page Change</Button>
                         <button className="btn btn-primary" onClick={e => getMarvelOmnis(e)}>Get Marvel Omnis</button>
                         <button className="btn btn-primary" onClick={e => testMarvelApi(e)}>Test Marvel Api</button>
+                    </div> */}
+                    <div id="comics-admin-results-toggle-container">
+                        <ToggleButtonGroup
+                        color="primary" value={selectedResultSet} exclusive 
+                        onChange={handleChange} aria-label="Result Set">
+                            <ToggleButton value="marvel-api">Marvel API</ToggleButton>
+                            <ToggleButton value="marvel-cgn">Marvel CGN</ToggleButton>
+                            <ToggleButton value="dc-cgn">DC CGN</ToggleButton>
+                        </ToggleButtonGroup>
                     </div>
                     <div className="book-card-container">
-                        {marvelOmnis.map((book, i) => { return displayOmnis(book, i, 'marvelApi') })}
-                        {scrapedDCOmnis.map((book, i) => { return displayOmnis(book, i, 'dcScraped') })}
+                        {displayedOmnis.map((book, i) => { 
+                            return displayOmnis(
+                                book, i, 
+                                selectedResultSet == 'marvel-api' ? 'marvelApi' : 
+                                selectedResultSet == 'marvel-cgn' ? 'marvelCgn' : 
+                                'dcScraped') 
+                        })}
+                        {/* {scrapedDCOmnis.map((book, i) => { return displayOmnis(book, i, 'dcScraped') })} */}
                     </div>
             </div> 
         </div>

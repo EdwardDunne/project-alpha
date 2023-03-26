@@ -539,3 +539,13 @@ span {
     height: 130px;
     overflow: auto;
 }
+
+button {
+    font-family: "Nunito"!important;
+}
+
+#comics-admin-results-toggle-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
