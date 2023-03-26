@@ -99,7 +99,7 @@ html, body {
 }
 
 .admin-leftside-content {
-    width: 300px;
+    /* width: 300px; */
     display: flex;
     height: 410px;
 }
@@ -518,6 +518,18 @@ span {
     border-top-right-radius: 0;
 }
 
+.book-card-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.omni-list-card {
+    margin: 5px;
+    width: 700px;
+}
+
 .omni-list-card img {
     height: 200px;
     object-fit: contain;
@@ -526,4 +538,14 @@ span {
 .omni-list-card .card-text {
     height: 130px;
     overflow: auto;
+}
+
+button {
+    font-family: "Nunito"!important;
+}
+
+#comics-admin-results-toggle-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

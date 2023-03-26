@@ -15,7 +15,7 @@ export default function OmniDetailsModal({ open, onClose, modalType, selectedBoo
                     <img src={selectedBook.thumbnail.path + '.' + selectedBook.thumbnail.extension}/>
                     <div className="details-container">
                         <span><b>ISBN</b>: {selectedBook.isbn}</span>
-                        <span><b>Test1</b>: placeholder placeholder placeholder</span>
+                        <span><b>Marvel DB ID</b>: {selectedBook.id}</span>
                         <span><b>Test2</b>: placeholder placeholder placeholder</span>
                         <span><b>Test3</b>: placeholder placeholder placeholder</span>
                         <span><b>Test4</b>: placeholder placeholder placeholder</span>
