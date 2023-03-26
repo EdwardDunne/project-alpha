@@ -99,7 +99,7 @@ html, body {
 }
 
 .admin-leftside-content {
-    width: 300px;
+    /* width: 300px; */
     display: flex;
     height: 410px;
 }
@@ -516,6 +516,18 @@ span {
     margin-bottom: 10px;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+}
+
+.book-card-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.omni-list-card {
+    margin: 5px;
+    width: 700px;
 }
 
 .omni-list-card img {
