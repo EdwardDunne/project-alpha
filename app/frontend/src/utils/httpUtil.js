@@ -20,6 +20,12 @@ class HttpUtils {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': Cookies.get('csrftoken')
                 }
+            case this.PUT:
+                return {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': Cookies.get('csrftoken')
+                }
         }
     }
 }

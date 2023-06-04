@@ -35,7 +35,7 @@ const DashboardPage = ({
     }
 
     return (
-        <div className='container'>
+        <div className='container dashboard'>
             <h1 className='mt-3'>Welcome to your User Dashboard</h1>
             <p className='mt-3 mb-3'>Update your user profile below:</p>
             <form onSubmit={e => onSubmit(e)}>
@@ -72,13 +72,11 @@ const DashboardPage = ({
                         value={email}
                     />
                 </div>
-                <button className='btn btn-primary mt-3' type='submit'>Update Profile</button>
+                <button className='btn btn-primary update-btn' type='submit'>Update Profile</button>
             </form>
-            <p className='mt-3'>
-                Click the button below to delete your user account:
-            </p>
+            <p className="delete-account-txt">Click the button below to delete your user account: </p>
             <a 
-                className='btn btn-danger'
+                className='btn btn-danger delete-btn'
                 href='#!'
                 onClick={e => delete_account()}
             >

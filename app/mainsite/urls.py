@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UpdateUserProfileView, SignupView, GetCSRFToken, LoginView, LogoutView, CheckAuthenticatedView, DeleteAccountView, GetUsersView, GetUserProfileView, TestMarvelApi, MarvelOmnis, DCOmnisScarpe, AmazonDetailsScrape
+from .views import UpdateUserProfileView, SignupView, GetCSRFToken, LoginView, LogoutView, CheckAuthenticatedView, DeleteAccountView, GetUsersView, GetUserProfileView, TestMarvelApi, MarvelOmnis, DCOmnisScarpe, AmazonDetailsScrape, DCOmnisScarpe2, MarvelOmnisScarpe
 
 urlpatterns = [
     path('csrf-cookie', GetCSRFToken.as_view()),
@@ -14,5 +14,7 @@ urlpatterns = [
     path('test-marvel', TestMarvelApi.as_view()),
     path('get-marvel-omnis', MarvelOmnis.as_view()),
     path('scrape-dc-omnis', DCOmnisScarpe.as_view()),
+    path('scrape-dc-omnis2', DCOmnisScarpe2.as_view()),
+    path('scrape-marvel-omnis', MarvelOmnisScarpe.as_view()),
     path('scrape-amazon-details', AmazonDetailsScrape.as_view())
 ]

@@ -176,18 +176,19 @@ html, body {
     margin: 5px;
 }
 
-.hex-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #FFF;
-    padding: 50px;
-    z-index: 1001;
-    border: 3px solid black;
+.form-signin {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
-.omni-details-modal {
+.form-signin .btn-primary{
+    margin: 15px 0px;
+}
+
+.omni-details-modal,
+.hex-modal {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -197,11 +198,27 @@ html, body {
     z-index: 1001;
     border-radius: 6px;
     width: 50vw;
-    /* height: 50vh; */
 }
 
-.omni-details-modal 
-.omni-details-modal-container {
+.hex-modal {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.hex-modal .modal-footer-btns-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+
+.hex-modal .close-btn {
+    margin: 10px 0px 0px 0px;
+}
+
+.omni-details-modal .omni-details-modal-container {
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -210,36 +227,25 @@ html, body {
     height: 100%;
 }
 
-.omni-details-modal 
-.omni-details-modal-container 
-.omni-title {
+.omni-details-modal .omni-details-modal-container .omni-title {
     font-size: 25px;
     font-weight: bold;
     padding: 0px 10px 20px 10px;
 }
 
-.omni-details-modal 
-.omni-details-modal-container 
-.content-container {
+.omni-details-modal .omni-details-modal-container .content-container {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
     width: 100%;
 }
 
-.omni-details-modal 
-.omni-details-modal-container 
-.content-container 
-.details-container {
+.omni-details-modal .omni-details-modal-container .content-container .details-container {
     display: flex;
     flex-direction: column;
 }
 
-.omni-details-modal 
-.omni-details-modal-container 
-.content-container 
-.details-container 
-span {
+.omni-details-modal .omni-details-modal-container .content-container .details-container span {
     padding: 10px;
 }
 
@@ -548,4 +554,13 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.dashboard .update-btn,
+.dashboard .delete-btn {
+    margin: 1rem 1.5rem 0.5rem 0rem;
+}
+
+.dashboard .delete-account-txt {
+    margin: 0px;
 }
