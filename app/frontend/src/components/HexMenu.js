@@ -3,14 +3,10 @@ import HomePageModal from "../modals/HomePageModal";
 import ReactDom from 'react-dom';
 
 import { 
-    matrix_hex_img, 
-    resume_hex_img, 
-    linkedin_hex_img, 
-    contact_hex_img,
-    art_hex_img,
-    fb_hex_img,
-    ig_hex_img,
-    comics_hex_img
+    matrix_hex_img, resume_hex_img, 
+    linkedin_hex_img, contact_hex_img,
+    art_hex_img, fb_hex_img,
+    ig_hex_img, comics_hex_img
 } from '../images'
 
 

@@ -4,52 +4,47 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import httpUtil from '../utils/httpUtil';
 import OmniDetailsModal from "../modals/OmniDetailsModal";
-import { get_marvel_omnis } from '../actions/comics';
+import { get_marvel_omnis, scrape_dc_omnis, scrape_marvel_omnis } from '../actions/comics';
 import { connect } from 'react-redux';
 import Button from '@mui/material/Button';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 
 const ComicsAdmin = ({
-    get_marvel_omnis,
-    marvel_api_comics_global
+    get_marvel_omnis, marvel_api_comics,
+    scrape_dc_omnis, scrape_marvel_omnis,
+    dc_scraped_comics, marvel_scraped_comics
 }) => {
 
     let navigate = useNavigate();
 
     const [displayedOmnis, setDisplayedOmnis] = useState([]);
-    const [marvelOmnis, setMarvelOmnis] = useState([]);
-    const [scrapedDCOmnis, setScrapedDCOmnis] = useState([]);
-
     const [selectedResultSet, setselectedResultSet] = useState('marvel-api');
 
     const [isOpen, setIsOpen] = useState(false);
     const [modalType, setModalType] = useState(null);
     const [selectedBook, setSelectedBook] = useState({});
 
-    let marvel_cgn_comics_global = []; // TEMP: need to create globaa state var
-    let dc_cgn_comics_global = []; // TEMP: need to create globaa state var
+    let marvel_cgn_comics_global = []; // TEMP: need to create global state var
+    let dc_cgn_comics_global = []; // TEMP: need to create global state var
 
     useEffect(() => {
-        console.log(marvelOmnis);
-    }, [marvelOmnis])
+        console.log(dc_scraped_comics);
+        if (selectedResultSet == 'dc-amz')
+            setDisplayedOmnis(dc_scraped_comics);
+    }, [dc_scraped_comics])
 
     useEffect(() => {
-        for (let book of scrapedDCOmnis) {
-            // scrapeAmazonDetails(book.book_url);
-        }
-    }, [scrapedDCOmnis])
+        console.log(marvel_scraped_comics);
+        if (selectedResultSet == 'marvel-amz')
+            setDisplayedOmnis(marvel_scraped_comics);
+    }, [marvel_scraped_comics])
 
     useEffect(() => {
-        setMarvelOmnis(marvel_api_comics_global);
+        console.log(marvel_api_comics);
         if (selectedResultSet == 'marvel-api')
-            setDisplayedOmnis(marvel_api_comics_global);
-    }, [marvel_api_comics_global]);
-    
-
-    function pageChange(event) {
-        navigate('/');
-    }
+            setDisplayedOmnis(marvel_api_comics);
+    }, [marvel_api_comics]);
 
     const testMarvelApi = async (event) => {
         event.preventDefault();
@@ -63,26 +58,17 @@ const ComicsAdmin = ({
 
     const getMarvelOmnis = async (event) => {
         event.preventDefault();
-        // const config = {
-        //     headers: httpUtil.get_headers('GET')
-        // };
-
-        // const res = await axios.get(`${window.location.origin}/api/get-marvel-omnis`, config);
-        // console.log(res);
-        // setMarvelOmnis(res.data.books);
-
         get_marvel_omnis();
     }
 
     const scrapeDCOmnis = async (event) => {
         event.preventDefault();
-        const config = {
-            headers: httpUtil.get_headers('GET')
-        };
+        scrape_dc_omnis();
+    }
 
-        const res = await axios.get(`${window.location.origin}/api/scrape-dc-omnis`, config);
-        console.log(res);
-        setScrapedDCOmnis(res.data.books);
+    const scrapeMarvelOmnis = async (event) => {
+        event.preventDefault();
+        scrape_marvel_omnis();
     }
 
     const scrapeAmazonDetails = async (book_url) => {
@@ -95,6 +81,25 @@ const ComicsAdmin = ({
         console.log(res);
     }
 
+    function omniClicked(type, book) {
+        setIsOpen(true);
+        setModalType(type);
+        setSelectedBook(book);
+        if (type == 'dcScraped' || type == 'marvelScraped')
+            scrapeAmazonDetails(book.book_url);
+    }
+
+    const handleChange = ( event, newAlignment ) => {
+        setselectedResultSet(newAlignment);
+        setDisplayedOmnis(
+            newAlignment == 'marvel-api' ? marvel_api_comics : 
+            newAlignment == 'marvel-cgn' ? marvel_cgn_comics_global : 
+            newAlignment == 'dc-cgn' ? dc_cgn_comics_global :
+            newAlignment == 'dc-amz' ? dc_scraped_comics : 
+            newAlignment == 'marvel-amz' ? marvel_scraped_comics : marvel_scraped_comics
+        );
+    };
+
     function displayOmnis(book, i, omniListType) {
         let imgUrl = '';
         let title = '';
@@ -105,6 +110,10 @@ const ComicsAdmin = ({
                 title = book.title;
                 break;
             case 'dcScraped':
+                imgUrl = book.book_img_url;
+                title = book.book_title;
+                break;
+            case 'marvelScraped':
                 imgUrl = book.book_img_url;
                 title = book.book_title;
                 break;
@@ -122,28 +131,12 @@ const ComicsAdmin = ({
                         <div className="card-body">
                             <h5 className="card-title">{title}</h5>
                             <p className="card-text">{book.description}</p>
-                            {/* <p className="card-text"><small className="text-muted">Last updated 3 mins ago</small></p> */}
                         </div>
                     </div>
                 </div>
             </div>
         )
     }
-
-    function omniClicked(type, book) {
-        setIsOpen(true);
-        setModalType(type);
-        setSelectedBook(book);
-    }
-
-    const handleChange = ( event, newAlignment ) => {
-        setselectedResultSet(newAlignment);
-        setDisplayedOmnis(
-            newAlignment == 'marvel-api' ? marvel_api_comics_global : 
-            newAlignment == 'marvel-cgn' ? marvel_cgn_comics_global : 
-            dc_cgn_comics_global
-        );
-    };
 
     return (
         <>
@@ -171,7 +164,7 @@ const ComicsAdmin = ({
                             <span> Scrape DC Omnis</span>
                         </a>
                     </li>
-                    <li className="side-nav-item">
+                    <li className="side-nav-item" onClick={e => scrapeMarvelOmnis(e)}>
                         <a href="#" className="side-nav-link">
                             <i className="uil-book-alt"></i>
                             <span> Scrape Marvel Omnis</span>
@@ -185,18 +178,13 @@ const ComicsAdmin = ({
                     <div className="page-title-box">
                         <h4 className="page-title">Comics Admin</h4>
                     </div>
-                    {/* <div className="admin-btn-panel">
-                        <Button variant="contained" className="btn btn-primary" onClick={e => pageChange(e)}>Test Page Change</Button>
-                        <button className="btn btn-primary" onClick={e => getMarvelOmnis(e)}>Get Marvel Omnis</button>
-                        <button className="btn btn-primary" onClick={e => testMarvelApi(e)}>Test Marvel Api</button>
-                    </div> */}
                     <div id="comics-admin-results-toggle-container">
                         <ToggleButtonGroup
                         color="primary" value={selectedResultSet} exclusive 
                         onChange={handleChange} aria-label="Result Set">
                             <ToggleButton value="marvel-api">Marvel API</ToggleButton>
-                            <ToggleButton value="marvel-cgn">Marvel CGN</ToggleButton>
-                            <ToggleButton value="dc-cgn">DC CGN</ToggleButton>
+                            <ToggleButton value="dc-amz">DC AMZ</ToggleButton>
+                            <ToggleButton value="marvel-amz">Marvel AMZ</ToggleButton>
                         </ToggleButtonGroup>
                     </div>
                     <div className="book-card-container">
@@ -204,10 +192,9 @@ const ComicsAdmin = ({
                             return displayOmnis(
                                 book, i, 
                                 selectedResultSet == 'marvel-api' ? 'marvelApi' : 
-                                selectedResultSet == 'marvel-cgn' ? 'marvelCgn' : 
-                                'dcScraped') 
+                                selectedResultSet == 'dc-amz' ? 'dcScraped' :
+                                selectedResultSet == 'marvel-amz' ? 'marvelScraped' : 'marvelScraped') 
                         })}
-                        {/* {scrapedDCOmnis.map((book, i) => { return displayOmnis(book, i, 'dcScraped') })} */}
                     </div>
             </div> 
         </div>
@@ -216,9 +203,11 @@ const ComicsAdmin = ({
 }
 
 const mapStateToProps = state => ({
-    marvel_api_comics_global: state.comics.marvel_api_comics
+    marvel_api_comics: state.comics.marvel_api_comics,
+    dc_scraped_comics: state.comics.dc_scraped_comics,
+    marvel_scraped_comics: state.comics.marvel_scraped_comics,
 })
 
 export default connect(mapStateToProps, { 
-    get_marvel_omnis, 
+    get_marvel_omnis, scrape_dc_omnis, scrape_marvel_omnis
 })(ComicsAdmin)

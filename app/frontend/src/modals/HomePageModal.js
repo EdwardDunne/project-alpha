@@ -1,46 +1,22 @@
 import { BorderAll } from '@material-ui/icons';
+import { textAlign } from '@mui/system';
 import React from 'react';
 import ReactDom from 'react-dom';
 
 export default function HomePageModal({ open, children, onClose, modalType }) {
   
     if (!open) return null;
-
-    function ResumeContent() {
-        return (
-            <>
-            <button onClick={onClose}>Close Modal</button>
-            RESUME
-            { children }
-            </>
-        );
-    }
-      
-    function OtherContent() {
-        return (
-            <>
-            <button onClick={onClose}>Close Modal</button>
-            OTHER
-            { children }
-            </>
-        );
-    }
-
-    let modalContent;
-    switch(modalType) {
-        case 'resume':
-            modalContent = <ResumeContent/>;
-            break;
-        default:
-            modalContent = <OtherContent/>; 
-            break;
-    }
+    let modal_title = modalType.charAt(0).toUpperCase() + modalType.slice(1);
 
     return ReactDom.createPortal(
         <>
             <div className='modal-overlay' onClick={onClose}/>
             <div className='hex-modal'>
-                {modalContent}
+                <h1 style={{textAlign: 'center', width: '100%'}}>{modal_title}</h1>
+                <span style={{textAlign: 'center', width: '100%'}}>{modalType} content</span>
+                <span className="modal-footer-btns-container">
+                    <button className="btn btn-primary close-btn" onClick={onClose}>Close Modal</button>
+                </span>
             </div>
         </>,
         document.getElementById('portal')

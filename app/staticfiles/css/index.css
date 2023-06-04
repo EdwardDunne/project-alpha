@@ -1,47 +1,38 @@
 
+@font-face {
+    font-family: "Nunito";
+    src: url(../assets/fonts/Nunito-Bold.ttf) format("truetype");
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Nunito";
+    src: url(../assets/fonts/Nunito-Light.ttf) format("truetype");
+    font-weight: light;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Nunito";
+    src: url(../assets/fonts/Nunito-Medium.ttf) format("truetype");
+    font-weight: medium;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Nunito";
+    src: url(../assets/fonts/Nunito-Regular.ttf) format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+  
 html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-    font-family: 'Roboto';
+    font-family: "Nunito"!important;
 }
-
-/* HEADER STYLES */
-
-#header {
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100vw;
-    height: 50px;
-    background: #00000063;
-}
-
-#header #header-left, #header #header-right {
-    width: 50%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    padding: 10px 15px;
-}
-
-#header-right {
-    justify-content: flex-end;
-}
-
-#header .header-btn {
-    background: #4848d2;
-    padding: 7px 15px;
-    border-radius: 15px;
-    font-weight: bold;
-    color: white;
-    cursor: pointer;
-    margin: 5px;
-}
-
 
 #main {
     position: fixed;
@@ -50,20 +41,107 @@ html, body {
     left: 0;
     top: 62px;
     overflow-y: auto;
-    /* padding: 50px 10px 0px 10px; */
 }
 
 #app {
     width: 100%;
     height: 100%;
-    /* display: flex; */
 }
 
-.navbar {
-    position: fixed! important;
-    width: 100vw;
-    z-index: 1000;
+.navbar-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    position: fixed;
     top: 0px;
+    left: 0px;
+    width: 100vw;
+    padding: 10px;
+    background: rgb(238, 242, 247);
+    height: 60px;
+}
+
+.nav-item {
+    list-style: none;
+    padding: 10px;
+}
+
+.nav-item.brand {
+    color: rgba(0, 0, 0, 0.9);
+    text-decoration: none;
+    font-size: 20px;
+}
+
+.nav-item .nav-link {
+    text-decoration: none;
+    color: #6c757d;
+}
+
+.btn {
+    border-radius: 3px;
+    padding: 7.2px 14.4px;
+    color: rgb(255, 255, 255);
+    margin: 1.5rem;
+    font-family: 'Nunito';
+    font-weight: 400;
+    font-size: 14.4px;
+}
+
+.btn.btn-primary {
+    background-color: rgb(83, 109, 230);
+    border: solid 1px rgb(83, 109, 230);
+}
+
+#admin-main-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.admin-leftside-content {
+    /* width: 300px; */
+    display: flex;
+    height: 410px;
+}
+
+.admin-main-content .page-title-box {
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.admin-main-content .page-title-box .page-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
+.side-nav {
+    list-style: none;
+    background: #313a46;
+    color: white;
+    padding: 20px;
+    margin: 15px;
+    border-radius: 5px;
+}
+
+.side-nav-item {
+    padding: 10px;
+}
+
+.side-nav-item a {
+    color: white;
+}
+
+.side-nav-link {
+    text-decoration: none;
+    color: black;
+}
+
+.admin-main-content {
+    width: calc(100% - 300px);
 }
 
 .content-page {
@@ -107,6 +185,66 @@ html, body {
     padding: 50px;
     z-index: 1001;
     border: 3px solid black;
+}
+
+.omni-details-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #FFF;
+    padding: 50px;
+    z-index: 1001;
+    border-radius: 6px;
+    width: 50vw;
+    /* height: 50vh; */
+}
+
+.omni-details-modal 
+.omni-details-modal-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.omni-details-modal 
+.omni-details-modal-container 
+.omni-title {
+    font-size: 25px;
+    font-weight: bold;
+    padding: 0px 10px 20px 10px;
+}
+
+.omni-details-modal 
+.omni-details-modal-container 
+.content-container {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
+}
+
+.omni-details-modal 
+.omni-details-modal-container 
+.content-container 
+.details-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.omni-details-modal 
+.omni-details-modal-container 
+.content-container 
+.details-container 
+span {
+    padding: 10px;
+}
+
+.omni-details-modal-container.marvel img {
+    width: 140px;
 }
 
 .modal-overlay {
@@ -380,6 +518,18 @@ html, body {
     border-top-right-radius: 0;
 }
 
+.book-card-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.omni-list-card {
+    margin: 5px;
+    width: 700px;
+}
+
 .omni-list-card img {
     height: 200px;
     object-fit: contain;
@@ -388,4 +538,14 @@ html, body {
 .omni-list-card .card-text {
     height: 130px;
     overflow: auto;
+}
+
+button {
+    font-family: "Nunito"!important;
+}
+
+#comics-admin-results-toggle-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

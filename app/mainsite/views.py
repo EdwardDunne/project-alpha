@@ -194,7 +194,7 @@ class TestMarvelApi(APIView):
 class MarvelOmnis(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
-    @method_decorator(cache_page(60*60*2))
+    # @method_decorator(cache_page(60*60*2))
     def get(self, request, format=None):
         try:
             timestamp = time.time()
@@ -256,7 +256,6 @@ class DCOmnisScarpe(APIView):
     def get(self, request, format=None):
         try:
             headers = getAmazonScrapeHeaders()
-            # url = "http://api.scraperapi.com?api_key=6fbe90a97851773ef3bc5527a64121b4&url=https://www.amazon.com/s?k=omnibus&i=stripbooks&rh=n%3A193766%2Cp_n_feature_eighteen_browse-bin%3A7421487011%2Cp_n_feature_nineteen_browse-bin%3A7421491011&s=date-desc-rank&dc&qid=1667757863&rnid=7421489011&ref=sr_pg_1"
             url = 'https://www.amazon.com/s?k=omnibus&i=stripbooks&rh=n%3A193766%2Cp_n_feature_eighteen_browse-bin%3A7421487011%2Cp_n_feature_nineteen_browse-bin%3A7421491011&s=date-desc-rank&dc&qid=1667757863&rnid=7421489011&ref=sr_pg_1'
             
             response = requests.get(url, headers=headers)
@@ -267,6 +266,8 @@ class DCOmnisScarpe(APIView):
             
             omnis = []
             while(next_page_url):
+                print(omnis)
+                time.sleep(3)
                 book_search_items = soup.find_all("div", {'class':['s-asin']})
                 for book_item in book_search_items:
                     book_asin = book_item['data-asin']
@@ -299,7 +300,134 @@ class DCOmnisScarpe(APIView):
 
         except Exception as e:
             print(e)
-            return Response({'error':'Something went wrong with testing the Marvel Api'})
+            return Response({'error':'Something went wrong with scraping DC omnis'})
+        
+class DCOmnisScarpe2(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, format=None):
+        try:
+            headers = getAmazonScrapeHeaders()
+            url = 'https://www.amazon.com/s?k=omnibus&i=stripbooks&rh=n%3A193766%2Cp_n_feature_eighteen_browse-bin%3A7421487011%2Cp_n_feature_nineteen_browse-bin%3A7421491011&s=date-desc-rank&dc&qid=1667757863&rnid=7421489011&ref=sr_pg_1'
+            
+            response = requests.get(url, headers=headers)
+            soup = BeautifulSoup(response.content, 'html.parser')
+
+            pagination_container = soup.find('span', {'class': 's-pagination-strip'})
+            next_page_url = 'amazon.com' + pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]['href']
+            
+            omnis = []
+            while(next_page_url):
+                time.sleep(random.randint(3,6))
+                book_search_items = soup.find_all("div", {'class':['s-asin']})
+                for book_item in book_search_items:
+                    book_asin = book_item['data-asin']
+                    book_title = book_item.find('h2').find('span').get_text()
+                    book_img_container = book_item.find('div', {'class': 's-product-image-container'})
+                    book_url = 'http://amazon.com' + book_img_container.find('a', {'class': 'a-link-normal'})['href']
+                    book_img_url = book_img_container.find('img')['src']
+
+                    omni = {
+                        'book_asin': book_asin,
+                        'book_title': book_title,
+                        'book_img_url': book_img_url,
+                        'book_url': book_url
+                    }
+                    omnis.append(omni)
+                    print(book_title)
+
+                pagination_container = soup.find('span', {'class': 's-pagination-strip'})
+                last_pagination_element = pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]
+                if last_pagination_element.has_attr('href'):
+                    next_page_url = 'http://amazon.com' + pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]['href']
+                    response = requests.get(next_page_url, headers=headers)
+                    soup = BeautifulSoup(response.content, 'html.parser')
+                else:
+                    next_page_url = None
+
+            return Response({
+                'success': True,
+                'books': omnis
+            })
+
+        except Exception as e:
+            print(e)
+            return Response({'error':'Something went wrong with scraping DC omnis'})
+        
+class MarvelOmnisScarpe(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, format=None):
+        soup = None
+        omnis = []
+        try:
+            headers = getAmazonScrapeHeaders()
+            url = 'https://www.amazon.com/s?k=omnibus&i=stripbooks&rh=n%3A4366%2Cp_n_feature_eighteen_browse-bin%3A7421487011%2Cp_n_feature_nineteen_browse-bin%3A7421490011&s=date-desc-rank&dc&page=1&qid=1667758382&rnid=7421489011&ref=sr_pg_1'
+            
+            response = requests.get(url, headers=headers)
+            soup = BeautifulSoup(response.content, 'html.parser')
+
+            pagination_container = soup.find('span', {'class': 's-pagination-strip'})
+            next_page_url = 'amazon.com' + pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]['href']
+            
+            sleepTimes = [3, 4, 5, 6, 7, 8]
+            sleepCounter = 0
+            pageCounter = 1
+            while(next_page_url):
+                print(pageCounter)
+
+                # Trick amazon into thinking its not being scraped
+                time.sleep(sleepTimes[sleepCounter])
+                sleepCounter += 1
+                if sleepCounter > 3: sleepCounter = 0
+
+                book_search_items = soup.find_all("div", {'class':['s-asin']})
+                for book_item in book_search_items:
+                    book_asin = book_item['data-asin']
+                    book_title = book_item.find('h2').find('span').get_text()
+                    book_img_container = book_item.find('div', {'class': 's-product-image-container'})
+                    book_url = 'http://amazon.com' + book_img_container.find('a', {'class': 'a-link-normal'})['href']
+                    book_img_url = book_img_container.find('img')['src']
+
+                    omni = {
+                        'book_asin': book_asin,
+                        'book_title': book_title,
+                        'book_img_url': book_img_url,
+                        'book_url': book_url
+                    }
+                    omnis.append(omni)
+
+                pageCounter += 1
+                if pageCounter > 20: # Get this number dynamically
+                    next_page_url = None
+                else:
+                    next_page_url = 'https://www.amazon.com/s?k=omnibus&i=stripbooks&rh=n%3A4366%2Cp_n_feature_eighteen_browse-bin%3A7421487011%2Cp_n_feature_nineteen_browse-bin%3A7421490011&s=date-desc-rank&dc&page=' + str(pageCounter) + '&qid=1667758382&rnid=7421489011&ref=sr_pg_1'
+                    response = requests.get(next_page_url, headers=headers)
+                    soup = BeautifulSoup(response.content, 'html.parser')
+
+                # pagination_container = soup.find('span', {'class': 's-pagination-strip'})
+                # print('find all 2')
+                # last_pagination_element = pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]
+                # if last_pagination_element.has_attr('href'):
+                #     print('find all 3')
+                #     next_page_url = 'http://amazon.com' + pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]['href']
+                #     response = requests.get(next_page_url, headers=headers)
+                #     soup = BeautifulSoup(response.content, 'html.parser')
+                # else:
+                #     next_page_url = None
+
+            return Response({
+                'success': True,
+                'books': omnis
+            })
+
+        except Exception as e:
+            print(e)
+            print(soup)
+            return Response({
+                'success': False,
+                'books': omnis
+            })
 
 class AmazonDetailsScrape(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -335,9 +463,12 @@ class AmazonDetailsScrape(APIView):
 
 
 def getAmazonScrapeHeaders():
-    rand = random.randint(1,2)
-    return {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", "Accept-Encoding":"gzip, deflate", "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "DNT":"1","Connection":"close", "Upgrade-Insecure-Requests":"1"}
+    rand = random.randint(1,3)
+    print('RANDOM NUMBER: ' + str(rand))
+    # return {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", "Accept-Encoding":"gzip, deflate", "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "DNT":"1","Connection":"close", "Upgrade-Insecure-Requests":"1"}
     if rand == 1:
         return {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36','Accept-Language': 'en-US, en;q=0.5'}
-    else:
+    elif rand == 2:
         return {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0", "Accept-Encoding":"gzip, deflate", "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "DNT":"1","Connection":"close", "Upgrade-Insecure-Requests":"1"}
+    else:
+        return {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36", "Accept-Encoding":"gzip, deflate", "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "DNT":"1","Connection":"close", "Upgrade-Insecure-Requests":"1"}

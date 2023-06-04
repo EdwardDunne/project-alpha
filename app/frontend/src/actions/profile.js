@@ -1,5 +1,6 @@
 import Cookies from 'js-cookie'
 import axios from 'axios';
+import httpUtil from '../utils/httpUtil';
 import {
     LOAD_USER_PROFILE_SUCCESS,
     LOAD_USER_PROFILE_FAIL,
@@ -9,10 +10,7 @@ import {
 
 export const load_user = () => async dispatch => {
     const config = {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
+        headers: httpUtil.get_headers('GET')
     };
 
     try {
@@ -38,11 +36,7 @@ export const load_user = () => async dispatch => {
 
 export const update_profile = (first_name, last_name, email) => async dispatch => {
     const config = {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-CSRFToken': Cookies.get('csrftoken')
-        }
+        headers: httpUtil.get_headers('PUT')
     };
 
     const body = JSON.stringify({

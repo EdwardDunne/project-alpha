@@ -8,22 +8,10 @@ export default function Header() {
 
   let navigate = useNavigate();
 
-  // Check if this session is already authenticated
-  // let login_url = `${window.location.origin}/api/login`
-  // HttpService.post(login_url).then(resp => {
-  //   console.log(resp.success);
-  //   if(resp.success)
-  //       Auth.login();
-  // }).catch((error) => {
-  //     console.error('Error:', error);
-  // });
-
   return (
     <>
     <div id="header">
       <div id="header-left">
-        {/* <Link to="/admin-test">Admin Test</Link>
-        <Link to="/">Hex Homepage</Link> */}
         <div className="header-btn" onClick={e => navigate('/admin-test')}>Admin Test</div>
         <div className="header-btn" onClick={e => navigate('/')}>Hex Homepage</div>
         <div className="header-btn" onClick={e => navigate('/login')}>Login</div>

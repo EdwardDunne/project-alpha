@@ -3,16 +3,11 @@ import axios from 'axios';
 import { load_user } from './profile';
 import httpUtil from '../utils/httpUtil';
 import {
-    REGISTER_SUCCESS,
-    REGISTER_FAIL,
-    LOGIN_SUCCESS,
-    LOGIN_FAIL,
-    LOGOUT_SUCCESS,
-    LOGOUT_FAIL,
-    AUTHENTICATED_SUCCESS,
-    AUTHENTICATED_FAIL,
-    DELETE_USER_SUCCESS,
-    DELETE_USER_FAIL
+    REGISTER_SUCCESS, REGISTER_FAIL,
+    LOGIN_SUCCESS, LOGIN_FAIL,
+    LOGOUT_SUCCESS, LOGOUT_FAIL,
+    AUTHENTICATED_SUCCESS, AUTHENTICATED_FAIL,
+    DELETE_USER_SUCCESS, DELETE_USER_FAIL
 } from './types';
 
 export const checkAuthenticated = () => async dispatch => {
