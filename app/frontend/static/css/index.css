@@ -102,6 +102,7 @@ html, body {
     /* width: 300px; */
     display: flex;
     height: 410px;
+    position: fixed;
 }
 
 .admin-main-content .page-title-box {
@@ -142,6 +143,7 @@ html, body {
 
 .admin-main-content {
     width: calc(100% - 300px);
+    margin-left: 265px;
 }
 
 .content-page {

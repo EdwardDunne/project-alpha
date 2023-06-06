@@ -306,6 +306,7 @@ class DCOmnisScarpe2(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, format=None):
+        omnis = []
         try:
             headers = getAmazonScrapeHeaders()
             url = 'https://www.amazon.com/s?k=omnibus&i=stripbooks&rh=n%3A193766%2Cp_n_feature_eighteen_browse-bin%3A7421487011%2Cp_n_feature_nineteen_browse-bin%3A7421491011&s=date-desc-rank&dc&qid=1667757863&rnid=7421489011&ref=sr_pg_1'
@@ -313,12 +314,17 @@ class DCOmnisScarpe2(APIView):
             response = requests.get(url, headers=headers)
             soup = BeautifulSoup(response.content, 'html.parser')
 
+            # Get the number of pages in this result set
             pagination_container = soup.find('span', {'class': 's-pagination-strip'})
-            next_page_url = 'amazon.com' + pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]['href']
-            
-            omnis = []
-            while(next_page_url):
-                time.sleep(random.randint(3,6))
+            total_page_count = pagination_container.find_all(True, {'class': 's-pagination-item'})[-2].getText()
+            total_page_count = int(total_page_count) + 1
+
+            page_counter = 2
+            while(page_counter < total_page_count):
+
+                # Trick amazon into thinking its not being scraped
+                time.sleep(random.randint(1,4))
+
                 book_search_items = soup.find_all("div", {'class':['s-asin']})
                 for book_item in book_search_items:
                     book_asin = book_item['data-asin']
@@ -336,14 +342,12 @@ class DCOmnisScarpe2(APIView):
                     omnis.append(omni)
                     print(book_title)
 
-                pagination_container = soup.find('span', {'class': 's-pagination-strip'})
-                last_pagination_element = pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]
-                if last_pagination_element.has_attr('href'):
-                    next_page_url = 'http://amazon.com' + pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]['href']
-                    response = requests.get(next_page_url, headers=headers)
-                    soup = BeautifulSoup(response.content, 'html.parser')
-                else:
-                    next_page_url = None
+
+                next_page_url = 'https://www.amazon.com/s?k=omnibus&i=stripbooks&rh=n%3A193766%2Cp_n_feature_eighteen_browse-bin%3A7421487011%2Cp_n_feature_nineteen_browse-bin%3A7421491011&s=date-desc-rank&dc&page=' + str(page_counter) + '&qid=1667757863&rnid=7421489011&ref=sr_pg_1'
+                response = requests.get(next_page_url, headers=headers)
+                soup = BeautifulSoup(response.content, 'html.parser')
+
+                page_counter += 1
 
             return Response({
                 'success': True,
@@ -352,7 +356,12 @@ class DCOmnisScarpe2(APIView):
 
         except Exception as e:
             print(e)
-            return Response({'error':'Something went wrong with scraping DC omnis'})
+
+            # return Response({'error':'Something went wrong with scraping DC omnis'})
+            return Response({
+                    'success': False,
+                    'books': omnis
+                })
         
 class MarvelOmnisScarpe(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -366,20 +375,17 @@ class MarvelOmnisScarpe(APIView):
             
             response = requests.get(url, headers=headers)
             soup = BeautifulSoup(response.content, 'html.parser')
-
-            pagination_container = soup.find('span', {'class': 's-pagination-strip'})
-            next_page_url = 'amazon.com' + pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]['href']
             
-            sleepTimes = [3, 4, 5, 6, 7, 8]
-            sleepCounter = 0
-            pageCounter = 1
-            while(next_page_url):
-                print(pageCounter)
+            # Get the number of pages in this result set
+            pagination_container = soup.find('span', {'class': 's-pagination-strip'})
+            total_page_count = pagination_container.find_all(True, {'class': 's-pagination-item'})[-2].getText()
+            total_page_count = int(total_page_count) + 1
+
+            page_counter = 2
+            while(page_counter < 6): # TEMP set to 6 for demo
 
                 # Trick amazon into thinking its not being scraped
-                time.sleep(sleepTimes[sleepCounter])
-                sleepCounter += 1
-                if sleepCounter > 3: sleepCounter = 0
+                time.sleep(random.randint(1,4))
 
                 book_search_items = soup.find_all("div", {'class':['s-asin']})
                 for book_item in book_search_items:
@@ -396,25 +402,13 @@ class MarvelOmnisScarpe(APIView):
                         'book_url': book_url
                     }
                     omnis.append(omni)
+                    print(book_title)
 
-                pageCounter += 1
-                if pageCounter > 20: # Get this number dynamically
-                    next_page_url = None
-                else:
-                    next_page_url = 'https://www.amazon.com/s?k=omnibus&i=stripbooks&rh=n%3A4366%2Cp_n_feature_eighteen_browse-bin%3A7421487011%2Cp_n_feature_nineteen_browse-bin%3A7421490011&s=date-desc-rank&dc&page=' + str(pageCounter) + '&qid=1667758382&rnid=7421489011&ref=sr_pg_1'
-                    response = requests.get(next_page_url, headers=headers)
-                    soup = BeautifulSoup(response.content, 'html.parser')
+                next_page_url = 'https://www.amazon.com/s?k=omnibus&i=stripbooks&rh=n%3A4366%2Cp_n_feature_eighteen_browse-bin%3A7421487011%2Cp_n_feature_nineteen_browse-bin%3A7421490011&s=date-desc-rank&dc&page=' + str(page_counter) + '&qid=1667758382&rnid=7421489011&ref=sr_pg_1'
+                response = requests.get(next_page_url, headers=headers)
+                soup = BeautifulSoup(response.content, 'html.parser')
 
-                # pagination_container = soup.find('span', {'class': 's-pagination-strip'})
-                # print('find all 2')
-                # last_pagination_element = pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]
-                # if last_pagination_element.has_attr('href'):
-                #     print('find all 3')
-                #     next_page_url = 'http://amazon.com' + pagination_container.find_all(True, {'class': 's-pagination-item'})[-1]['href']
-                #     response = requests.get(next_page_url, headers=headers)
-                #     soup = BeautifulSoup(response.content, 'html.parser')
-                # else:
-                #     next_page_url = None
+                page_counter += 1
 
             return Response({
                 'success': True,
@@ -423,7 +417,6 @@ class MarvelOmnisScarpe(APIView):
 
         except Exception as e:
             print(e)
-            print(soup)
             return Response({
                 'success': False,
                 'books': omnis
@@ -436,21 +429,42 @@ class AmazonDetailsScrape(APIView):
         try:
             data = self.request.data
 
+            # Request product page
             headers = getAmazonScrapeHeaders()
             url = data['book_url']
-            
             response = requests.get(url, headers=headers)
             soup = BeautifulSoup(response.content, 'html.parser')
 
-            book_pages_container = soup.find('div', {'id': 'rpi-attribute-book_details-fiona_pages'})
-            book_pages = ''
-            if book_pages_container:
-                book_pages = book_pages_container.find('div', {'class': 'rpi-attribute-value'}).get_text()
-                print(book_pages)
+            # Initialize data
+            publish_date = pages = by_line = ''
+            contributors = []
+
+            # Get contributors
+            by_container = soup.find('div', {'id': 'bylineInfo'})
+            contributor_containers = by_container.find_all("span", {'class':['author']})
+            for contributor in contributor_containers:
+                contributors.append(' '.join(contributor.get_text().split()))
+
+            # Get by line - Currently not using this
+            by_line = soup.find('div', {'id': 'bylineInfo'}).get_text()
+            by_line = ' '.join(by_line.split())
+            
+            # Get publish date
+            publish_date_container = soup.find('div', {'id': 'rpi-attribute-book_details-publication_date'})
+            if publish_date_container:
+                publish_date = publish_date_container.find('div', {'class': 'rpi-attribute-value'}).get_text()
+
+            # Get page count
+            pages_container = soup.find('div', {'id': 'rpi-attribute-book_details-fiona_pages'})
+            if pages_container:
+                pages = int(pages_container.find('div', {'class': 'rpi-attribute-value'}).get_text().split()[0])
 
             omni_details = {
-                'book_pages': book_pages
+                'contributors': contributors,
+                'publish_date': publish_date,
+                'pages': pages
             }
+            print(omni_details)
 
             return Response({
                 'success': True,
@@ -459,7 +473,7 @@ class AmazonDetailsScrape(APIView):
 
         except Exception as e:
             print(e)
-            return Response({'error':'Something went wrong with testing the Marvel Api'})
+            return Response({'error': "Something went wrong with getting the omni's details"})
 
 
 def getAmazonScrapeHeaders():

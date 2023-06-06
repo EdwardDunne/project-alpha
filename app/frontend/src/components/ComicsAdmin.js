@@ -21,7 +21,7 @@ const ComicsAdmin = ({
     const [displayedOmnis, setDisplayedOmnis] = useState([]);
     const [selectedResultSet, setselectedResultSet] = useState('marvel-api');
 
-    const [isOpen, setIsOpen] = useState(false);
+    const [detailsOpen, setDetailsOpen] = useState(false);
     const [modalType, setModalType] = useState(null);
     const [selectedBook, setSelectedBook] = useState({});
 
@@ -30,31 +30,21 @@ const ComicsAdmin = ({
 
     useEffect(() => {
         console.log(dc_scraped_comics);
-        if (selectedResultSet == 'dc-amz')
+        if (selectedResultSet === 'dc-amz')
             setDisplayedOmnis(dc_scraped_comics);
     }, [dc_scraped_comics])
 
     useEffect(() => {
         console.log(marvel_scraped_comics);
-        if (selectedResultSet == 'marvel-amz')
+        if (selectedResultSet === 'marvel-amz')
             setDisplayedOmnis(marvel_scraped_comics);
     }, [marvel_scraped_comics])
 
     useEffect(() => {
         console.log(marvel_api_comics);
-        if (selectedResultSet == 'marvel-api')
+        if (selectedResultSet === 'marvel-api')
             setDisplayedOmnis(marvel_api_comics);
     }, [marvel_api_comics]);
-
-    const testMarvelApi = async (event) => {
-        event.preventDefault();
-        const config = {
-            headers: httpUtil.get_headers('GET')
-        };
-
-        const res = await axios.get(`${window.location.origin}/api/test-marvel`, config);
-        console.log(res);
-    }
 
     const getMarvelOmnis = async (event) => {
         event.preventDefault();
@@ -71,32 +61,20 @@ const ComicsAdmin = ({
         scrape_marvel_omnis();
     }
 
-    const scrapeAmazonDetails = async (book_url) => {
-        const config = {
-            headers: httpUtil.get_headers('POST')
-        };
-
-        const body = JSON.stringify({ book_url });
-        const res = await axios.post(`${window.location.origin}/api/scrape-amazon-details`, body, config);
-        console.log(res);
-    }
-
     function omniClicked(type, book) {
-        setIsOpen(true);
+        setDetailsOpen(true);
         setModalType(type);
         setSelectedBook(book);
-        if (type == 'dcScraped' || type == 'marvelScraped')
-            scrapeAmazonDetails(book.book_url);
     }
 
     const handleChange = ( event, newAlignment ) => {
         setselectedResultSet(newAlignment);
         setDisplayedOmnis(
-            newAlignment == 'marvel-api' ? marvel_api_comics : 
-            newAlignment == 'marvel-cgn' ? marvel_cgn_comics_global : 
-            newAlignment == 'dc-cgn' ? dc_cgn_comics_global :
-            newAlignment == 'dc-amz' ? dc_scraped_comics : 
-            newAlignment == 'marvel-amz' ? marvel_scraped_comics : marvel_scraped_comics
+            newAlignment === 'marvel-api' ? marvel_api_comics : 
+            newAlignment === 'marvel-cgn' ? marvel_cgn_comics_global : 
+            newAlignment === 'dc-cgn' ? dc_cgn_comics_global :
+            newAlignment === 'dc-amz' ? dc_scraped_comics : 
+            newAlignment === 'marvel-amz' ? marvel_scraped_comics : marvel_scraped_comics
         );
     };
 
@@ -138,15 +116,24 @@ const ComicsAdmin = ({
         )
     }
 
+    function getDetailsModal() {
+        if (detailsOpen) {
+            return (
+                <OmniDetailsModal 
+                    open={detailsOpen} 
+                    onClose={() => setDetailsOpen(false)} 
+                    modalType={modalType}
+                    selectedBook={selectedBook}>
+                </OmniDetailsModal>
+            );
+        }
+        return (<></>);
+    }
+
     return (
         <>
 
-        <OmniDetailsModal 
-            open={isOpen} 
-            onClose={() => setIsOpen(false)} 
-            modalType={modalType}
-            selectedBook={selectedBook}>
-        </OmniDetailsModal>
+        {getDetailsModal()}
 
         <div id="admin-main-container">
             <div className="admin-leftside-content" style={{"padding": "0px"}}>
@@ -191,9 +178,9 @@ const ComicsAdmin = ({
                         {displayedOmnis.map((book, i) => { 
                             return displayOmnis(
                                 book, i, 
-                                selectedResultSet == 'marvel-api' ? 'marvelApi' : 
-                                selectedResultSet == 'dc-amz' ? 'dcScraped' :
-                                selectedResultSet == 'marvel-amz' ? 'marvelScraped' : 'marvelScraped') 
+                                selectedResultSet === 'marvel-api' ? 'marvelApi' : 
+                                selectedResultSet === 'dc-amz' ? 'dcScraped' :
+                                selectedResultSet === 'marvel-amz' ? 'marvelScraped' : 'marvelScraped') 
                         })}
                     </div>
             </div> 
