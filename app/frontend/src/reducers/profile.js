@@ -5,7 +5,6 @@ import {
     UPDATE_USER_PROFILE_FAIL
 } from '../actions/types';
 
-
 const initialState = {
     username: '',
     first_name: '',

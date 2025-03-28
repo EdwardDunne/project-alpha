@@ -12,3 +12,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = '__all__'
+
+#  ALTERNATE APPROACH
+# class UserProfileSerializer(serializers.Serializer):
+#     email = serializers.EmailField()
+#     first_name = serializers.CharField(max_length=50)
+#     last_name = serializers.CharField(max_length=50)

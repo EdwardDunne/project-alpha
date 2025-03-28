@@ -1,6 +1,7 @@
 import Cookies from 'js-cookie'
 import axios from 'axios';
 import httpUtil from '../utils/httpUtil';
+import { toast } from 'react-toastify';
 import {
     LOAD_USER_PROFILE_SUCCESS,
     LOAD_USER_PROFILE_FAIL,
@@ -50,17 +51,20 @@ export const update_profile = (first_name, last_name, email) => async dispatch =
         const res = await axios.put(`${window.location.origin}/api/profile/user/update`, body, config);
 
         if (res.data.profile && res.data.username) {
+            toast.success('Profile Updated!');
             dispatch({
                 type: UPDATE_USER_PROFILE_SUCCESS,
                 payload: res.data
             });
         } else {
+            toast.error('Something went wrong...');
             dispatch({
                 type: UPDATE_USER_PROFILE_FAIL
             });
         }
     } catch (error) {
         console.error(error);
+        toast.error('Something went wrong...');
         dispatch({
             type: UPDATE_USER_PROFILE_FAIL
         });
