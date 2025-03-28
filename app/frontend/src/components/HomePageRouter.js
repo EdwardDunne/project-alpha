@@ -1,10 +1,10 @@
 import React, { Component, useEffect } from "react";
 import HexMenu from "./HexMenu";
-import AdminTest from "./AdminTest";
-import ComicsAdmin from "./ComicsAdmin";
-import LoginPage from "./LoginPage";
-import RegisterPage from "./RegisterPage";
-import DashboardPage from "./DashboardPage";
+import AdminTest from "../pages/AdminTest";
+import ComicsAdmin from "../pages/ComicsAdmin";
+import LoginPage from "../pages/LoginPage";
+import RegisterPage from "../pages/RegisterPage";
+import DashboardPage from "../pages/DashboardPage";
 import { checkAuthenticated } from "../actions/auth";
 import { load_user } from "../actions/profile";
 import { connect } from 'react-redux';

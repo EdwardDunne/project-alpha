@@ -126,6 +126,13 @@ html, body {
     padding: 20px;
     margin: 15px;
     border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+.side-nav-list {
+    list-style: none;
+    padding: 0;
 }
 
 .side-nav-item {
@@ -190,6 +197,7 @@ html, body {
 }
 
 .omni-details-modal,
+.dunne-web-modal,
 .hex-modal {
     position: fixed;
     top: 50%;
@@ -253,16 +261,6 @@ html, body {
 
 .omni-details-modal-container.marvel img {
     width: 140px;
-}
-
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgb(0 0 0 / 43%);
-    z-index: 1000;
 }
 
 *,
