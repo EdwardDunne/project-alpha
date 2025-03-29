@@ -28,7 +28,7 @@ const PrivateRoute = ({ staffOnly = false, is_staff, children, isAuthenticated }
                 const res = await axios.get(`${window.location.origin}/api/authenticated`, config);
 
                 if (res && res.data.isAuthenticated === 'success')
-                    evaluateRoute(staffOnly, is_staff, children)
+                    evaluateRoute(staffOnly, res.data.is_staff, children)
                 if (res && res.data.isAuthenticated === 'error')
                     setRoute(<Navigate to="/login" />);
             }
