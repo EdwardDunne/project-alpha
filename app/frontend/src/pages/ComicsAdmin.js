@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-// import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import OmniDetailsModal from "../modals/OmniDetailsModal";
 import { get_marvel_omnis, scrape_dc_omnis, scrape_marvel_omnis } from '../actions/comics';
 import { connect } from 'react-redux';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
-import { Button } from "@material-ui/core";
+import Button from '@mui/material/Button'
 import DunneWebModal from "../modals/DunneWebModal";
 import AddOmnibus from "../modals/dwModalContant/AddOmnibus";
 
