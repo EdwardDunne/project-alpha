@@ -13,7 +13,7 @@ const DunneWebModal = ({ onClose, children }) => {
             <div className='dunne-web-modal'>
                 {children}
                 <div className='dunne-web-modal-footer'>
-                    <button className="btn btn-primary m-3" onClick={onClose}>Close Modal</button>
+                    <button className="btn btn-primary m-3" onClick={onClose}>Close</button>
                 </div>
             </div>
         </>,

@@ -17,7 +17,7 @@ export default function HomePageModal({ open, children, onClose, modalType }) {
                     {content}
                 </span>
                 <span className="modal-footer-btns-container">
-                    <button className="btn btn-primary close-btn" onClick={onClose}>Close Modal</button>
+                    <button className="btn btn-primary close-btn" onClick={onClose}>Close</button>
                 </span>
             </div>
         </>,

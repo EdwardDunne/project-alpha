@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import ReactDom from 'react-dom';
 
 
@@ -34,7 +34,7 @@ export default function ResumeModal({ open, children, onClose }) {
                     >
                         Download
                     </button>
-                    <button className="btn btn-primary close-btn" onClick={onClose}>Close Modal</button>
+                    <button className="btn btn-primary close-btn" onClick={onClose}>Close</button>
                 </span>
             </div>
         </>,

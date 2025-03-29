@@ -7,6 +7,7 @@ import fb_hex_img from './hex-images/fb-hex-img.jpeg';
 import ig_hex_img from './hex-images/ig-hex-img.webp';
 import comics_hex_img from './hex-images/comics-hex-img.jpg';
 import tiktok_hex_img from './hex-images/tiktok-hex-img.jpg';
+import youtube_hex_img from './hex-images/yt-hex-img.webp';
 
 export {
     matrix_hex_img,
@@ -17,5 +18,6 @@ export {
     fb_hex_img,
     ig_hex_img,
     comics_hex_img,
-    tiktok_hex_img
+    tiktok_hex_img,
+    youtube_hex_img
   };
