@@ -26,11 +26,11 @@ const HomePageRouter = ({ checkAuthenticated, load_user, isAuthenticated }) => {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/admin-test" element={
-                <PrivateRoute>
+                <PrivateRoute staffOnly={true}>
                     <AdminTest />
                 </PrivateRoute>} />
             <Route path="/comics-admin" element={
-                <PrivateRoute>
+                <PrivateRoute staffOnly={true}>
                     <ComicsAdmin />
                 </PrivateRoute>} />
             <Route path="/dashboard" element={

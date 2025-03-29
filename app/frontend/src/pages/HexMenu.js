@@ -1,4 +1,4 @@
-import React, { Component, useState } from "react";
+import React, { useState } from "react";
 import HomePageModal from "../modals/HomePageModal";
 import ResumeModal from "../modals/ResumeModal";
 import { useNavigate } from 'react-router-dom';
@@ -7,9 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
     matrix_hex_img, resume_hex_img, 
     linkedin_hex_img, contact_hex_img,
-    art_hex_img, fb_hex_img,
-    ig_hex_img, comics_hex_img,
-    tiktok_hex_img
+    youtube_hex_img, ig_hex_img, 
+    comics_hex_img, tiktok_hex_img
 } from '../images'
 
 
@@ -28,14 +27,14 @@ export default function HexMenu() {
             setIsResumeOpen(true)
         }  else if (type === 'linkedIn') {
             window.open("https://www.linkedin.com/in/edward-dunne-jr-67831276/", "_blank")
+        } else if (type === 'youtube') {
+            window.open("https://www.youtube.com/@ejthecollector", "_blank")
         } else if (type === 'instagram') {
             window.open("https://www.instagram.com/ejthecollector/", "_blank")
         } else if (type === 'tiktok') {
             window.open("https://www.tiktok.com/@ejthecollector", "_blank")
         } else if (type === 'github') {
             window.open("https://github.com/EdwardDunne", "_blank")
-        } else if (type === 'art') {
-            setIsOpen(true);
         } else if (type === 'comics') {
             navigate('/dashboard')
         }
@@ -75,9 +74,9 @@ export default function HexMenu() {
                 <img className="honeycomb-cell__image" style={{objectPosition: '87%'}} src={contact_hex_img} />
                 <div className="honeycomb-cell__title">Contact</div>
             </li>
-            <li className="honeycomb-cell mid-last" onClick={e => hexClicked('art')}>
-                <img className="honeycomb-cell__image" src={art_hex_img} />
-                <div className="honeycomb-cell__title">Art</div>
+            <li className="honeycomb-cell mid-last" onClick={e => hexClicked('youtube')}>
+                <img className="honeycomb-cell__image" src={youtube_hex_img} />
+                <div className="honeycomb-cell__title">Youtube</div>
             </li>
             <li className="honeycomb-cell" onClick={e => hexClicked('tiktok')}>
                 <img className="honeycomb-cell__image" src={tiktok_hex_img} />

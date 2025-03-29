@@ -7,6 +7,18 @@ class UserProfile(models.Model):
     last_name = models.CharField(max_length=256, default='')
     email = models.CharField(max_length=128, default='')
 
+    ADMIN = 'ADMIN'
+    USER = 'USER'
+    ROLES = [
+        (ADMIN, 'Administrator'),
+        (USER, 'User'),
+    ]
+    role = models.CharField(
+        max_length=16,
+        choices=ROLES,
+        default=USER,
+    )
+
     def __str__(self):
         return self.first_name
 
