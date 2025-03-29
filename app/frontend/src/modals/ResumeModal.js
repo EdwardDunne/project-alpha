@@ -14,11 +14,12 @@ export default function ResumeModal({ open, children, onClose }) {
             <div className='hex-modal' style={
                 {
                     height: '80vh', 
-                    width: '80vw', 
+                    width: '80vw',
+                    maxWidth: '1060px',
                     padding: '20px', 
                     justifyContent: 'space-between',
                     flexDirection: 'column',
-                    flexWrap: 'nowrap'
+                    flexWrap: 'nowrap',
                 }}>
                 <h1 style={{textAlign: 'center', width: '100%'}}>{modal_title}</h1>
                 <span style={{textAlign: 'center', width: '100%', height: '60vh', overflow: 'scroll'}}>
