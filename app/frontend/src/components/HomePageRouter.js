@@ -1,5 +1,5 @@
 import React, { Component, useEffect } from "react";
-import HexMenu from "./HexMenu";
+import HexMenu from "../pages/HexMenu";
 import AdminTest from "../pages/AdminTest";
 import ComicsAdmin from "../pages/ComicsAdmin";
 import LoginPage from "../pages/LoginPage";
