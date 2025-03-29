@@ -144,7 +144,7 @@ const ComicsAdmin = ({
                         <li className="side-nav-item" onClick={e => getMarvelOmnis(e)}>
                             <a href="#" className="side-nav-link">
                                 <i className="uil-book-alt"></i>
-                                <span> Get Marvel Omnis TEST</span>
+                                <span> Get Marvel Omnis</span>
                             </a>
                         </li>
                         <li className="side-nav-item" onClick={e => scrapeDCOmnis(e)}>
