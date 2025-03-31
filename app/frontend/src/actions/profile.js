@@ -1,4 +1,3 @@
-import Cookies from 'js-cookie'
 import axios from 'axios';
 import httpUtil from '../utils/httpUtil';
 import { toast } from 'react-toastify';

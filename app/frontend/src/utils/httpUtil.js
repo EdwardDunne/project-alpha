@@ -4,6 +4,7 @@ class HttpUtils {
 
     GET = 'GET'
     POST = 'POST'
+    POSTFILE = 'POSTFILE'
     PUT = 'PUT'
     DELETE = 'DELETE'
     
@@ -18,6 +19,12 @@ class HttpUtils {
                 return {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': Cookies.get('csrftoken')
+                }
+            case this.POSTFILE:
+                return {
+                    'Accept': 'application/json',
+                    'Content-Type': 'multipart/form-data',
                     'X-CSRFToken': Cookies.get('csrftoken')
                 }
             case this.PUT:
