@@ -7,5 +7,6 @@ urlpatterns = [
     path('comics-admin', index),
     path('login', index),
     path('register', index),
-    path('dashboard', index)
+    path('dashboard', index),
+    path('comics', index)
 ]

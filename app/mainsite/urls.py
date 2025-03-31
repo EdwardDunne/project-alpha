@@ -22,6 +22,7 @@ urlpatterns = [
     path('scrape-marvel-omnis', MarvelOmnisScarpe.as_view()),
     path('scrape-amazon-details', AmazonDetailsScrape.as_view()),
     path('comics/add-book', BookView.as_view()),
+    path('comics/get-omnis', BookView.as_view()),
     path('comics/add-character', CharacterView.as_view()),
     path('comics/get-characters', CharacterView.as_view()),
     path('comics/add-publisher', PublisherView.as_view()),

@@ -141,3 +141,20 @@ export const getAllCharacters = async () => {
         return {}
     }
 }
+
+export const getAllOmnis = async () => {
+    const config = {
+        headers: httpUtil.get_headers('GET'),
+        params: {
+            action: 'get_all_omnis'
+        }
+    }
+
+    try {
+        return await axios.get(`${window.location.origin}/api/comics/get-omnis`, config);
+    } catch (error) {
+        console.error(error);
+        toast.error('Something went wrong...');
+        return {}
+    }
+}

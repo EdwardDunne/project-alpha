@@ -500,7 +500,8 @@ class BookView(APIView):
                 description=data['description'],
                 page_count=data['page_count'],
                 thumbnail=request.FILES['thumbnail'],
-                publisher=Publisher.objects.get(key=data['publisher'])
+                publisher=Publisher.objects.get(key=data['publisher']),
+                character=Character.objects.get(name=data['character'])
             )
             new_book = BookSerializer(new_book)
             return Response({'success': 'true', 'new_book': new_book.data})
@@ -510,6 +511,20 @@ class BookView(APIView):
 
         except:
             return Response({'error': 'Something went wrong when updating books'})
+        
+    def get(self, request, format=None):
+        try:
+            data = self.request.query_params
+            action = data['action']
+
+            if action == 'get_all_omnis':
+                # Eventually this should be changed to - Book.objects.filter(format='OM')
+                all_omnis = [BookSerializer(omni).data for omni in Book.objects.all()]
+                return Response({'success': 'true', 'omnis': all_omnis})
+            
+            return Response({'error': 'no action'})
+        except:
+            return Response({'error': 'Something went wrong when updating publishers'})
         
 class CharacterView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -530,14 +545,13 @@ class CharacterView(APIView):
         try:
             data = self.request.query_params
             action = data['action']
+
             if action == 'get_all':
-                characters = Character.objects.all()
-
-                all_characters = []
-                for character in characters:
-                    all_characters.append(CharacterSerializer(character).data)
-
-            return Response({'success': 'true', 'characters': all_characters})
+                all_characters = [
+                    CharacterSerializer(character).data for character in Character.objects.all()]
+                return Response({'success': 'true', 'characters': all_characters})
+            
+            return Response({'error': 'no action'})
         except:
             return Response({'error': 'Something went wrong when updating publishers'})
         
@@ -560,13 +574,12 @@ class PublisherView(APIView):
         try:
             data = self.request.query_params
             action = data['action']
+
             if action == 'get_all':
-                publishers = Publisher.objects.all()
-
-                all_publishers = []
-                for publisher in publishers:
-                    all_publishers.append(PublisherSerializer(publisher).data)
-
-            return Response({'success': 'true', 'publishers': all_publishers})
+                all_publishers = [
+                    PublisherSerializer(publisher).data for publisher in Publisher.objects.all()]
+                return Response({'success': 'true', 'publishers': all_publishers})
+            
+            return Response({'error': 'no action'})
         except:
             return Response({'error': 'Something went wrong when updating publishers'})
