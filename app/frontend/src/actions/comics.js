@@ -107,3 +107,37 @@ export const scrape_marvel_omnis = () => async dispatch => {
     }
 
 };
+
+export const getAllPublishers = async () => {
+    const config = {
+        headers: httpUtil.get_headers('GET'),
+        params: {
+            action: 'get_all'
+        }
+    }
+
+    try {
+        return await axios.get(`${window.location.origin}/api/comics/get-publishers`, config);
+    } catch (error) {
+        console.error(error);
+        toast.error('Something went wrong...');
+        return {}
+    }
+}
+
+export const getAllCharacters = async () => {
+    const config = {
+        headers: httpUtil.get_headers('GET'),
+        params: {
+            action: 'get_all'
+        }
+    }
+
+    try {
+        return await axios.get(`${window.location.origin}/api/comics/get-characters`, config);
+    } catch (error) {
+        console.error(error);
+        toast.error('Something went wrong...');
+        return {}
+    }
+}

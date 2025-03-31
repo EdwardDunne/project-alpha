@@ -12,8 +12,8 @@ from rest_framework import permissions
 from django.contrib import auth
 from .utils import get_hash_for_marvel_api
 from django.contrib.auth.models import User
-from mainsite.models import UserProfile
-from .serializers import UserSerializer, UserProfileSerializer
+from mainsite.models import Book, Character, Publisher, UserProfile
+from .serializers import BookSerializer, CharacterSerializer, PublisherSerializer, UserSerializer, UserProfileSerializer
 from bs4 import BeautifulSoup
 import time
 import requests
@@ -488,3 +488,85 @@ def getAmazonScrapeHeaders():
         return {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0", "Accept-Encoding":"gzip, deflate", "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "DNT":"1","Connection":"close", "Upgrade-Insecure-Requests":"1"}
     else:
         return {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36", "Accept-Encoding":"gzip, deflate", "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "DNT":"1","Connection":"close", "Upgrade-Insecure-Requests":"1"}
+
+class BookView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, format=None):
+        try:
+            data = self.request.data
+            new_book = Book.objects.create(
+                title=data['title'],
+                description=data['description'],
+                page_count=data['page_count'],
+                thumbnail=request.FILES['thumbnail'],
+                publisher=Publisher.objects.get(key=data['publisher'])
+            )
+            new_book = BookSerializer(new_book)
+            return Response({'success': 'true', 'new_book': new_book.data})
+        
+        # Book thumbnail url example
+        # http://localhost:8000/media/uploads/book-thumbnails/comics-hex-img.jpg
+
+        except:
+            return Response({'error': 'Something went wrong when updating books'})
+        
+class CharacterView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, format=None):
+        try:
+            data = self.request.data
+            new_character = Character.objects.create(
+                name=data['name'], 
+                publisher=Publisher.objects.get(key=data['publisher'])
+            )
+            new_character = CharacterSerializer(new_character)
+            return Response({'success': 'true', 'new_character': new_character.data})
+        except:
+            return Response({'error': 'Something went wrong when updating publishers'})
+        
+    def get(self, request, format=None):
+        try:
+            data = self.request.query_params
+            action = data['action']
+            if action == 'get_all':
+                characters = Character.objects.all()
+
+                all_characters = []
+                for character in characters:
+                    all_characters.append(CharacterSerializer(character).data)
+
+            return Response({'success': 'true', 'characters': all_characters})
+        except:
+            return Response({'error': 'Something went wrong when updating publishers'})
+        
+class PublisherView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, format=None):
+        try:
+            data = self.request.data
+            new_publisher = Publisher.objects.create(
+                key=data['key'], 
+                name=data['name']
+            )
+            new_publisher = PublisherSerializer(new_publisher)
+            return Response({'success': 'true', 'new_publisher': new_publisher.data})
+        except:
+            return Response({'error': 'Something went wrong when updating publishers'})
+        
+    def get(self, request, format=None):
+        try:
+            data = self.request.query_params
+            action = data['action']
+            if action == 'get_all':
+                publishers = Publisher.objects.all()
+
+                all_publishers = []
+                for publisher in publishers:
+                    all_publishers.append(PublisherSerializer(publisher).data)
+
+            return Response({'success': 'true', 'publishers': all_publishers})
+        except:
+            return Response({'error': 'Something went wrong when updating publishers'})

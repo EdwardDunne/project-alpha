@@ -8,14 +8,14 @@ import ToggleButton from '@mui/material/ToggleButton';
 import Button from '@mui/material/Button'
 import DunneWebModal from "../modals/DunneWebModal";
 import AddOmnibus from "../modals/dwModalContant/AddOmnibus";
+import AddPublisher from "../modals/dwModalContant/AddPublisher";
+import AddCharacter from "../modals/dwModalContant/AddCharacter";
 
 const ComicsAdmin = ({
     get_marvel_omnis, marvel_api_comics,
     scrape_dc_omnis, scrape_marvel_omnis,
     dc_scraped_comics, marvel_scraped_comics
 }) => {
-
-    let navigate = useNavigate();
 
     const [displayedOmnis, setDisplayedOmnis] = useState([]);
     const [selectedResultSet, setselectedResultSet] = useState('marvel-api');
@@ -25,24 +25,22 @@ const ComicsAdmin = ({
     const [selectedBook, setSelectedBook] = useState({});
 
     const [dwModalOpen, setDwModalOpen] = useState(false);
+    const [dwModalType, setDwModalType] = useState('book')
     
     let marvel_cgn_comics_global = []; // TEMP: need to create global state var
     let dc_cgn_comics_global = []; // TEMP: need to create global state var
 
     useEffect(() => {
-        console.log(dc_scraped_comics);
         if (selectedResultSet === 'dc-amz')
             setDisplayedOmnis(dc_scraped_comics);
     }, [dc_scraped_comics])
 
     useEffect(() => {
-        console.log(marvel_scraped_comics);
         if (selectedResultSet === 'marvel-amz')
             setDisplayedOmnis(marvel_scraped_comics);
     }, [marvel_scraped_comics])
 
     useEffect(() => {
-        console.log(marvel_api_comics);
         if (selectedResultSet === 'marvel-api')
             setDisplayedOmnis(marvel_api_comics);
     }, [marvel_api_comics]);
@@ -101,7 +99,7 @@ const ComicsAdmin = ({
         }
 
         return (
-            <div className="card omni-list-card" key={i} onClick={e => omniClicked(omniListType, book)}>
+            <div className="card omni-list-card" key={i} onClick={() => omniClicked(omniListType, book)}>
                 <div className="row g-0 align-items-center">
                     <div className="col-md-4">
                         <img src={imgUrl} className="card-img" alt="..."/>
@@ -115,6 +113,10 @@ const ComicsAdmin = ({
                 </div>
             </div>
         )
+    }
+
+    const addButtonStyles = {
+        margin: '5px'
     }
 
     return (
@@ -132,7 +134,12 @@ const ComicsAdmin = ({
             <DunneWebModal
                 onClose={() => setDwModalOpen(false)}
             > 
-                <AddOmnibus/>
+                {
+                    dwModalType === 'book' ? <AddOmnibus/> : 
+                    dwModalType === 'character' ? <AddCharacter/> :
+                    dwModalType === 'publisher' ? <AddPublisher/>  : ''
+                }
+
             </DunneWebModal>
         }
 
@@ -144,7 +151,7 @@ const ComicsAdmin = ({
                         <li className="side-nav-item" onClick={e => getMarvelOmnis(e)}>
                             <a href="#" className="side-nav-link">
                                 <i className="uil-book-alt"></i>
-                                <span> Get Marvel Omnis TEST</span>
+                                <span> Get Marvel Omnis</span>
                             </a>
                         </li>
                         <li className="side-nav-item" onClick={e => scrapeDCOmnis(e)}>
@@ -161,13 +168,37 @@ const ComicsAdmin = ({
                         </li>
                     </ul>
                     <Button
+                        style={addButtonStyles}
                         variant="contained"
-                        onClick={e => {
+                        onClick={() => {
                             setDwModalOpen(true)
+                            setDwModalType('book')
                         }}
                         value="Add Omnibus"
                     >
-                        Add Omnibus
+                        Add Book
+                    </Button>
+                    <Button
+                        style={addButtonStyles}
+                        variant="contained"
+                        onClick={() => {
+                            setDwModalOpen(true)
+                            setDwModalType('character')
+                        }}
+                        value="Add Character"
+                    >
+                        Add Character
+                    </Button>
+                    <Button
+                        style={addButtonStyles}
+                        variant="contained"
+                        onClick={() => {
+                            setDwModalOpen(true)
+                            setDwModalType('publisher')
+                        }}
+                        value="Add Publisher"
+                    >
+                        Add Publisher
                     </Button>
                     <div className="clearfix"></div>
                 </div>

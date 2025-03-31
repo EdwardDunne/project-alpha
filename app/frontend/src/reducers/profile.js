@@ -2,7 +2,8 @@ import {
     LOAD_USER_PROFILE_SUCCESS,
     LOAD_USER_PROFILE_FAIL,
     UPDATE_USER_PROFILE_SUCCESS,
-    UPDATE_USER_PROFILE_FAIL
+    UPDATE_USER_PROFILE_FAIL,
+    UPDATE_IS_STAFF
 } from '../actions/types';
 
 const initialState = {
@@ -42,6 +43,11 @@ export default function (state = initialState, action) {
                 first_name: payload.profile.first_name,
                 last_name: payload.profile.last_name,
                 email: payload.profile.email
+            }
+        case UPDATE_IS_STAFF:
+            return {
+                ...state,
+                is_staff: payload.is_staff
             }
         case UPDATE_USER_PROFILE_FAIL:
             return {
