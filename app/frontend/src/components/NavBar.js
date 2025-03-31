@@ -23,7 +23,6 @@ const NavBar = ({ isAuthenticated, is_staff, logout }) => {
     
     const authLinks = (
         <>
-            { is_staff ? adminTestLink : ''}
             { is_staff ? comicAdminLink : ''}
             <li className="nav-item">
                 <NavLink className="nav-link" to="/dashboard">Dashboard</NavLink>
@@ -50,6 +49,9 @@ const NavBar = ({ isAuthenticated, is_staff, logout }) => {
         <Link className="nav-item brand" to="/">Dunne Web</Link>
         <li className="nav-item">
             <NavLink className="nav-link" to="/">Home</NavLink>
+        </li>
+        <li className="nav-item">
+            <NavLink className="nav-link" to="/comics">Comics</NavLink>
         </li>
         { isAuthenticated ? authLinks : guestLinks }
     </nav>

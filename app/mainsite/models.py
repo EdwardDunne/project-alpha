@@ -51,6 +51,9 @@ class Book(models.Model):
     team = models.CharField(max_length=256, null=True, blank=True)
     thumbnail = models.FileField(upload_to ='uploads/book-thumbnails/', null=True)
 
+    def __str__(self):
+        return self.title
+
 
 class Character(models.Model):
     name = models.CharField(max_length=256)
@@ -62,3 +65,6 @@ class Character(models.Model):
 class Publisher(models.Model):
     key = models.CharField(max_length=8, default="MARVEL")
     name = models.CharField(max_length=256)
+
+    def __str__(self):
+        return self.name

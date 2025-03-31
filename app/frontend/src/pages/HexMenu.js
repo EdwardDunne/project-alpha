@@ -36,7 +36,7 @@ export default function HexMenu() {
         } else if (type === 'github') {
             window.open("https://github.com/EdwardDunne", "_blank")
         } else if (type === 'comics') {
-            navigate('/dashboard')
+            navigate('/comics')
         }
         
         setModalType(type);

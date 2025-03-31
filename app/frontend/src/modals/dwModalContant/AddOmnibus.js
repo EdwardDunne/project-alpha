@@ -68,6 +68,7 @@ const AddOmnibus = () => {
         _formData.append('description', formData.description)
         _formData.append('page_count', formData.page_count.toString())
         _formData.append('publisher', formData.publisher)
+        _formData.append('character', formData.character)
 
         try {
             const res = await axios.post(`${window.location.origin}/api/comics/add-book`, _formData, config);

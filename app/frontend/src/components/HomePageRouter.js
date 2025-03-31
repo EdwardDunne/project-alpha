@@ -5,6 +5,7 @@ import ComicsAdmin from "../pages/ComicsAdmin";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import DashboardPage from "../pages/DashboardPage";
+import ComicsPage from "../pages/ComicsPage";
 import { checkAuthenticated } from "../actions/auth";
 import { load_user } from "../actions/profile";
 import { connect } from 'react-redux';
@@ -25,6 +26,7 @@ const HomePageRouter = ({ checkAuthenticated, load_user, isAuthenticated }) => {
             <Route exact path="/" element={<HexMenu />}/>
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/comics" element={<ComicsPage />} />
             <Route path="/admin-test" element={
                 <PrivateRoute staffOnly={true}>
                     <AdminTest />
