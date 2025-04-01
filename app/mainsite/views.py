@@ -512,6 +512,8 @@ class BookView(APIView):
         except:
             return Response({'error': 'Something went wrong when updating books'})
         
+class GetOmnisView(APIView):
+
     def get(self, request, format=None):
         try:
             data = self.request.query_params
