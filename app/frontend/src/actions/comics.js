@@ -1,13 +1,15 @@
-import React from 'react';
-import Cookies from 'js-cookie'
 import axios from 'axios';
 import httpUtil from '../utils/httpUtil';
 import { toast } from 'react-toastify';
 import {
     LOAD_MARVEL_API_OMNIS_SUCCESS, LOAD_MARVEL_API_OMNIS_FAIL,
     LOAD_DC_SCRAPED_OMNIS_SUCCESS, LOAD_DC_SCRAPED_OMNIS_FAIL,
-    LOAD_MARVEL_SCRAPED_OMNIS_SUCCESS, LOAD_MARVEL_SCRAPED_OMNIS_FAIL
+    LOAD_MARVEL_SCRAPED_OMNIS_SUCCESS, LOAD_MARVEL_SCRAPED_OMNIS_FAIL,
+    LOAD_CHARACTERS_FAIL, LOAD_CHARACTERS_SUCCESS,
+    LOAD_PUBLISHERS_FAIL, LOAD_PUBLISHERS_SUCCESS,
+    LOAD_BOOKS_FAIL, LOAD_BOOKS_SUCCESS
 } from './types';
+import store from '../store';
 
 export const get_marvel_omnis = () => async dispatch => {
     const config = {
@@ -106,9 +108,9 @@ export const scrape_marvel_omnis = () => async dispatch => {
         });
     }
 
-};
+}
 
-export const getAllPublishers = async () => {
+export const getAllCharacters = () => async dispatch => {
     const config = {
         headers: httpUtil.get_headers('GET'),
         params: {
@@ -117,7 +119,18 @@ export const getAllPublishers = async () => {
     }
 
     try {
-        return await axios.get(`${window.location.origin}/api/comics/get-publishers`, config);
+        const res = await axios.get(`${window.location.origin}/api/comics/get-characters`, config);
+        if (res.data.error) {
+            toast.error('Error getting characters...');
+            dispatch({
+                type: LOAD_CHARACTERS_FAIL
+            });
+        } else {
+            dispatch({
+                type: LOAD_CHARACTERS_SUCCESS,
+                payload: res.data
+            });
+        }
     } catch (error) {
         console.error(error);
         toast.error('Something went wrong...');
@@ -125,16 +138,26 @@ export const getAllPublishers = async () => {
     }
 }
 
-export const getAllCharacters = async () => {
+export const getAllPublishers = () => async dispatch => {
     const config = {
         headers: httpUtil.get_headers('GET'),
         params: {
             action: 'get_all'
         }
     }
-
     try {
-        return await axios.get(`${window.location.origin}/api/comics/get-characters`, config);
+        const res = await axios.get(`${window.location.origin}/api/comics/get-publishers`, config)
+        if (res.data.error) {
+            toast.error('Error getting publishers...')
+            dispatch({
+                type: LOAD_PUBLISHERS_FAIL
+            })
+        } else {
+            dispatch({
+                type: LOAD_PUBLISHERS_SUCCESS,
+                payload: res.data
+            })
+        }
     } catch (error) {
         console.error(error);
         toast.error('Something went wrong...');
@@ -142,19 +165,108 @@ export const getAllCharacters = async () => {
     }
 }
 
-export const getAllOmnis = async () => {
+export const getAllBooks = () => async dispatch => {
     const config = {
         headers: httpUtil.get_headers('GET'),
         params: {
-            action: 'get_all_omnis'
+            action: 'get_all_books'
         }
     }
 
     try {
-        return await axios.get(`${window.location.origin}/api/comics/get-omnis`, config);
+        const res = await axios.get(`${window.location.origin}/api/comics/get-omnis`, config)
+        if (res.data.error) {
+            toast.error('Error getting books...')
+            dispatch({
+                type: LOAD_BOOKS_FAIL
+            })
+        } else {
+            dispatch({
+                type: LOAD_BOOKS_SUCCESS,
+                payload: res.data
+            })
+        }
     } catch (error) {
         console.error(error);
         toast.error('Something went wrong...');
         return {}
+    }
+}
+
+export const addPublisher = async (formData, setDwModalOpen) => {
+    const config = {
+        headers: httpUtil.get_headers('POST')
+    };
+
+    const body = JSON.stringify({
+        key: formData.key,
+        name: formData.name,
+    });
+
+    try {
+        const res = await axios.post(`${window.location.origin}/api/comics/add-publisher`, body, config);
+        if (res['data']['new_publisher']) {
+            toast.success('Publisher Added!')
+            store.dispatch(getAllPublishers()) // Refresh publishers
+            setDwModalOpen(false)
+        } else {
+            toast.error('Something went wrong...')
+        }
+    } catch (error) {
+        console.error(error);
+        toast.error('Something went wrong...');
+    }
+}
+
+export const addCharacter = async (formData, setDwModalOpen) => {
+    const config = {
+        headers: httpUtil.get_headers('POST')
+    };
+
+    const body = JSON.stringify({
+        name: formData.name,
+        publisher: formData.publisher,
+    });
+
+    try {
+        const res = await axios.post(`${window.location.origin}/api/comics/add-character`, body, config);
+        if (res['data']['new_character']) {
+            toast.success('Character Added!')
+            store.dispatch(getAllCharacters()) // Refresh characters
+            setDwModalOpen(false)
+        } else {
+            toast.error('Something went wrong...')
+        }
+    } catch (error) {
+        console.error(error);
+        toast.error('Something went wrong...');
+    }
+}
+
+export const addBook = async (formData, setDwModalOpen) => {
+    const config = {
+        headers: httpUtil.get_headers('POSTFILE')
+    };
+
+    const _formData = new FormData();
+    _formData.append('thumbnail', formData.thumbnail)
+    _formData.append('title', formData.title)
+    _formData.append('description', formData.description)
+    _formData.append('page_count', formData.page_count.toString())
+    _formData.append('publisher', formData.publisher)
+    _formData.append('character', formData.character)
+
+    try {
+        const res = await axios.post(`${window.location.origin}/api/comics/add-book`, _formData, config)
+        if (res['data']['new_book']) {
+            toast.success('Book Added!')
+            store.dispatch(getAllBooks()) // Refresh Books
+            setDwModalOpen(false)
+        } else {
+            toast.error('Something went wrong...')
+        }
+    } catch (error) {
+        console.error(error);
+        toast.error('Something went wrong...');
     }
 }

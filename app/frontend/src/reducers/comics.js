@@ -2,13 +2,19 @@ import {
     LOAD_MARVEL_API_OMNIS_SUCCESS, LOAD_MARVEL_API_OMNIS_FAIL,
     LOAD_DC_SCRAPED_OMNIS_SUCCESS, LOAD_DC_SCRAPED_OMNIS_FAIL,
     LOAD_MARVEL_SCRAPED_OMNIS_SUCCESS, LOAD_MARVEL_SCRAPED_OMNIS_FAIL,
+    LOAD_CHARACTERS_SUCCESS, LOAD_CHARACTERS_FAIL,
+    LOAD_PUBLISHERS_SUCCESS, LOAD_PUBLISHERS_FAIL,
+    LOAD_BOOKS_SUCCESS, LOAD_BOOKS_FAIL,
 } from '../actions/types';
 
 
 const initialState = {
     marvel_api_comics: [],
     dc_scraped_comics: [],
-    marvel_scraped_comics: []
+    marvel_scraped_comics: [],
+    all_characters: [],
+    all_publishers: [],
+    all_books: [],
 };
 
 export default function (state = initialState, action) {
@@ -44,6 +50,36 @@ export default function (state = initialState, action) {
             return {
                 ...state,
                 marvel_scraped_comics: []
+            }
+        case LOAD_CHARACTERS_SUCCESS:
+            return {
+                ...state,
+                all_characters: payload.characters
+            }
+        case LOAD_CHARACTERS_FAIL:
+            return {
+                ...state,
+                all_characters: []
+            }
+        case LOAD_PUBLISHERS_SUCCESS:
+            return {
+                ...state,
+                all_publishers: payload.publishers
+            }
+        case LOAD_PUBLISHERS_FAIL:
+            return {
+                ...state,
+                all_publishers: []
+            }
+        case LOAD_BOOKS_SUCCESS:
+            return {
+                ...state,
+                all_books: payload.books
+            }
+        case LOAD_BOOKS_FAIL:
+            return {
+                ...state,
+                all_books: []
             }
         default:
             return state

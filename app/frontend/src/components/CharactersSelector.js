@@ -3,20 +3,23 @@ import { getAllCharacters } from '../actions/comics';
 import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux';
 
-const CharactersSelector = ({ setCharacter }) => {
+const CharactersSelector = ({ setCharacter, variant = 'standard', allCharacters, getAllCharacters }) => {
     const [characterOptions, setCharacterOptions] = useState([])
 
+    // Use allCharacters cache if it is not empty
     useEffect(() => {
-        _getAllCharacters()
+        allCharacters.length ? _setCharacterOptions(allCharacters) : getAllCharacters()
     }, [])
 
-    const _getAllCharacters = async () => {
-        const res = await getAllCharacters()
-        if (res['data'] && res['data']['success']) 
-            setCharacterOptions(
-                res['data']['characters']
-                    .sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
-            )
+    useEffect(() => {
+        _setCharacterOptions(allCharacters)
+    }, [allCharacters]);
+
+    const _setCharacterOptions = (characters) => {
+        setCharacterOptions(
+            characters
+                .sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
+        )
     }
 
     return (
@@ -26,12 +29,14 @@ const CharactersSelector = ({ setCharacter }) => {
                 options={characterOptions}
                 getOptionLabel={(option) => option['name']}
                 renderInput={params => 
-                    <TextField {...params} label="Character" variant="filled" />}
+                    <TextField {...params} label="Character" variant={variant} />}
                 onChange={(e, character) => setCharacter(character)}
             />
         </div>
     )
 }
 
-const mapStateToProps = state => ({})
-export default connect(mapStateToProps, {})(CharactersSelector)
+const mapStateToProps = state => ({
+    allCharacters: state.comics.all_characters
+})
+export default connect(mapStateToProps, { getAllCharacters })(CharactersSelector)

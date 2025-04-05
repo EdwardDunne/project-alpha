@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from 'react-router-dom';
 import OmniDetailsModal from "../modals/OmniDetailsModal";
 import { get_marvel_omnis, scrape_dc_omnis, scrape_marvel_omnis } from '../actions/comics';
 import { connect } from 'react-redux';
@@ -7,7 +6,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import Button from '@mui/material/Button'
 import DunneWebModal from "../modals/DunneWebModal";
-import AddOmnibus from "../modals/dwModalContant/AddOmnibus";
+import AddBook from "../modals/dwModalContant/AddBook";
 import AddPublisher from "../modals/dwModalContant/AddPublisher";
 import AddCharacter from "../modals/dwModalContant/AddCharacter";
 
@@ -26,9 +25,6 @@ const ComicsAdmin = ({
 
     const [dwModalOpen, setDwModalOpen] = useState(false);
     const [dwModalType, setDwModalType] = useState('book')
-    
-    let marvel_cgn_comics_global = []; // TEMP: need to create global state var
-    let dc_cgn_comics_global = []; // TEMP: need to create global state var
 
     useEffect(() => {
         if (selectedResultSet === 'dc-amz')
@@ -135,9 +131,9 @@ const ComicsAdmin = ({
                 onClose={() => setDwModalOpen(false)}
             > 
                 {
-                    dwModalType === 'book' ? <AddOmnibus/> : 
-                    dwModalType === 'character' ? <AddCharacter/> :
-                    dwModalType === 'publisher' ? <AddPublisher/>  : ''
+                    dwModalType === 'book' ? <AddBook setDwModalOpen={setDwModalOpen}/> : 
+                    dwModalType === 'character' ? <AddCharacter setDwModalOpen={setDwModalOpen}/> :
+                    dwModalType === 'publisher' ? <AddPublisher setDwModalOpen={setDwModalOpen}/>  : ''
                 }
 
             </DunneWebModal>

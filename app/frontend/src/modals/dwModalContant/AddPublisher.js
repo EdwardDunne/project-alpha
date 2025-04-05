@@ -1,10 +1,8 @@
 import React, { useState } from 'react'
 import { connect } from 'react-redux';
-import axios from 'axios';
-import { toast } from 'react-toastify';
-import httpUtil from '../../utils/httpUtil';
+import { addPublisher, getAllPublishers } from '../../actions/comics';
 
-const AddPublisher = () => {
+const AddPublisher = ({ setDwModalOpen, getAllPublishers }) => {
 
     const [formData, setFormData] = useState({
         key: '',
@@ -15,22 +13,7 @@ const AddPublisher = () => {
 
     const onSubmit = async e => {
         e.preventDefault();
-        const config = {
-            headers: httpUtil.get_headers('POST')
-        };
-    
-        const body = JSON.stringify({
-            key: formData.key,
-            name: formData.name,
-        });
-
-        try {
-            const res = await axios.post(`${window.location.origin}/api/comics/add-publisher`, body, config);
-            res['data']['new_publisher'] ? toast.success('Publisher Added!') : toast.error('Something went wrong...')
-        } catch (error) {
-            console.error(error);
-            toast.error('Something went wrong...');
-        }
+        addPublisher(formData, setDwModalOpen)
     }
 
     const titleStyles = {
@@ -91,4 +74,4 @@ const AddPublisher = () => {
 }
 
 const mapStateToProps = state => ({})
-export default connect(mapStateToProps, {})(AddPublisher)
+export default connect(mapStateToProps, { getAllPublishers })(AddPublisher)
