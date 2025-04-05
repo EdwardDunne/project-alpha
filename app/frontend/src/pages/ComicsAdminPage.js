@@ -136,7 +136,6 @@ const ComicsAdmin = ({
                     dwModalType === 'character' ? <AddCharacter setDwModalOpen={setDwModalOpen}/> :
                     dwModalType === 'publisher' ? <AddPublisher setDwModalOpen={setDwModalOpen}/>  : ''
                 }
-
             </DunneWebModal>
         }
 
