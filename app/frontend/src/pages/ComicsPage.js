@@ -1,27 +1,26 @@
 import React, { useEffect, useState } from "react";
 import OmniDetailsModal from "../modals/OmniDetailsModal";
-import { getAllCharacters, getAllOmnis, getAllPublishers } from '../actions/comics';
+import { getAllBooks } from '../actions/comics';
 import { connect } from 'react-redux';
-import { Autocomplete, TextField, ThemeProvider } from "@mui/material";
+import { ThemeProvider } from "@mui/material";
 import { darkTheme } from "../App";
 import PublishersSelector from "../components/PublishersSelector";
 import CharactersSelector from "../components/CharactersSelector";
 
-const ComicsPage = () => {
+const ComicsPage = ({ getAllBooks, allBooks }) => {
 
-    const [omnis, setOmnis] = useState([])
+    const [books, setBooks] = useState([])
     const [characterFilter, setCharacterFilter] = useState(undefined)
     const [publisherFilter, setPublisherFilter] = useState(undefined)
 
+     // Use allCharacters cache if it is not empty
     useEffect(() => {
-        _getAllOmnis()
+        allBooks.length ? setBooks(allBooks) : getAllBooks()
     }, [])
 
-    const _getAllOmnis = async () => {
-        const res = await getAllOmnis()
-        if (res['data'] && res['data']['success']) 
-            setOmnis(res['data']['omnis'])
-    }
+    useEffect(() => {
+        setBooks(allBooks)
+    }, [allBooks]);
 
     const omniListContainerStyles = {
         display: 'flex',
@@ -98,7 +97,7 @@ const ComicsPage = () => {
                         <h4 className="page-title">Comics</h4>
                     </div>
                     <div style={omniListContainerStyles}>
-                        {omnis.map((book, i) => { 
+                        {books.map((book, i) => { 
                             return getDisplayedBooks(book, i) 
                         })}
                     </div>
@@ -108,6 +107,8 @@ const ComicsPage = () => {
     );
 }
 
-const mapStateToProps = state => ({})
+const mapStateToProps = state => ({
+    allBooks: state.comics.all_books
+})
 
-export default connect(mapStateToProps, {})(ComicsPage)
+export default connect(mapStateToProps, { getAllBooks })(ComicsPage)

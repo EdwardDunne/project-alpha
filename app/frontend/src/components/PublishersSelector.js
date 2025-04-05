@@ -3,20 +3,23 @@ import { getAllPublishers } from '../actions/comics';
 import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux';
 
-const PublishersSelector = ({ setPublisher }) => {
+const PublishersSelector = ({ setPublisher, variant = 'standard', allPublishers, getAllPublishers }) => {
     const [publisherOptions, setPublisherOptions] = useState([])
 
+    // Use allCharacters cache if it is not empty
     useEffect(() => {
-        _getAllPublishers()
+        allPublishers.length ? _setPublisherOptions(allPublishers) : getAllPublishers()
     }, [])
 
-    const _getAllPublishers = async () => {
-        const res = await getAllPublishers()
-        if (res['data'] && res['data']['success']) 
-            setPublisherOptions(
-                res['data']['publishers']
-                    .sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
-            )
+    useEffect(() => {
+        _setPublisherOptions(allPublishers)
+    }, [allPublishers]);
+
+    const _setPublisherOptions = (publishers) => {
+        setPublisherOptions(
+            publishers
+                .sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
+        )
     }
 
     return (
@@ -26,12 +29,14 @@ const PublishersSelector = ({ setPublisher }) => {
                 options={publisherOptions}
                 getOptionLabel={(option) => option['name']}
                 renderInput={params => 
-                    <TextField {...params} label="Publisher" variant="filled" />}
+                    <TextField {...params} label="Publisher" variant={variant} />}
                 onChange={(e, publisher) => setPublisher(publisher)}
             />
         </div>
     )
 }
 
-const mapStateToProps = state => ({})
-export default connect(mapStateToProps, {})(PublishersSelector)
+const mapStateToProps = state => ({
+    allPublishers: state.comics.all_publishers
+})
+export default connect(mapStateToProps, { getAllPublishers })(PublishersSelector)

@@ -501,7 +501,7 @@ class BookView(APIView):
                 page_count=data['page_count'],
                 thumbnail=request.FILES['thumbnail'],
                 publisher=Publisher.objects.get(key=data['publisher']),
-                character=Character.objects.get(name=data['character'])
+                character=Character.objects.get(id=data['character'])
             )
             new_book = BookSerializer(new_book)
             return Response({'success': 'true', 'new_book': new_book.data})
@@ -512,17 +512,16 @@ class BookView(APIView):
         except:
             return Response({'error': 'Something went wrong when updating books'})
         
-class GetOmnisView(APIView):
+class GetBooksView(APIView):
 
     def get(self, request, format=None):
         try:
             data = self.request.query_params
             action = data['action']
 
-            if action == 'get_all_omnis':
-                # Eventually this should be changed to - Book.objects.filter(format='OM')
-                all_omnis = [BookSerializer(omni).data for omni in Book.objects.all()]
-                return Response({'success': 'true', 'omnis': all_omnis})
+            if action == 'get_all_books':
+                all_books = [BookSerializer(book).data for book in Book.objects.all()]
+                return Response({'success': 'true', 'books': all_books})
             
             return Response({'error': 'no action'})
         except:
