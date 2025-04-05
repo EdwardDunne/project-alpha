@@ -112,7 +112,8 @@ const ComicsAdmin = ({
     }
 
     const addButtonStyles = {
-        margin: '5px'
+        margin: '5px',
+        backgroundColor: 'rgb(83, 109, 230)',
     }
 
     return (
