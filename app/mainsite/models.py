@@ -51,6 +51,10 @@ class Book(models.Model):
     team = models.CharField(max_length=256, null=True, blank=True)
     thumbnail = models.FileField(upload_to ='uploads/book-thumbnails/', null=True)
 
+    @property
+    def publisher_name(self):
+        return self.publisher.name
+    
     def __str__(self):
         return self.title
 

@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
 import OmniDetailsModal from "../modals/OmniDetailsModal";
-import { getAllOmnis } from '../actions/comics';
+import { getAllCharacters, getAllOmnis, getAllPublishers } from '../actions/comics';
 import { connect } from 'react-redux';
-
+import { Autocomplete, TextField, ThemeProvider } from "@mui/material";
+import { darkTheme } from "../App";
+import PublishersSelector from "../components/PublishersSelector";
+import CharactersSelector from "../components/CharactersSelector";
 
 const ComicsPage = () => {
 
     const [omnis, setOmnis] = useState([])
+    const [characterFilter, setCharacterFilter] = useState(undefined)
+    const [publisherFilter, setPublisherFilter] = useState(undefined)
 
     useEffect(() => {
         _getAllOmnis()
@@ -14,7 +19,6 @@ const ComicsPage = () => {
 
     const _getAllOmnis = async () => {
         const res = await getAllOmnis()
-        console.log(res)
         if (res['data'] && res['data']['success']) 
             setOmnis(res['data']['omnis'])
     }
@@ -42,31 +46,51 @@ const ComicsPage = () => {
         alignItems: 'center'
     }
 
-    function displayOmni(omni) {
-        return (
-            <div 
-            style={omniCardStyles}
-            // onClick={() => omniClicked(omniListType, book)}
-            >
-                <div style={imageContainerStyles}>
-                    <img src={`${window.location.origin}${omni.thumbnail}`} className="card-img" alt="..."/>
-                </div>
-                <div style={omniTitleStyles}>{omni.title}</div>
-            </div>
-        )
+    const leftPanelStyles = {
+        width: '300px',
+        display: 'flex',
+        height: '410px',
+        position: 'fixed',
+        padding: "0px",
     }
 
+    function getDisplayedBooks(book, i) {
+        const bookPublisher = book['publisher']
+        const bookCharacter = book['character']
+
+        if (
+            (!publisherFilter || bookPublisher === publisherFilter['id']) && 
+            (!characterFilter || bookCharacter === characterFilter['id'])
+        ) {
+            return (
+                <div 
+                style={omniCardStyles}
+                key={i}
+                // onClick={() => omniClicked(omniListType, book)}
+                >
+                    <div style={imageContainerStyles}>
+                        <img src={`${window.location.origin}${book.thumbnail}`} className="card-img" alt="..."/>
+                    </div>
+                    <div style={omniTitleStyles}>{book.title}</div>
+                </div>
+            )
+        }
+    }
 
     return (
         <>
         <div id="admin-main-container">
-            <div className="admin-leftside-content" style={{"padding": "0px"}}>
-                <div className="side-nav">
-                    <ul className="side-nav-list">
-                        FILTERS GO HERE
-                    </ul>
-                    <div className="clearfix"></div>
-                </div>
+            <div style={leftPanelStyles}>
+                <ThemeProvider theme={darkTheme}>
+                    <div className="side-nav" style={{width: '300px'}}>
+                        <span style={{textAlign: 'center'}}>Filter Books</span>
+                        <ul className="side-nav-list">
+                            <PublishersSelector setPublisher={setPublisherFilter}/>
+                            <CharactersSelector setCharacter={setCharacterFilter}/>
+                        </ul>
+                        <div className="clearfix"></div>
+                    </div>
+                </ThemeProvider>
             </div>
 
             <div className="admin-main-content">
@@ -75,7 +99,7 @@ const ComicsPage = () => {
                     </div>
                     <div style={omniListContainerStyles}>
                         {omnis.map((book, i) => { 
-                            return displayOmni(book) 
+                            return getDisplayedBooks(book, i) 
                         })}
                     </div>
             </div> 
