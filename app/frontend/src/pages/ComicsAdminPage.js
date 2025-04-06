@@ -246,30 +246,30 @@ const ComicsAdmin = ({
             </div>
 
             <div className="admin-main-content">
-                    <div className="page-title-box">
-                        <h4 className="page-title">Comics Admin</h4>
-                    </div>
-                    <div style={toggleContainer}>
-                        <ToggleButtonGroup
-                        color="primary" value={selectedResultSet} exclusive 
-                        onChange={handleChange} aria-label="Result Set">
-                            <ToggleButton value="dunneweb-db">Dunne Web Comics</ToggleButton>
-                            <ToggleButton value="marvel-api">Marvel API</ToggleButton>
-                            <ToggleButton value="dc-amz">DC AMZ</ToggleButton>
-                            <ToggleButton value="marvel-amz">Marvel AMZ</ToggleButton>
-                        </ToggleButtonGroup>
-                    </div>
-                    <div style={booksContainerStyles}>
-                        {displayedBooks
-                            .map((book, i) => { 
-                            return displayBooks(
-                                book, i, 
-                                selectedResultSet === 'dunneweb-db' ? 'marvelApi' :
-                                selectedResultSet === 'marvel-api' ? 'marvelApi' : 
-                                selectedResultSet === 'dc-amz' ? 'dcScraped' :
-                                selectedResultSet === 'marvel-amz' ? 'marvelScraped' : 'marvelScraped') 
-                        })}
-                    </div>
+                <div className="page-title-box">
+                    <h4 className="page-title">Comics Admin</h4>
+                </div>
+                <div style={toggleContainer}>
+                    <ToggleButtonGroup
+                    color="primary" value={selectedResultSet} exclusive 
+                    onChange={handleChange} aria-label="Result Set">
+                        <ToggleButton value="dunneweb-db">Dunne Web Comics</ToggleButton>
+                        <ToggleButton value="marvel-api">Marvel API</ToggleButton>
+                        <ToggleButton value="dc-amz">DC AMZ</ToggleButton>
+                        <ToggleButton value="marvel-amz">Marvel AMZ</ToggleButton>
+                    </ToggleButtonGroup>
+                </div>
+                <div style={booksContainerStyles}>
+                    {displayedBooks
+                        .map((book, i) => { 
+                        return displayBooks(
+                            book, i, 
+                            selectedResultSet === 'dunneweb-db' ? 'marvelApi' :
+                            selectedResultSet === 'marvel-api' ? 'marvelApi' : 
+                            selectedResultSet === 'dc-amz' ? 'dcScraped' :
+                            selectedResultSet === 'marvel-amz' ? 'marvelScraped' : 'marvelScraped') 
+                    })}
+                </div>
             </div> 
         </div>
         </>

@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react'
+import React from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { connect } from 'react-redux';
 import { logout } from '../actions/auth';
@@ -7,16 +7,16 @@ const NavBar = ({ isAuthenticated, is_staff, logout }) => {
     
     const adminTestLink = (
         <>
-            <li className="nav-item">
-                <NavLink className="nav-link" to="/admin-test">AdminTest</NavLink>
+            <li style={navItemStyles}>
+                <NavLink style={navLinkStyles} to="/admin-test">AdminTest</NavLink>
             </li>
         </>
     )
 
     const comicAdminLink = (
         <>
-            <li className="nav-item">
-                <NavLink className="nav-link" to="/comics-admin">Comics Admin</NavLink>
+            <li style={navItemStyles}>
+                <NavLink style={navLinkStyles} to="/comics-admin">Comics Admin</NavLink>
             </li>
         </>
     )
@@ -24,34 +24,34 @@ const NavBar = ({ isAuthenticated, is_staff, logout }) => {
     const authLinks = (
         <>
             { is_staff ? comicAdminLink : ''}
-            <li className="nav-item">
-                <NavLink className="nav-link" to="/dashboard">Dashboard</NavLink>
+            <li style={navItemStyles}>
+                <NavLink style={navLinkStyles} to="/dashboard">Dashboard</NavLink>
             </li>
-            <li className="nav-item">
-                <a className="nav-link" onClick={logout} href='#!'>Logout</a>
+            <li style={navItemStyles}>
+                <a style={navLinkStyles} onClick={logout} href='#!'>Logout</a>
             </li>
         </>
     );
 
     const guestLinks = (
         <>
-            <li className="nav-item">
-                <NavLink className="nav-link" to="/login">Login</NavLink>
+            <li style={navItemStyles}>
+                <NavLink style={navLinkStyles} to="/login">Login</NavLink>
             </li>
-            <li className="nav-item">
-                <NavLink className="nav-link" to="/register">Register</NavLink>
+            <li style={navItemStyles}>
+                <NavLink style={navLinkStyles} to="/register">Register</NavLink>
             </li>
         </>
     );
 
     return (
-    <span className="navbar-container">
-        <Link className="nav-item brand" to="/">Dunne Web</Link>
-        <li className="nav-item">
-            <NavLink className="nav-link" to="/">Home</NavLink>
+    <span style={navContainerStyles}>
+        <Link style={{...navItemStyles, ...brandStyles}} to="/">Dunne Web</Link>
+        <li style={navItemStyles}>
+            <NavLink style={navLinkStyles} to="/">Home</NavLink>
         </li>
-        <li className="nav-item">
-            <NavLink className="nav-link" to="/comics">Comics</NavLink>
+        <li style={navItemStyles}>
+            <NavLink style={navLinkStyles} to="/comics">Comics</NavLink>
         </li>
         { isAuthenticated ? authLinks : guestLinks }
     </span>
@@ -64,3 +64,33 @@ const mapStateToProps = state => ({
 })
 
 export default connect(mapStateToProps, { logout })(NavBar)
+
+const navLinkStyles = {
+    textDecoration: 'none',
+    color: '#6c757d',
+}
+
+const navItemStyles = {
+    listStyle: 'none',
+    padding: '10px',
+}
+
+const brandStyles = {
+    color: 'rgba(0, 0, 0, 0.9)',
+    textDecoration: 'none',
+    fontSize: '20px',
+}
+
+const navContainerStyles = {
+    display: 'flex',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    position: 'fixed',
+    top: '0px',
+    left: '0px',
+    width: '100%',
+    padding: '10px',
+    background: '#dbdbdb',
+    // background: rgb(238, 242, 247),
+    height: '60px',
+}
