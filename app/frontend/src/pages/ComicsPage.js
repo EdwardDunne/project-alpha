@@ -76,7 +76,7 @@ const ComicsPage = ({ getAllBooks, allBooks }) => {
         flexDirection: 'column',
         width: 'calc(100% - 315px)',
         marginLeft: '315px',
-        height: 'calc(100vh - 60px)',
+        height: 'calc(100dvh - 60px)',
         paddingTop: '20px',
     }
 
