@@ -203,7 +203,7 @@ const ComicsAdmin = ({
                     <h4 style={contentTitleStyles}>Comics Admin</h4>
                 </div>
                 <div style={toggleContainer}>
-                    <ToggleButtonGroup
+                    {/* <ToggleButtonGroup
                         color="primary"
                         value={selectedResultSet}
                         onChange={handleChange}
@@ -212,9 +212,9 @@ const ComicsAdmin = ({
                         <ToggleButton value="marvel-api">Marvel API</ToggleButton>
                         <ToggleButton value="dc-amz">DC AMZ</ToggleButton>
                         <ToggleButton value="marvel-amz">Marvel AMZ</ToggleButton>
-                    </ToggleButtonGroup>
+                    </ToggleButtonGroup> */}
                 </div>
-                {/* <div style={booksContainerStyles}>
+                <div style={booksContainerStyles}>
                     {displayedBooks
                         .map((book, i) => { 
                         return displayBooks(
@@ -224,7 +224,7 @@ const ComicsAdmin = ({
                             selectedResultSet === 'dc-amz' ? 'dcScraped' :
                             selectedResultSet === 'marvel-amz' ? 'marvelScraped' : 'marvelScraped') 
                     })}
-                </div> */}
+                </div>
             </div> 
         </div>
         </>
