@@ -199,10 +199,10 @@ const ComicsAdmin = ({
             </div>
 
             <div style={mainContentStyles}>
-                {/* <div style={contentTitleContainerStyles}>
+                <div style={contentTitleContainerStyles}>
                     <h4 style={contentTitleStyles}>Comics Admin</h4>
                 </div>
-                <div style={toggleContainer}>
+                {/* <div style={toggleContainer}>
                     <ToggleButtonGroup
                         color="primary" 
                         value={selectedResultSet} 
