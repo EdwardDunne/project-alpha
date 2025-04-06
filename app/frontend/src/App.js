@@ -18,22 +18,31 @@ export const darkTheme = createTheme({
 
 const App = () => {
 
+    const appStyles = {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column',
+    }
+
     return (
         <Provider store={store}>
-            <NavBar />
-            <HomePageRouter />
-            <ToastContainer
-                position="top-right"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="colored"
-            />
+            <div style={appStyles}>
+                <NavBar />
+                <HomePageRouter />
+                <ToastContainer
+                    position="top-right"
+                    autoClose={5000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="colored"
+                />
+            </div>
         </Provider>
     )
 }

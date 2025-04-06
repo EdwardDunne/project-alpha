@@ -85,7 +85,7 @@ const navContainerStyles = {
     display: 'flex',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    position: 'fixed',
+    // position: 'fixed',
     top: '0px',
     left: '0px',
     width: '100%',
