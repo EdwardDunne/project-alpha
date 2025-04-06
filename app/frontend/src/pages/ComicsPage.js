@@ -63,9 +63,21 @@ const ComicsPage = ({ getAllBooks, allBooks }) => {
     }
 
     const booksContainerStyles = {
+        width: '100%',
+        padding: '1rem',
+        overflowY: 'scroll',
+        height: 'calc(100vh - 60px)',
+    }
+
+    const mainContentStyles = {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column',
         width: 'calc(100% - 315px)',
         marginLeft: '315px',
-        padding: '1rem',
+        height: 'calc(100vh - 60px)',
+        paddingTop: '20px',
     }
 
     const imgStyles = {
@@ -126,15 +138,17 @@ const ComicsPage = ({ getAllBooks, allBooks }) => {
                 </ThemeProvider>
             </div>
 
-            <div style={booksContainerStyles}>
-                    <span>
-                        <h4 style={{textAlign: 'center'}}>Comics</h4>
-                    </span>
-                    <div style={bookListContainerStyles}>
-                        {books.map((book, i) => { 
-                            return getDisplayedBooks(book, i) 
-                        })}
-                    </div>
+            <div style={mainContentStyles}>
+                <span>
+                    <h4 style={{textAlign: 'center'}}>Comics</h4>
+                </span>
+                <div style={booksContainerStyles}>
+                        <div style={bookListContainerStyles}>
+                            {books.map((book, i) => { 
+                                return getDisplayedBooks(book, i) 
+                            })}
+                        </div>
+                </div>
             </div> 
         </div>
         </>
