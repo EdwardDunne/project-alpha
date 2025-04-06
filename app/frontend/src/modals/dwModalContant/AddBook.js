@@ -10,10 +10,10 @@ const AddBook = ({ setDwModalOpen }) => {
         publisher: '',
         format: '',
         title: '',
+        author: '',
         description: '',
         thumbnail_url: '',
         thumbnail: '',
-        author: '',
         page_count: 0,
         character: '',
         team: ''
@@ -51,53 +51,71 @@ const AddBook = ({ setDwModalOpen }) => {
         height: '4rem'
     }
 
+    const inputContainerStyles = {
+        maxHeight: '60vh',
+        overflowY: 'scroll',
+        overflowX: 'hidden'
+    }
+
     return (
         <div className="dw-modal-container">
             <div style={titleStyles}>Add Book</div>
             <div className="dw-modal-content-container">
                 <form onSubmit={e => onSubmit(e)}>
-                    <div className='form-group'>
-                        <label className='form-label' htmlFor='title'>Title</label>
-                        <input
-                            className='form-control'
-                            type='text'
-                            name='title'
-                            placeholder={`Title`}
-                            onChange={e => onChange(e)}
-                        />
+                    <div style={inputContainerStyles}>
+                        <div className='form-group'>
+                            <label className='form-label' htmlFor='title'>Title</label>
+                            <input
+                                className='form-control'
+                                type='text'
+                                name='title'
+                                placeholder={`Title`}
+                                onChange={e => onChange(e)}
+                            />
+                        </div>
+                        <div className='form-group mt-3'>
+                            <label className='form-label' htmlFor='author'>Author</label>
+                            <input
+                                className='form-control'
+                                type='text'
+                                name='author'
+                                placeholder={`Author`}
+                                onChange={e => onChange(e)}
+                            />
+                        </div>
+                        <div className='form-group mt-3'>
+                            <label className='form-label' htmlFor='description'>Description</label>
+                            <input
+                                className='form-control'
+                                type='text'
+                                name='description'
+                                placeholder={`Description`}
+                                onChange={e => onChange(e)}
+                            />
+                        </div>
+                        <div className='form-group mt-3'>
+                            <label className='form-label' htmlFor='thumbnail'>Thumbnail</label>
+                            <input
+                                className='form-control'
+                                type='file'
+                                name='thumbnail'
+                                placeholder={`Thumbnail`}
+                                onChange={e => setFormData({ ...formData, [e.target.name]: e.target.files[0] })}
+                            />
+                        </div>
+                        <div className='form-group mt-3'>
+                            <label className='form-label' htmlFor='page_count'>Page Count</label>
+                            <input
+                                className='form-control'
+                                type='number'
+                                name='page_count'
+                                placeholder={`Page Count`}
+                                onChange={e => onChange(e)}
+                            />
+                        </div>
+                        <PublishersSelector setPublisher={setPublisher}/>
+                        <CharactersSelector setCharacter={setCharacter}/>
                     </div>
-                    <div className='form-group mt-3'>
-                        <label className='form-label' htmlFor='description'>Description</label>
-                        <input
-                            className='form-control'
-                            type='text'
-                            name='description'
-                            placeholder={`Description`}
-                            onChange={e => onChange(e)}
-                        />
-                    </div>
-                    <div className='form-group mt-3'>
-                        <label className='form-label' htmlFor='thumbnail'>Thumbnail</label>
-                        <input
-                            className='form-control'
-                            type='file'
-                            name='thumbnail'
-                            placeholder={`Thumbnail`}
-                            onChange={e => setFormData({ ...formData, [e.target.name]: e.target.files[0] })}
-                        />
-                    </div>
-                    <div className='form-group mt-3'>
-                        <label className='form-label' htmlFor='page_count'>Page Count</label>
-                        <input
-                            className='form-control'
-                            type='number'
-                            name='page_count'
-                            placeholder={`Page Count`}
-                            onChange={e => onChange(e)}
-                        />
-                    </div>
-                    <PublishersSelector setPublisher={setPublisher}/>
-                    <CharactersSelector setCharacter={setCharacter}/>
                     <div style={footerStyles}>
                         <button 
                             className='btn btn-primary update-btn' 

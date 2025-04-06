@@ -251,6 +251,7 @@ export const addBook = async (formData, setDwModalOpen) => {
     const _formData = new FormData();
     _formData.append('thumbnail', formData.thumbnail)
     _formData.append('title', formData.title)
+    _formData.append('author', formData.author)
     _formData.append('description', formData.description)
     _formData.append('page_count', formData.page_count.toString())
     _formData.append('publisher', formData.publisher)

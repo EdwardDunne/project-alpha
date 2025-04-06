@@ -14,6 +14,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class BookSerializer(serializers.ModelSerializer):
     publisher_name = serializers.ReadOnlyField()
+    character_name = serializers.ReadOnlyField()
 
     class Meta:
         model = Book

@@ -55,6 +55,10 @@ class Book(models.Model):
     def publisher_name(self):
         return self.publisher.name
     
+    @property
+    def character_name(self):
+        return self.character.name
+    
     def __str__(self):
         return self.title
 

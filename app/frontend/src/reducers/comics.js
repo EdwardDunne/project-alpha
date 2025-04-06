@@ -75,6 +75,8 @@ export default function (state = initialState, action) {
             return {
                 ...state,
                 all_books: payload.books
+                    .sort((a,b) => (a.title.toLowerCase() > b.title.toLowerCase()) ? 1 
+                    : ((b.title.toLowerCase() > a.title.toLowerCase()) ? -1 : 0))
             }
         case LOAD_BOOKS_FAIL:
             return {

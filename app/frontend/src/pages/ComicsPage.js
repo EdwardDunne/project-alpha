@@ -6,12 +6,16 @@ import { ThemeProvider } from "@mui/material";
 import { darkTheme } from "../App";
 import PublishersSelector from "../components/PublishersSelector";
 import CharactersSelector from "../components/CharactersSelector";
+import DunneWebModal from "../modals/DunneWebModal";
+import Book from "../modals/dwModalContant/Book";
 
 const ComicsPage = ({ getAllBooks, allBooks }) => {
 
     const [books, setBooks] = useState([])
     const [characterFilter, setCharacterFilter] = useState(undefined)
     const [publisherFilter, setPublisherFilter] = useState(undefined)
+    const [dwModalOpen, setDwModalOpen] = useState(false);
+    const [selectedBook, setSelectedBook] = useState({});
 
      // Use allCharacters cache if it is not empty
     useEffect(() => {
@@ -22,14 +26,15 @@ const ComicsPage = ({ getAllBooks, allBooks }) => {
         setBooks(allBooks)
     }, [allBooks]);
 
-    const omniListContainerStyles = {
+    const bookListContainerStyles = {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'row',
+        flexWrap: 'wrap',
     } 
     
-    const omniCardStyles = {
+    const bookCardStyles = {
         margin: '5px',
         width: '200px',
     }
@@ -38,11 +43,14 @@ const ComicsPage = ({ getAllBooks, allBooks }) => {
         flex: '0 0 auto',
     }
 
-    const omniTitleStyles = {
+    const bookTitleStyles = {
+        display: '-webkit-box',
+        webkitLineClamp: '2',
+        webkitBoxOrient: 'vertical',
+        height: '3rem',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
         textAlign: 'center',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
     }
 
     const leftPanelStyles = {
@@ -51,6 +59,17 @@ const ComicsPage = ({ getAllBooks, allBooks }) => {
         height: '410px',
         position: 'fixed',
         padding: "0px",
+    }
+
+    const booksContainerStyles = {
+        width: 'calc(100% - 315px)',
+        marginLeft: '315px',
+        padding: '1rem',
+    }
+
+    const imgStyles = {
+        borderRadius: '10px',
+        width: '12rem',
     }
 
     function getDisplayedBooks(book, i) {
@@ -63,14 +82,21 @@ const ComicsPage = ({ getAllBooks, allBooks }) => {
         ) {
             return (
                 <div 
-                style={omniCardStyles}
+                style={bookCardStyles}
                 key={i}
-                // onClick={() => omniClicked(omniListType, book)}
+                onClick={() => {
+                    setSelectedBook(book)
+                    setDwModalOpen(true)
+                }}
                 >
                     <div style={imageContainerStyles}>
-                        <img src={`${window.location.origin}${book.thumbnail}`} className="card-img" alt="..."/>
+                        <img 
+                            style={imgStyles}
+                            src={`${window.location.origin}${book.thumbnail}`}
+                            alt={book.title}
+                        />
                     </div>
-                    <div style={omniTitleStyles}>{book.title}</div>
+                    <div style={bookTitleStyles}>{book.title}</div>
                 </div>
             )
         }
@@ -78,6 +104,13 @@ const ComicsPage = ({ getAllBooks, allBooks }) => {
 
     return (
         <>
+
+        {
+            dwModalOpen && 
+            <DunneWebModal onClose={() => setDwModalOpen(false)}> 
+                <Book book={selectedBook} setDwModalOpen={setDwModalOpen}/>
+            </DunneWebModal>
+        }
         <div id="admin-main-container">
             <div style={leftPanelStyles}>
                 <ThemeProvider theme={darkTheme}>
@@ -92,11 +125,11 @@ const ComicsPage = ({ getAllBooks, allBooks }) => {
                 </ThemeProvider>
             </div>
 
-            <div className="admin-main-content">
-                    <div className="page-title-box">
-                        <h4 className="page-title">Comics</h4>
-                    </div>
-                    <div style={omniListContainerStyles}>
+            <div style={booksContainerStyles}>
+                    <span>
+                        <h4 style={{textAlign: 'center'}}>Comics</h4>
+                    </span>
+                    <div style={bookListContainerStyles}>
                         {books.map((book, i) => { 
                             return getDisplayedBooks(book, i) 
                         })}

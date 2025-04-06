@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import OmniDetailsModal from "../modals/OmniDetailsModal";
-import { get_marvel_omnis, scrape_dc_omnis, scrape_marvel_omnis } from '../actions/comics';
+import { get_marvel_omnis, getAllBooks, scrape_dc_omnis, scrape_marvel_omnis } from '../actions/comics';
 import { connect } from 'react-redux';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -9,36 +8,43 @@ import DunneWebModal from "../modals/DunneWebModal";
 import AddBook from "../modals/dwModalContant/AddBook";
 import AddPublisher from "../modals/dwModalContant/AddPublisher";
 import AddCharacter from "../modals/dwModalContant/AddCharacter";
+import Book from "../modals/dwModalContant/Book";
 
 const ComicsAdmin = ({
     get_marvel_omnis, marvel_api_comics,
     scrape_dc_omnis, scrape_marvel_omnis,
-    dc_scraped_comics, marvel_scraped_comics
+    dc_scraped_comics, marvel_scraped_comics,
+    allBooks, getAllBooks,
 }) => {
 
-    const [displayedOmnis, setDisplayedOmnis] = useState([]);
-    const [selectedResultSet, setselectedResultSet] = useState('marvel-api');
+    const [displayedBooks, setDisplayedBooks] = useState([]);
+    const [selectedResultSet, setselectedResultSet] = useState('dunneweb-db');
 
-    const [detailsOpen, setDetailsOpen] = useState(false);
-    const [modalType, setModalType] = useState(null);
     const [selectedBook, setSelectedBook] = useState({});
-
     const [dwModalOpen, setDwModalOpen] = useState(false);
     const [dwModalType, setDwModalType] = useState('book')
 
     useEffect(() => {
+        allBooks.length ? handleChange(selectedResultSet) : getAllBooks()
+    }, [])
+
+    useEffect(() => {
+        setDisplayedBooks(allBooks)
+    }, [allBooks])
+
+    useEffect(() => {
         if (selectedResultSet === 'dc-amz')
-            setDisplayedOmnis(dc_scraped_comics);
+            setDisplayedBooks(dc_scraped_comics);
     }, [dc_scraped_comics])
 
     useEffect(() => {
         if (selectedResultSet === 'marvel-amz')
-            setDisplayedOmnis(marvel_scraped_comics);
+            setDisplayedBooks(marvel_scraped_comics);
     }, [marvel_scraped_comics])
 
     useEffect(() => {
         if (selectedResultSet === 'marvel-api')
-            setDisplayedOmnis(marvel_api_comics);
+            setDisplayedBooks(marvel_api_comics);
     }, [marvel_api_comics]);
 
     const getMarvelOmnis = async (event) => {
@@ -56,24 +62,20 @@ const ComicsAdmin = ({
         scrape_marvel_omnis();
     }
 
-    function omniClicked(type, book) {
-        setDetailsOpen(true);
-        setModalType(type);
-        setSelectedBook(book);
-    }
-
-    const handleChange = ( event, newAlignment ) => {
-        setselectedResultSet(newAlignment);
-        setDisplayedOmnis(
-            newAlignment === 'marvel-api' ? marvel_api_comics : 
-            newAlignment === 'marvel-cgn' ? marvel_cgn_comics_global : 
-            newAlignment === 'dc-cgn' ? dc_cgn_comics_global :
-            newAlignment === 'dc-amz' ? dc_scraped_comics : 
-            newAlignment === 'marvel-amz' ? marvel_scraped_comics : marvel_scraped_comics
+    const handleChange = ( event ) => {
+        const toggleValue = event?.target?.value ? event.target.value : 'dunneweb-db'
+        setselectedResultSet(toggleValue)
+        setDisplayedBooks(
+            toggleValue === 'dunneweb-db' ? allBooks : 
+            toggleValue === 'marvel-api' ? marvel_api_comics : 
+            toggleValue === 'marvel-cgn' ? marvel_cgn_comics_global : 
+            toggleValue === 'dc-cgn' ? dc_cgn_comics_global :
+            toggleValue === 'dc-amz' ? dc_scraped_comics : 
+            toggleValue === 'marvel-amz' ? marvel_scraped_comics : marvel_scraped_comics
         );
     };
 
-    function displayOmnis(book, i, omniListType) {
+    function displayBooks(book, i, omniListType) {
         let imgUrl = '';
         let title = '';
 
@@ -95,15 +97,28 @@ const ComicsAdmin = ({
         }
 
         return (
-            <div className="card omni-list-card" key={i} onClick={() => omniClicked(omniListType, book)}>
+            <div 
+                className="card omni-list-card" 
+                key={i} 
+                onClick={() => {
+                    setDwModalOpen(true)
+                    setDwModalType('book')
+                    setSelectedBook(book)
+                }}
+            >
                 <div className="row g-0 align-items-center">
-                    <div className="col-md-4">
-                        <img src={imgUrl} className="card-img" alt="..."/>
+                    <div className="col-md-4" style={imgContainerStyles}>
+                        <img src={`${window.location.origin}${book.thumbnail}`} style={imgStyles} alt="..."/>
                     </div>
                     <div className="col-md-8">
                         <div className="card-body">
                             <h5 className="card-title">{title}</h5>
-                            <p className="card-text">{book.description}</p>
+                            <div style={bookDetailsContainer}>
+                                <span><b>Publisher</b>: {book.publisher_name}</span>
+                                <span><b>Character</b>: {book.character_name}</span>
+                                <span><b>Author</b>: {book.author}</span>
+                                <span><b>Page Count</b>: {book.page_count}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -111,30 +126,60 @@ const ComicsAdmin = ({
         )
     }
 
+    const imgStyles = {
+        height: '200px',
+        objectFit: 'contain',
+        margin: '1rem 0',
+        borderRadius: '10px',
+    }
+
+    const imgContainerStyles = {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+    }
+
+    const bookDetailsContainer = {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        flexDirection: 'column',
+        marginTop: '0.9rem',
+    }
+
     const addButtonStyles = {
         margin: '5px',
         backgroundColor: 'rgb(83, 109, 230)',
     }
 
+    const toggleContainer = {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: '1rem'
+    }
+
+    const booksContainerStyles = {
+        display: 'flex',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        flexDirection: 'column',
+        overflowY: 'scroll',
+        height: 'calc(100vh - 200px)',
+    }
+
     return (
         <>
-        {
-            detailsOpen && 
-            <OmniDetailsModal 
-                open={detailsOpen} 
-                onClose={() => setDetailsOpen(false)} 
-                modalType={modalType}
-                selectedBook={selectedBook}>
-            </OmniDetailsModal>}
         {
             dwModalOpen && 
             <DunneWebModal
                 onClose={() => setDwModalOpen(false)}
             > 
                 {
-                    dwModalType === 'book' ? <AddBook setDwModalOpen={setDwModalOpen}/> : 
-                    dwModalType === 'character' ? <AddCharacter setDwModalOpen={setDwModalOpen}/> :
-                    dwModalType === 'publisher' ? <AddPublisher setDwModalOpen={setDwModalOpen}/>  : ''
+                    dwModalType === 'book' ? <Book book={selectedBook} setDwModalOpen={setDwModalOpen}/> : 
+                    dwModalType === 'addBook' ? <AddBook setDwModalOpen={setDwModalOpen}/> : 
+                    dwModalType === 'addCharacter' ? <AddCharacter setDwModalOpen={setDwModalOpen}/> :
+                    dwModalType === 'addPublisher' ? <AddPublisher setDwModalOpen={setDwModalOpen}/>  : ''
                 }
             </DunneWebModal>
         }
@@ -168,7 +213,7 @@ const ComicsAdmin = ({
                         variant="contained"
                         onClick={() => {
                             setDwModalOpen(true)
-                            setDwModalType('book')
+                            setDwModalType('addBook')
                         }}
                         value="Add Omnibus"
                     >
@@ -179,7 +224,7 @@ const ComicsAdmin = ({
                         variant="contained"
                         onClick={() => {
                             setDwModalOpen(true)
-                            setDwModalType('character')
+                            setDwModalType('addCharacter')
                         }}
                         value="Add Character"
                     >
@@ -190,7 +235,7 @@ const ComicsAdmin = ({
                         variant="contained"
                         onClick={() => {
                             setDwModalOpen(true)
-                            setDwModalType('publisher')
+                            setDwModalType('addPublisher')
                         }}
                         value="Add Publisher"
                     >
@@ -204,19 +249,22 @@ const ComicsAdmin = ({
                     <div className="page-title-box">
                         <h4 className="page-title">Comics Admin</h4>
                     </div>
-                    <div id="comics-admin-results-toggle-container">
+                    <div style={toggleContainer}>
                         <ToggleButtonGroup
                         color="primary" value={selectedResultSet} exclusive 
                         onChange={handleChange} aria-label="Result Set">
+                            <ToggleButton value="dunneweb-db">Dunne Web Comics</ToggleButton>
                             <ToggleButton value="marvel-api">Marvel API</ToggleButton>
                             <ToggleButton value="dc-amz">DC AMZ</ToggleButton>
                             <ToggleButton value="marvel-amz">Marvel AMZ</ToggleButton>
                         </ToggleButtonGroup>
                     </div>
-                    <div className="book-card-container">
-                        {displayedOmnis.map((book, i) => { 
-                            return displayOmnis(
+                    <div style={booksContainerStyles}>
+                        {displayedBooks
+                            .map((book, i) => { 
+                            return displayBooks(
                                 book, i, 
+                                selectedResultSet === 'dunneweb-db' ? 'marvelApi' :
                                 selectedResultSet === 'marvel-api' ? 'marvelApi' : 
                                 selectedResultSet === 'dc-amz' ? 'dcScraped' :
                                 selectedResultSet === 'marvel-amz' ? 'marvelScraped' : 'marvelScraped') 
@@ -232,8 +280,9 @@ const mapStateToProps = state => ({
     marvel_api_comics: state.comics.marvel_api_comics,
     dc_scraped_comics: state.comics.dc_scraped_comics,
     marvel_scraped_comics: state.comics.marvel_scraped_comics,
+    allBooks: state.comics.all_books,
 })
 
 export default connect(mapStateToProps, { 
-    get_marvel_omnis, scrape_dc_omnis, scrape_marvel_omnis
+    get_marvel_omnis, scrape_dc_omnis, scrape_marvel_omnis, getAllBooks
 })(ComicsAdmin)
