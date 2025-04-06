@@ -37,6 +37,7 @@ const ComicsPage = ({ getAllBooks, allBooks }) => {
     const bookCardStyles = {
         margin: '5px',
         width: '200px',
+        cursor: 'pointer',
     }
 
     const imageContainerStyles = {
