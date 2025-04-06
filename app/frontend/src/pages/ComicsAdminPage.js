@@ -98,7 +98,7 @@ const ComicsAdmin = ({
 
         return (
             <div 
-                className="card omni-list-card" 
+                style={bookListItem} 
                 key={i} 
                 onClick={() => {
                     setDwModalOpen(true)
@@ -106,66 +106,20 @@ const ComicsAdmin = ({
                     setSelectedBook(book)
                 }}
             >
-                <div className="row g-0 align-items-center">
-                    <div className="col-md-4" style={imgContainerStyles}>
-                        <img src={`${window.location.origin}${book.thumbnail}`} style={imgStyles} alt="..."/>
-                    </div>
-                    <div className="col-md-8">
-                        <div className="card-body">
-                            <h5 className="card-title">{title}</h5>
-                            <div style={bookDetailsContainer}>
-                                <span><b>Publisher</b>: {book.publisher_name}</span>
-                                <span><b>Character</b>: {book.character_name}</span>
-                                <span><b>Author</b>: {book.author}</span>
-                                <span><b>Page Count</b>: {book.page_count}</span>
-                            </div>
-                        </div>
+                <div style={imgContainerStyles}>
+                    <img src={`${window.location.origin}${book.thumbnail}`} style={imgStyles} alt="..."/>
+                </div>
+                <div style={bookItemContentStyles}>
+                    <h5>{title}</h5>
+                    <div style={bookDetailsContainer}>
+                        <span><b>Publisher</b>: {book.publisher_name}</span>
+                        <span><b>Character</b>: {book.character_name}</span>
+                        <span><b>Author</b>: {book.author}</span>
+                        <span><b>Page Count</b>: {book.page_count}</span>
                     </div>
                 </div>
             </div>
         )
-    }
-
-    const imgStyles = {
-        height: '200px',
-        objectFit: 'contain',
-        margin: '1rem 0',
-        borderRadius: '10px',
-    }
-
-    const imgContainerStyles = {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
-    }
-
-    const bookDetailsContainer = {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        flexDirection: 'column',
-        marginTop: '0.9rem',
-    }
-
-    const addButtonStyles = {
-        margin: '5px',
-        backgroundColor: 'rgb(83, 109, 230)',
-    }
-
-    const toggleContainer = {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: '1rem'
-    }
-
-    const booksContainerStyles = {
-        display: 'flex',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        flexDirection: 'column',
-        overflowY: 'scroll',
-        height: 'calc(100vh - 200px)',
     }
 
     return (
@@ -184,25 +138,25 @@ const ComicsAdmin = ({
             </DunneWebModal>
         }
 
-        <div id="admin-main-container">
-            <div className="admin-leftside-content" style={{"padding": "0px"}}>
-                <div className="side-nav">
-                    <ul className="side-nav-list">
-                        <li className="side-nav-title side-nav-item">Actions</li>
-                        <li className="side-nav-item" onClick={e => getMarvelOmnis(e)}>
-                            <a href="#" className="side-nav-link">
+        <div style={mainContainerStyles}>
+            <div style={leftSideContainer}>
+                <div style={sideNavStyles}>
+                    <ul style={sideNavListStyles}>
+                        <li style={sideNavItemStyles}>Actions</li>
+                        <li style={sideNavItemStyles} onClick={e => getMarvelOmnis(e)}>
+                            <a href="#" style={sideNavLinkStyles}>
                                 <i className="uil-book-alt"></i>
                                 <span> Get Marvel Omnis</span>
                             </a>
                         </li>
-                        <li className="side-nav-item" onClick={e => scrapeDCOmnis(e)}>
-                            <a href="#" className="side-nav-link">
+                        <li style={sideNavItemStyles} onClick={e => scrapeDCOmnis(e)}>
+                            <a href="#" style={sideNavLinkStyles}>
                                 <i className="uil-book-alt"></i>
                                 <span> Scrape DC Omnis</span>
                             </a>
                         </li>
-                        <li className="side-nav-item" onClick={e => scrapeMarvelOmnis(e)}>
-                            <a href="#" className="side-nav-link">
+                        <li style={sideNavItemStyles} onClick={e => scrapeMarvelOmnis(e)}>
+                            <a href="#" style={sideNavLinkStyles}>
                                 <i className="uil-book-alt"></i>
                                 <span> Scrape Marvel Omnis</span>
                             </a>
@@ -241,18 +195,20 @@ const ComicsAdmin = ({
                     >
                         Add Publisher
                     </Button>
-                    <div className="clearfix"></div>
                 </div>
             </div>
 
-            <div className="admin-main-content">
-                <div className="page-title-box">
-                    <h4 className="page-title">Comics Admin</h4>
+            <div style={mainContentStyles}>
+                <div style={contentTitleContainerStyles}>
+                    <h4 style={contentTitleStyles}>Comics Admin</h4>
                 </div>
                 <div style={toggleContainer}>
                     <ToggleButtonGroup
-                    color="primary" value={selectedResultSet} exclusive 
-                    onChange={handleChange} aria-label="Result Set">
+                        color="primary" 
+                        value={selectedResultSet} 
+                        exclusive 
+                        onChange={handleChange} 
+                        aria-label="Result Set">
                         <ToggleButton value="dunneweb-db">Dunne Web Comics</ToggleButton>
                         <ToggleButton value="marvel-api">Marvel API</ToggleButton>
                         <ToggleButton value="dc-amz">DC AMZ</ToggleButton>
@@ -286,3 +242,120 @@ const mapStateToProps = state => ({
 export default connect(mapStateToProps, { 
     get_marvel_omnis, scrape_dc_omnis, scrape_marvel_omnis, getAllBooks
 })(ComicsAdmin)
+
+const bookItemContentStyles = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    flexDirection: 'column',
+    width: '70%',
+}
+
+const bookListItem = {
+    margin: '5px',
+    width: '700px',
+    border: '1px solid #cacaca',
+    borderRadius: '10px',
+    display: 'flex',
+    justifyContent: 'flex-start',
+}
+
+const contentTitleStyles = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: '0',
+}
+
+const contentTitleContainerStyles = {
+    height: '70px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+}
+
+const mainContentStyles = {
+    width: 'calc(100% - 300px)',
+    marginLeft: '265px',
+}
+
+const sideNavLinkStyles = {
+    textDecoration: 'none',
+    color: 'white',
+}
+
+const sideNavItemStyles = {
+    padding: '10px',
+}
+
+const sideNavListStyles = {
+    listStyle: 'none',
+    padding: '0',
+}
+
+const mainContainerStyles = {
+    display: 'flex',
+    width: '100%',
+    height: '100%',
+}
+
+const leftSideContainer = {
+    display: 'flex',
+    height: '410px',
+    position: 'fixed',
+    padding: "0px",
+}
+
+const sideNavStyles = {
+    listStyle: 'none',
+    background: '#313a46',
+    color: 'white',
+    padding: '20px',
+    margin: '15px',
+    borderRadius: '5px',
+    display: 'flex',
+    flexDirection: 'column',
+}
+
+const imgStyles = {
+    height: '200px',
+    objectFit: 'contain',
+    margin: '1rem 0',
+    borderRadius: '10px',
+}
+
+const imgContainerStyles = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '30%',
+}
+
+const bookDetailsContainer = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    flexDirection: 'column',
+    marginTop: '0.9rem',
+}
+
+const addButtonStyles = {
+    margin: '5px',
+    backgroundColor: 'rgb(83, 109, 230)',
+}
+
+const toggleContainer = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: '1rem'
+}
+
+const booksContainerStyles = {
+    display: 'flex',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    flexDirection: 'column',
+    overflowY: 'scroll',
+    height: 'calc(100vh - 200px)',
+}
