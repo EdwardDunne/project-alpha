@@ -257,6 +257,7 @@ const bookListItem = {
     borderRadius: '10px',
     display: 'flex',
     justifyContent: 'flex-start',
+    cursor: 'pointer',
 }
 
 const contentTitleStyles = {

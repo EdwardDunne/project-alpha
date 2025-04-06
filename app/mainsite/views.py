@@ -542,7 +542,8 @@ class CharacterView(APIView):
             return Response({'success': 'true', 'new_character': new_character.data})
         except:
             return Response({'error': 'Something went wrong when updating publishers'})
-        
+
+class GetCharactersView(APIView):  
     def get(self, request, format=None):
         try:
             data = self.request.query_params
@@ -572,6 +573,7 @@ class PublisherView(APIView):
         except:
             return Response({'error': 'Something went wrong when updating publishers'})
         
+class GetPublishersView(APIView):        
     def get(self, request, format=None):
         try:
             data = self.request.query_params
