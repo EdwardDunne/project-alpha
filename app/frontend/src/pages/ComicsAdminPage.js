@@ -205,10 +205,8 @@ const ComicsAdmin = ({
                 <div style={toggleContainer}>
                     <ToggleButtonGroup
                         color="primary" 
-                        value={selectedResultSet} 
-                        exclusive 
-                        onChange={handleChange} 
-                        aria-label="Result Set">
+                        value={selectedResultSet}
+                        onChange={handleChange}>
                         <ToggleButton value="dunneweb-db">Dunne Web Comics</ToggleButton>
                         <ToggleButton value="marvel-api">Marvel API</ToggleButton>
                         <ToggleButton value="dc-amz">DC AMZ</ToggleButton>
