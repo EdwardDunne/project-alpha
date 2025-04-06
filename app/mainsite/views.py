@@ -497,6 +497,7 @@ class BookView(APIView):
             data = self.request.data
             new_book = Book.objects.create(
                 title=data['title'],
+                author=data['author'],
                 description=data['description'],
                 page_count=data['page_count'],
                 thumbnail=request.FILES['thumbnail'],
