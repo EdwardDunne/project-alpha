@@ -198,8 +198,8 @@ const ComicsAdmin = ({
                 </div>
             </div>
 
-            {/* <div style={mainContentStyles}>
-                <div style={contentTitleContainerStyles}>
+            <div style={mainContentStyles}>
+                {/* <div style={contentTitleContainerStyles}>
                     <h4 style={contentTitleStyles}>Comics Admin</h4>
                 </div>
                 <div style={toggleContainer}>
@@ -225,8 +225,8 @@ const ComicsAdmin = ({
                             selectedResultSet === 'dc-amz' ? 'dcScraped' :
                             selectedResultSet === 'marvel-amz' ? 'marvelScraped' : 'marvelScraped') 
                     })}
-                </div>
-            </div>  */}
+                </div> */}
+            </div> 
         </div>
         </>
     );
