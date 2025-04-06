@@ -212,6 +212,17 @@ const ComicsAdmin = ({
                         <ToggleButton value="dc-amz">DC AMZ</ToggleButton>
                         <ToggleButton value="marvel-amz">Marvel AMZ</ToggleButton>
                     </ToggleButtonGroup> */}
+
+                    <ToggleButtonGroup
+                        color="primary"
+                        value={selectedResultSet}
+                        onChange={handleChange}
+                    >
+                        <ToggleButton value="dunneweb-db">Dunne Web Comics</ToggleButton>
+                        <ToggleButton value="marvel-api">Marvel API</ToggleButton>
+                        <ToggleButton value="dc-amz">DC AMZ</ToggleButton>
+                        <ToggleButton value="marvel-amz">Marvel AMZ</ToggleButton>
+                    </ToggleButtonGroup>
                 </div>
                 {/* <div style={booksContainerStyles}>
                     {displayedBooks
