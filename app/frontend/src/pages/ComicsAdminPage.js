@@ -202,7 +202,7 @@ const ComicsAdmin = ({
                 <div style={contentTitleContainerStyles}>
                     <h4 style={contentTitleStyles}>Comics Admin</h4>
                 </div>
-                {/* <div style={toggleContainer}>
+                <div style={toggleContainer}>
                     <ToggleButtonGroup
                         color="primary" 
                         value={selectedResultSet} 
@@ -215,7 +215,7 @@ const ComicsAdmin = ({
                         <ToggleButton value="marvel-amz">Marvel AMZ</ToggleButton>
                     </ToggleButtonGroup>
                 </div>
-                <div style={booksContainerStyles}>
+                {/* <div style={booksContainerStyles}>
                     {displayedBooks
                         .map((book, i) => { 
                         return displayBooks(
