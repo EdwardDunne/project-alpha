@@ -45,7 +45,7 @@ const NavBar = ({ isAuthenticated, is_staff, logout }) => {
     );
 
     return (
-    <nav className="navbar-container">
+    <span className="navbar-container">
         <Link className="nav-item brand" to="/">Dunne Web</Link>
         <li className="nav-item">
             <NavLink className="nav-link" to="/">Home</NavLink>
@@ -54,7 +54,7 @@ const NavBar = ({ isAuthenticated, is_staff, logout }) => {
             <NavLink className="nav-link" to="/comics">Comics</NavLink>
         </li>
         { isAuthenticated ? authLinks : guestLinks }
-    </nav>
+    </span>
     )
 }
 
