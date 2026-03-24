@@ -37,7 +37,7 @@ const RegisterPage: React.FC<Props> = ({ register, isAuthenticated }) => {
         <div className='container mx-auto max-w-md mt-12 px-4'>
             <div className='bg-white p-8 rounded-lg shadow-md'>
                 <h1 className='text-2xl font-semibold mb-1'>Register for an Account</h1>
-                <p className='text-gray-500 text-sm mb-6'>Create an account for Dunne Web</p>
+                <p className='text-gray-500 text-sm mb-6'>Create an account for Omni Trackers</p>
                 <form onSubmit={onSubmit}>
                     <CSRFToken />
                     <div className='mb-4'>
