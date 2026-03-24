@@ -149,7 +149,7 @@ const ComicsAdmin: React.FC<Props> = ({
                 </div>
                 <div className='flex justify-center items-center mb-4'>
                     <ToggleButtonGroup color="primary" value={selectedResultSet} onChange={handleChange}>
-                        <ToggleButton value="dunneweb-db">Dunne Web Comics</ToggleButton>
+                        <ToggleButton value="dunneweb-db">Omni Trackers Comics</ToggleButton>
                         <ToggleButton value="marvel-api">Marvel API</ToggleButton>
                         <ToggleButton value="dc-amz">DC AMZ</ToggleButton>
                         <ToggleButton value="marvel-amz">Marvel AMZ</ToggleButton>
