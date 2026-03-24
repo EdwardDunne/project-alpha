@@ -73,7 +73,7 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
 
         <div id="admin-main-container" className='flex w-full h-full'>
             {/* Sidebar */}
-            <div className='w-[300px] flex h-[410px] fixed p-0 bg-[#313a46]'>
+            <div className='w-[300px] flex h-[410px] fixed p-0 bg-[#313a46] m-[20px] rounded-[5px]'>
                 <ThemeProvider theme={darkTheme}>
                     <div className="w-[300px] p-[20px]">
                         <span className='w-[100%] flex justify-center items-center text-center p-2.5 font-semibold text-gray-300 uppercase tracking-wider'>Filter Books</span>
@@ -87,7 +87,7 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
 
             {/* Main content */}
             <div className='flex flex-col items-center w-[calc(100%-315px)] ml-[315px] h-[calc(100dvh-60px)] pt-5'>
-                <h4 className='text-center mb-4 font-semibold'>Comics</h4>
+                <h4 className='text-center mb-4 font-semibold text-3xl'>Comics</h4>
                 <div className='w-full px-4 overflow-y-scroll h-full'>
                     <div className='flex justify-center items-center flex-row flex-wrap'>
                         {books.map((book, i) => getDisplayedBooks(book, i))}
