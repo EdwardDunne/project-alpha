@@ -23,6 +23,9 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
     const [dwModalOpen, setDwModalOpen] = useState(false);
     const [selectedBook, setSelectedBook] = useState<BookType>({} as BookType);
 
+    if (window.location.hostname === 'dunneweb.com')
+        window.location.href = 'omnitrackers.com/about'
+
     useEffect(() => {
         allBooks.length ? setBooks(allBooks) : getAllBooks()
     }, [])
