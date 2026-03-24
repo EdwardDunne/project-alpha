@@ -15,7 +15,6 @@ interface Props {
 const CharactersSelector: React.FC<Props> = ({ setCharacter, variant = 'standard', allCharacters, getAllCharacters }) => {
     const [characterOptions, setCharacterOptions] = useState<Character[]>([])
 
-    // Use allCharacters cache if it is not empty
     useEffect(() => {
         allCharacters.length ? _setCharacterOptions(allCharacters) : getAllCharacters()
     }, [])
@@ -32,9 +31,9 @@ const CharactersSelector: React.FC<Props> = ({ setCharacter, variant = 'standard
     }
 
     return (
-        <div className='form-group mt-3'>
+        <div className='mt-3'>
             <Autocomplete
-                id="filled-basic"
+                id="character-selector"
                 options={characterOptions}
                 getOptionLabel={(option) => option['name']}
                 renderInput={params =>

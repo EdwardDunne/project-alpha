@@ -7,73 +7,36 @@ interface Props {
     getAllPublishers: () => void;
 }
 
+const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
+
 const AddPublisher: React.FC<Props> = ({ setDwModalOpen, getAllPublishers }) => {
 
-    const [formData, setFormData] = useState({
-        key: '',
-        name: '',
-    });
+    const [formData, setFormData] = useState({ key: '', name: '' });
 
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) =>
         setFormData({ ...formData, [e.target.name]: e.target.value });
 
-    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        addPublisher(formData, setDwModalOpen)
-    }
-
-    const titleStyles: React.CSSProperties = {
-        width: '100%',
-        height: '4rem',
-        padding: '1rem',
-        textAlign: 'center',
-        fontWeight: 600,
-        fontSize: '2rem'
-    }
-
-    const footerStyles: React.CSSProperties = {
-        display: 'flex',
-        justifyContent: 'flex-end',
-        alignItems: 'flex-end',
-        width: '100%',
-        height: '4rem'
-    }
-
     return (
-        <div className="dw-modal-container">
-            <div style={titleStyles} className="dw-modal-title">Add Publisher</div>
-            <div className="dw-modal-content-container">
-                <form onSubmit={onSubmit}>
-                    <div className='form-group'>
-                        <label className='form-label' htmlFor='key'>Key</label>
-                        <input
-                            className='form-control'
-                            type='text'
-                            name='key'
-                            placeholder={`Key`}
-                            onChange={onChange}
-                        />
-                    </div>
-                    <div className='form-group mt-3'>
-                        <label className='form-label' htmlFor='name'>Name</label>
-                        <input
-                            className='form-control'
-                            type='text'
-                            name='name'
-                            placeholder={`Name`}
-                            onChange={onChange}
-                        />
-                    </div>
-                    <div style={footerStyles}>
-                        <button
-                            className='btn btn-primary update-btn'
-                            type='submit'
-                            style={{margin: 0}}
-                        >
-                            Add Publisher
-                        </button>
-                    </div>
-                </form>
+        <div className='flex flex-col w-full'>
+            <h2 className='text-2xl font-semibold text-center py-4 border-b border-gray-100'>Add Publisher</h2>
+            <div className='flex-1 py-4 space-y-3'>
+                <div>
+                    <label className={labelClass} htmlFor='key'>Key</label>
+                    <input className={inputClass} type='text' name='key' placeholder='Key' onChange={onChange} />
+                </div>
+                <div>
+                    <label className={labelClass} htmlFor='name'>Name</label>
+                    <input className={inputClass} type='text' name='name' placeholder='Name' onChange={onChange} />
+                </div>
+            </div>
+            <div className='flex justify-end pt-4 border-t border-gray-100'>
+                <button
+                    className='px-5 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold'
+                    onClick={() => addPublisher(formData, setDwModalOpen)}
+                >
+                    Add Publisher
+                </button>
             </div>
         </div>
     )

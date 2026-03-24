@@ -8,27 +8,16 @@ interface Props {
 }
 
 const DunneWebModal: React.FC<Props> = ({ onClose, children }) => {
-
-    const closeButtonStyles: React.CSSProperties = {
-        fontFamily: 'Nunito',
-        fontWeight: 600,
-        fontSize: '20px',
-        border: 'solid 2px rgb(83, 109, 230)',
-        borderRadius: '40px',
-        background: 'white',
-        color: 'rgb(83, 109, 230)',
-        lineHeight: '10px',
-        padding: '12px 10px 10px 10px',
-        position: 'absolute',
-        right: '10px',
-        top: '10px',
-    }
-
     return ReactDom.createPortal(
         <>
             <div className='modal-overlay' onClick={onClose}/>
             <div className='dunne-web-modal'>
-                <button style={closeButtonStyles} onClick={onClose}>X</button>
+                <button
+                    className='absolute top-2.5 right-2.5 w-9 h-9 rounded-full border-2 border-brand bg-white text-brand font-bold text-sm hover:bg-brand hover:text-white transition-colors'
+                    onClick={onClose}
+                >
+                    ✕
+                </button>
                 {children}
             </div>
         </>,

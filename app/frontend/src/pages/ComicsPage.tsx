@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import OmniDetailsModal from "../modals/OmniDetailsModal";
 import { getAllBooks } from '../actions/comics';
 import { connect } from 'react-redux';
 import { ThemeProvider } from "@mui/material";
@@ -24,7 +23,6 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
     const [dwModalOpen, setDwModalOpen] = useState(false);
     const [selectedBook, setSelectedBook] = useState<BookType>({} as BookType);
 
-    // Use allBooks cache if it is not empty
     useEffect(() => {
         allBooks.length ? setBooks(allBooks) : getAllBooks()
     }, [])
@@ -32,63 +30,6 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
     useEffect(() => {
         setBooks(allBooks)
     }, [allBooks]);
-
-    const bookListContainerStyles: React.CSSProperties = {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-    }
-
-    const bookCardStyles: React.CSSProperties = {
-        margin: '5px',
-        width: '200px',
-        cursor: 'pointer',
-    }
-
-    const imageContainerStyles: React.CSSProperties = {
-        flex: '0 0 auto',
-    }
-
-    const bookTitleStyles: React.CSSProperties = {
-        display: '-webkit-box',
-        height: '3rem',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        textAlign: 'center',
-    }
-
-    const leftPanelStyles: React.CSSProperties = {
-        width: '300px',
-        display: 'flex',
-        height: '410px',
-        position: 'fixed',
-        padding: "0px",
-    }
-
-    const booksContainerStyles: React.CSSProperties = {
-        width: '100%',
-        padding: '1rem',
-        overflowY: 'scroll',
-        height: 'calc(100vh - 60px)',
-    }
-
-    const mainContentStyles: React.CSSProperties = {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'column',
-        width: 'calc(100% - 315px)',
-        marginLeft: '315px',
-        height: 'calc(100dvh - 60px)',
-        paddingTop: '20px',
-    }
-
-    const imgStyles: React.CSSProperties = {
-        borderRadius: '10px',
-        width: '12rem',
-    }
 
     function getDisplayedBooks(book: BookType, i: number) {
         const bookPublisher = book['publisher']
@@ -100,21 +41,23 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
         ) {
             return (
                 <div
-                style={bookCardStyles}
-                key={i}
-                onClick={() => {
-                    setSelectedBook(book)
-                    setDwModalOpen(true)
-                }}
+                    key={i}
+                    className='m-[5px] w-[200px] cursor-pointer'
+                    onClick={() => {
+                        setSelectedBook(book)
+                        setDwModalOpen(true)
+                    }}
                 >
-                    <div style={imageContainerStyles}>
+                    <div className='flex-none'>
                         <img
-                            style={imgStyles}
+                            className='rounded-[10px] w-48'
                             src={`${window.location.origin}${book.thumbnail}`}
                             alt={book.title}
                         />
                     </div>
-                    <div style={bookTitleStyles}>{book.title}</div>
+                    <div className='h-12 overflow-hidden text-ellipsis text-center text-sm mt-1'>
+                        {book.title}
+                    </div>
                 </div>
             )
         }
@@ -122,36 +65,33 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
 
     return (
         <>
-        {
-            dwModalOpen &&
+        {dwModalOpen &&
             <DunneWebModal onClose={() => setDwModalOpen(false)}>
                 <Book book={selectedBook} setDwModalOpen={setDwModalOpen}/>
             </DunneWebModal>
         }
-        <div id="admin-main-container">
-            <div style={leftPanelStyles}>
+
+        <div id="admin-main-container" className='flex w-full h-full'>
+            {/* Sidebar */}
+            <div className='w-[300px] flex h-[410px] fixed p-0 bg-[#313a46]'>
                 <ThemeProvider theme={darkTheme}>
-                    <div className="side-nav" style={{width: '300px'}}>
-                        <span style={{textAlign: 'center'}}>Filter Books</span>
-                        <ul className="side-nav-list">
+                    <div className="w-[300px] p-[20px]">
+                        <span className='w-[100%] flex justify-center items-center text-center p-2.5 font-semibold text-gray-300 uppercase tracking-wider'>Filter Books</span>
+                        <ul className='list-none p-0'>
                             <PublishersSelector setPublisher={setPublisherFilter}/>
                             <CharactersSelector setCharacter={setCharacterFilter}/>
                         </ul>
-                        <div className="clearfix"></div>
                     </div>
                 </ThemeProvider>
             </div>
 
-            <div style={mainContentStyles}>
-                <span>
-                    <h4 style={{textAlign: 'center'}}>Comics</h4>
-                </span>
-                <div style={booksContainerStyles}>
-                        <div style={bookListContainerStyles}>
-                            {books.map((book, i) => {
-                                return getDisplayedBooks(book, i)
-                            })}
-                        </div>
+            {/* Main content */}
+            <div className='flex flex-col items-center w-[calc(100%-315px)] ml-[315px] h-[calc(100dvh-60px)] pt-5'>
+                <h4 className='text-center mb-4 font-semibold'>Comics</h4>
+                <div className='w-full px-4 overflow-y-scroll h-full'>
+                    <div className='flex justify-center items-center flex-row flex-wrap'>
+                        {books.map((book, i) => getDisplayedBooks(book, i))}
+                    </div>
                 </div>
             </div>
         </div>

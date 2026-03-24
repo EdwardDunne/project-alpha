@@ -7,66 +7,27 @@ interface Props {
     book: BookType;
 }
 
-const Book: React.FC<Props> = ({ setDwModalOpen, book }) => {
-
-    const imgStyles: React.CSSProperties = {
-        width: '12rem',
-        borderRadius: '10px',
-    }
-
-    const containerStyles: React.CSSProperties = {
-        display: 'flex',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        flexDirection: 'row',
-    }
-
-    const titleStyles: React.CSSProperties = {
-        fontSize: '1.3rem',
-        fontWeight: 'bold',
-        textAlign: 'center',
-    }
-
-    const contentContainerStyles: React.CSSProperties = {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'column',
-        margin: '2rem',
-    }
-
-    const bookDetailsContainer: React.CSSProperties = {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        flexDirection: 'column',
-        marginTop: '0.9rem',
-    }
-
-    const descriptionStyles: React.CSSProperties = {
-        maxHeight: '7rem',
-        overflowY: 'scroll',
-    }
-
+const Book: React.FC<Props> = ({ book }) => {
     return (
-        <>
-        <div style={containerStyles}>
-            <div>
-                <img style={imgStyles} src={`${window.location.origin}${book.thumbnail}`}/>
+        <div className='flex justify-around items-center flex-row gap-6'>
+            <div className='flex-none'>
+                <img
+                    className='w-48 rounded-[10px]'
+                    src={`${window.location.origin}${book.thumbnail}`}
+                    alt={book.title}
+                />
             </div>
-
-            <div style={contentContainerStyles}>
-                <div style={titleStyles}>{book.title}</div>
-                <div style={bookDetailsContainer}>
+            <div className='flex flex-col items-center'>
+                <div className='text-lg font-bold text-center mb-4'>{book.title}</div>
+                <div className='flex flex-col gap-1.5 text-sm'>
                     <span><b>Publisher</b>: {book.publisher_name}</span>
                     <span><b>Character</b>: {book.character_name}</span>
                     <span><b>Author</b>: {book.author}</span>
-                    <span style={descriptionStyles}><b>Description</b>: {book.description}</span>
+                    <span className='max-h-28 overflow-y-scroll'><b>Description</b>: {book.description}</span>
                     <span><b>Page Count</b>: {book.page_count}</span>
                 </div>
             </div>
         </div>
-        </>
     )
 }
 

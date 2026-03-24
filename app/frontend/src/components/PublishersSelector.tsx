@@ -15,7 +15,6 @@ interface Props {
 const PublishersSelector: React.FC<Props> = ({ setPublisher, variant = 'standard', allPublishers, getAllPublishers }) => {
     const [publisherOptions, setPublisherOptions] = useState<Publisher[]>([])
 
-    // Use allPublishers cache if it is not empty
     useEffect(() => {
         allPublishers.length ? _setPublisherOptions(allPublishers) : getAllPublishers()
     }, [])
@@ -32,9 +31,9 @@ const PublishersSelector: React.FC<Props> = ({ setPublisher, variant = 'standard
     }
 
     return (
-        <div className='form-group mt-3'>
+        <div className='mt-3'>
             <Autocomplete
-                id="filled-basic"
+                id="publisher-selector"
                 options={publisherOptions}
                 getOptionLabel={(option) => option['name']}
                 renderInput={params =>

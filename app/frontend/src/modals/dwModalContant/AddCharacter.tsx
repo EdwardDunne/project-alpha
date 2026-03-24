@@ -8,6 +8,9 @@ interface Props {
     setDwModalOpen: (open: boolean) => void;
 }
 
+const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
+
 const AddCharacter: React.FC<Props> = ({ setDwModalOpen }) => {
 
     const [formData, setFormData] = useState({ name: '', publisher: '' });
@@ -19,54 +22,23 @@ const AddCharacter: React.FC<Props> = ({ setDwModalOpen }) => {
         if (publisher) setFormData({ ...formData, publisher: publisher['key'] })
     }
 
-    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        addCharacter(formData, setDwModalOpen)
-    }
-
-    const titleStyles: React.CSSProperties = {
-        width: '100%',
-        height: '4rem',
-        padding: '1rem',
-        textAlign: 'center',
-        fontWeight: 600,
-        fontSize: '2rem'
-    }
-
-    const footerStyles: React.CSSProperties = {
-        display: 'flex',
-        justifyContent: 'flex-end',
-        alignItems: 'flex-end',
-        width: '100%',
-        height: '4rem'
-    }
-
     return (
-        <div className="dw-modal-container">
-            <div style={titleStyles}>Add Character</div>
-            <div className="dw-modal-content-container">
-                <form onSubmit={onSubmit}>
-                    <div className='form-group'>
-                        <label className='form-label' htmlFor='name'>Name</label>
-                        <input
-                            className='form-control'
-                            type='text'
-                            name='name'
-                            placeholder={`Name`}
-                            onChange={onChange}
-                        />
-                    </div>
-                    <PublishersSelector setPublisher={setPublisher}/>
-                    <div style={footerStyles}>
-                        <button
-                            className='btn btn-primary update-btn'
-                            type='submit'
-                            style={{margin: 0}}
-                        >
-                            Add Character
-                        </button>
-                    </div>
-                </form>
+        <div className='flex flex-col w-full'>
+            <h2 className='text-2xl font-semibold text-center py-4 border-b border-gray-100'>Add Character</h2>
+            <div className='flex-1 py-4 space-y-3'>
+                <div>
+                    <label className={labelClass} htmlFor='name'>Name</label>
+                    <input className={inputClass} type='text' name='name' placeholder='Name' onChange={onChange} />
+                </div>
+                <PublishersSelector setPublisher={setPublisher}/>
+            </div>
+            <div className='flex justify-end pt-4 border-t border-gray-100'>
+                <button
+                    className='px-5 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold'
+                    onClick={() => addCharacter(formData, setDwModalOpen)}
+                >
+                    Add Character
+                </button>
             </div>
         </div>
     )

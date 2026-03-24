@@ -10,13 +10,12 @@ interface Props {
     isAuthenticated: boolean | null;
 }
 
+const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
+
 const LoginPage: React.FC<Props> = ({ login, isAuthenticated }) => {
 
-    const [formData, setFormData] = useState({
-        username: '',
-        password: ''
-    });
-
+    const [formData, setFormData] = useState({ username: '', password: '' });
     const { username, password } = formData;
 
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -31,48 +30,56 @@ const LoginPage: React.FC<Props> = ({ login, isAuthenticated }) => {
         return <Navigate to='/dashboard' />;
 
     return (
-        <div className="form-signin w-100 m-auto">
-            <form onSubmit={onSubmit}>
+        <div className='w-full max-w-sm mx-auto mt-20 px-4'>
+            <form onSubmit={onSubmit} className='bg-white p-8 rounded-lg shadow-md'>
                 <CSRFToken />
-                <h1 className="h3 mb-3 fw-normal">Sign in to DunneWeb</h1>
+                <h1 className='text-2xl font-semibold text-center mb-6'>Sign in to DunneWeb</h1>
 
-                <div className="form-floating">
+                <div className='mb-4'>
+                    <label className={labelClass} htmlFor='username'>Username</label>
                     <input
-                        className="form-control username"
-                        id="floatingInput"
+                        className={inputClass}
+                        id='username'
                         type='text'
-                        placeholder='Username*'
+                        placeholder='Username'
                         name='username'
                         onChange={onChange}
                         value={username}
                         required
                     />
-                    <label htmlFor="floatingInput">Email address</label>
                 </div>
-                <div className="form-floating">
+
+                <div className='mb-4'>
+                    <label className={labelClass} htmlFor='password'>Password</label>
                     <input
-                        className="form-control"
-                        id="floatingPassword"
-                        type="password"
-                        placeholder="Password"
+                        className={inputClass}
+                        id='password'
+                        type='password'
+                        placeholder='Password'
                         name='password'
                         onChange={onChange}
                         value={password}
                         minLength={6}
                         required
                     />
-                    <label htmlFor="floatingPassword">Password</label>
                 </div>
 
-                <div className="checkbox mb-3">
-                    <label>
-                        <input type="checkbox" value="remember-me" /> Remember me
+                <div className='mb-4'>
+                    <label className='flex items-center gap-2 text-sm text-gray-600 cursor-pointer'>
+                        <input type='checkbox' value='remember-me' className='rounded' />
+                        Remember me
                     </label>
                 </div>
-                <button className="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+
+                <button
+                    className='w-full py-2.5 bg-brand text-white rounded-lg hover:bg-brand-dark transition-colors font-semibold'
+                    type='submit'
+                >
+                    Sign in
+                </button>
             </form>
-            <p className='mt-3'>
-                Don't have an Account? <Link to='/register'>Sign Up</Link>
+            <p className='mt-4 text-center text-sm text-gray-600'>
+                Don't have an account? <Link className='text-brand hover:underline' to='/register'>Sign Up</Link>
             </p>
         </div>
     )
