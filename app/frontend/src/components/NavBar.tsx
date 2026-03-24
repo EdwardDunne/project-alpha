@@ -27,6 +27,9 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
                 <NavLink className={linkClass} to="/dashboard">Dashboard</NavLink>
             </li>
             <li className='list-none px-2.5 py-2'>
+                <NavLink className={linkClass} to="/about">About Me</NavLink>
+            </li>
+            <li className='list-none px-2.5 py-2'>
                 <a className={linkClass + ' cursor-pointer'} onClick={logout} href='#!'>Logout</a>
             </li>
         </>
@@ -34,6 +37,9 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
 
     const guestLinks = (
         <>
+            <li className='list-none px-2.5 py-2'>
+                <NavLink className={linkClass} to="/about">About Me</NavLink>
+            </li>
             <li className='list-none px-2.5 py-2'>
                 <NavLink className={linkClass} to="/login">Login</NavLink>
             </li>
@@ -45,12 +51,9 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
 
     return (
         <span className='flex justify-start items-center w-full px-2.5 bg-[#dbdbdb] h-[60px]'>
-            <Link className='list-none px-2.5 py-2 text-black/90 no-underline text-xl font-bold' to="/">Dunne Web</Link>
+            <Link className='list-none px-2.5 py-2 text-black/90 no-underline text-xl font-bold' to="/">Omni Trackers</Link>
             <li className='list-none px-2.5 py-2'>
-                <NavLink className={linkClass} to="/">Home</NavLink>
-            </li>
-            <li className='list-none px-2.5 py-2'>
-                <NavLink className={linkClass} to="/comics">Comics</NavLink>
+                <NavLink className={linkClass} to="/">Comics</NavLink>
             </li>
             {isAuthenticated ? authLinks : guestLinks}
         </span>

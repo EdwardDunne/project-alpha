@@ -89,10 +89,10 @@ export default function HexMenu() {
             <li className="honeycomb-cell honeycomb__placeholder"></li>
         </ul>
 
-        <li className="honeycomb-cell comics-hex" onClick={() => hexClicked('comics')}>
+        {/* <li className="honeycomb-cell comics-hex" onClick={() => hexClicked('comics')}>
             <img className="honeycomb-cell__image" src={comics_hex_img} />
             <div className="honeycomb-cell__title">Comics</div>
-        </li>
+        </li> */}
         </>
     );
 }
