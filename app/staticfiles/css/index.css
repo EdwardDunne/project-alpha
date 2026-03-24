@@ -25,21 +25,12 @@
     font-weight: normal;
     font-style: normal;
 }
-  
+
 html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-    font-family: "Nunito"!important;
-}
-
-#main {
-    position: fixed;
-    width: 100%;
-    max-height: calc(100% - 62px);
-    left: 0;
-    top: 62px;
-    overflow-y: auto;
+    font-family: "Nunito" !important;
 }
 
 #app {
@@ -47,153 +38,11 @@ html, body {
     height: 100%;
 }
 
-.navbar-container {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    width: 100vw;
-    padding: 10px;
-    background: rgb(238, 242, 247);
-    height: 60px;
+button {
+    font-family: "Nunito" !important;
 }
 
-.nav-item {
-    list-style: none;
-    padding: 10px;
-}
-
-.nav-item.brand {
-    color: rgba(0, 0, 0, 0.9);
-    text-decoration: none;
-    font-size: 20px;
-}
-
-.nav-item .nav-link {
-    text-decoration: none;
-    color: #6c757d;
-}
-
-.btn {
-    border-radius: 3px;
-    padding: 7.2px 14.4px;
-    color: rgb(255, 255, 255);
-    margin: 1.5rem;
-    font-family: 'Nunito';
-    font-weight: 400;
-    font-size: 14.4px;
-}
-
-.btn.btn-primary {
-    background-color: rgb(83, 109, 230);
-    border: solid 1px rgb(83, 109, 230);
-}
-
-#admin-main-container {
-    display: flex;
-    width: 100%;
-    height: 100%;
-}
-
-.admin-leftside-content {
-    /* width: 300px; */
-    display: flex;
-    height: 410px;
-    position: fixed;
-}
-
-.admin-main-content .page-title-box {
-    height: 70px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.admin-main-content .page-title-box .page-title {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0;
-}
-
-.side-nav {
-    list-style: none;
-    background: #313a46;
-    color: white;
-    padding: 20px;
-    margin: 15px;
-    border-radius: 5px;
-    display: flex;
-    flex-direction: column;
-}
-
-.side-nav-list {
-    list-style: none;
-    padding: 0;
-}
-
-.side-nav-item {
-    padding: 10px;
-}
-
-.side-nav-item a {
-    color: white;
-}
-
-.side-nav-link {
-    text-decoration: none;
-    color: black;
-}
-
-.admin-main-content {
-    width: calc(100% - 300px);
-    margin-left: 265px;
-}
-
-.content-page {
-    padding-top: 0px! important;
-    padding-left: 22px! important;
-}
-
-.leftside-menu.menuitem-active {
-    margin-left: 10px;
-}
-
-.sign-in-form {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    padding: 15px;
-}
-
-.form-title {
-    margin: 15px;
-    font-weight: bold;
-}
-
-.form-fields-row {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.form-fields-row input {
-    margin: 5px;
-}
-
-.form-signin {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.form-signin .btn-primary{
-    margin: 15px 0px;
-}
+/* ── Modal positioning ───────────────────────────────────────── */
 
 .omni-details-modal,
 .dunne-web-modal,
@@ -202,7 +51,7 @@ html, body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: #FFF;
+    background: #fff;
     padding: 50px;
     z-index: 1001;
     border-radius: 6px;
@@ -224,7 +73,7 @@ html, body {
 }
 
 .hex-modal .close-btn {
-    margin: 10px 0px 0px 0px;
+    margin: 10px 0 0 0;
 }
 
 .omni-details-modal .omni-details-modal-container {
@@ -239,7 +88,7 @@ html, body {
 .omni-details-modal .omni-details-modal-container .omni-title {
     font-size: 25px;
     font-weight: bold;
-    padding: 0px 10px 20px 10px;
+    padding: 0 10px 20px 10px;
 }
 
 .omni-details-modal .omni-details-modal-container .content-container {
@@ -262,6 +111,8 @@ html, body {
     width: 140px;
 }
 
+/* ── Honeycomb ───────────────────────────────────────────────── */
+
 *,
 *::before,
 *::after {
@@ -277,7 +128,6 @@ html, body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0;
-    transform: translateY(34.375px);
     position: fixed;
     left: 50%;
     top: 50%;
@@ -323,23 +173,15 @@ html, body {
     cursor: pointer;
 }
 
-.honeycomb-cell.mid-first {
-    margin-left: 10%;
-}
-
-.honeycomb-cell.mid-last {
-    margin-right: 10%;
-}
-
+.honeycomb-cell.mid-first { margin-left: 10%; }
+.honeycomb-cell.mid-last  { margin-right: 10%; }
 
 .honeycomb-cell__title {
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    -webkit-hyphens: auto;
-        -ms-hyphens: auto;
-            hyphens: auto;
+    hyphens: auto;
     word-break: break-word;
     text-transform: uppercase;
     color: #fff;
@@ -355,25 +197,25 @@ html, body {
 }
 
 .honeycomb-cell__image {
-    -o-object-fit: cover;
     object-fit: cover;
-    -o-object-position: center;
     object-position: center;
 }
 
-.honeycomb-cell::before, .honeycomb-cell::after {
+.honeycomb-cell::before,
+.honeycomb-cell::after {
     content: "";
 }
 
-.honeycomb-cell::before, .honeycomb-cell::after, .honeycomb-cell__image {
+.honeycomb-cell::before,
+.honeycomb-cell::after,
+.honeycomb-cell__image {
     top: -50%;
     left: 0;
     width: 100%;
     height: 200%;
     display: block;
     position: absolute;
-    -webkit-clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
     z-index: -1;
 }
 
@@ -388,26 +230,15 @@ html, body {
     transition: background 350ms;
 }
 
-.honeycomb-cell.buffer::after {
-    opacity: 0.0;
-}
-
-.honeycomb-cell.buffer {
-    opacity: 0.0;
-}
+.honeycomb-cell.buffer::after { opacity: 0; }
+.honeycomb-cell.buffer        { opacity: 0; }
 
 .honeycomb-cell:hover .honeycomb-cell__title {
-    /* opacity: 0; */
     text-shadow: 2px 2px 8px #000000;
 }
 
-.honeycomb-cell:not(.buffer):hover::before {
-    background: #414141;
-}
-
-.honeycomb-cell:hover::after {
-    background: rgba(66, 66, 66, 0);
-}
+.honeycomb-cell:not(.buffer):hover::before { background: #414141; }
+.honeycomb-cell:hover::after               { background: rgba(66,66,66,0); }
 
 .honeycomb__placeholder {
     display: none;
@@ -418,148 +249,29 @@ html, body {
 
 @media only screen and (max-width: 600px) {
     .honeycomb-cell {
-        flex: 0 1 250px;
         max-width: 29%;
         max-height: 125px;
         height: 18vw;
         margin: 5% 1% 25px;
-        position: relative;
-        padding: 0.5em;
-        text-align: center;
-        z-index: 1;
     }
-
-    .honeycomb-cell.buffer {
-        max-width: 11%! important;
-    }
-
-    .honeycomb-cell.mid-first {
-        margin-left: 4.5%;
-    }
-
-    .honeycomb-cell.mid-last {
-        margin-right: 4.5%;
-    }
-
-    .honeycomb-cell__title {
-        font-size: 4vw;
-    }
+    .honeycomb-cell.buffer  { max-width: 11% !important; }
+    .honeycomb-cell.mid-first { margin-left: 4.5%; }
+    .honeycomb-cell.mid-last  { margin-right: 4.5%; }
+    .honeycomb-cell__title  { font-size: 4vw; }
 }
 
 @media only screen and (max-height: 800px) and (min-width: 600px) {
     .honeycomb-cell {
-        flex: 0 1 250px;
         max-width: 16%;
         max-height: 100px;
         height: 18vw;
         margin: 5% 0.7% 10px;
-        position: relative;
-        padding: 0.5em;
-        text-align: center;
-        z-index: 1;
     }
-
-    .honeycomb-cell.mid-first {
-        margin-left: 19%;
-    }
-
-    .honeycomb-cell.mid-last {
-        margin-right: 19%;
-    }
-
-    .honeycomb-cell__title {
-        font-size: 2.2vw;
-    }
+    .honeycomb-cell.mid-first { margin-left: 19%; }
+    .honeycomb-cell.mid-last  { margin-right: 19%; }
+    .honeycomb-cell__title  { font-size: 2.2vw; }
 }
 
 @media only screen and (min-width: 1361px) {
-    .honeycomb-cell__title {
-        font-size: 30px;
-    }
-}
-
-/* Admin Page Themes */
-
-.admin-btn-panel {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    padding: 20px;
-}
-
-.admin-page-btn {
-    background: #4848d2;
-    padding: 11px;
-    z-index: 1000;
-    border-radius: 10px;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 17px;
-    cursor: pointer;
-    margin: 10px;
-}
-
-.form-signin {
-    max-width: 330px;
-        padding: 15px;
-}
-
-.form-signin .form-floating:focus-within {
-    z-index: 2;
-}
-
-.form-signin .username {
-    margin-bottom: -1px;
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-}
-
-.form-signin input[type="password"] {
-    margin-bottom: 10px;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-}
-
-.book-card-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
-.omni-list-card {
-    margin: 5px;
-    width: 700px;
-}
-
-.omni-list-card img {
-    height: 200px;
-    object-fit: contain;
-}
-
-.omni-list-card .card-text {
-    height: 130px;
-    overflow: auto;
-}
-
-button {
-    font-family: "Nunito"!important;
-}
-
-#comics-admin-results-toggle-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.dashboard .update-btn,
-.dashboard .delete-btn {
-    margin: 1rem 1.5rem 0.5rem 0rem;
-}
-
-.dashboard .delete-account-txt {
-    margin: 0px;
+    .honeycomb-cell__title { font-size: 30px; }
 }

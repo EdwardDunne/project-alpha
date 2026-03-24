@@ -1,0 +1,68 @@
+import { AnyAction } from 'redux';
+import {
+    LOAD_USER_PROFILE_SUCCESS,
+    LOAD_USER_PROFILE_FAIL,
+    UPDATE_USER_PROFILE_SUCCESS,
+    UPDATE_USER_PROFILE_FAIL,
+    UPDATE_IS_STAFF
+} from '../actions/types';
+
+interface ProfileState {
+    username: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    is_staff: boolean;
+}
+
+const initialState: ProfileState = {
+    username: '',
+    first_name: '',
+    last_name: '',
+    email: '',
+    is_staff: false
+};
+
+export default function profileReducer(state: ProfileState = initialState, action: AnyAction): ProfileState {
+    const { type, payload } = action;
+
+    switch (type) {
+        case LOAD_USER_PROFILE_SUCCESS:
+            return {
+                ...state,
+                username: payload.username,
+                first_name: payload.profile.first_name,
+                last_name: payload.profile.last_name,
+                email: payload.profile.email,
+                is_staff: payload.is_staff
+            }
+        case LOAD_USER_PROFILE_FAIL:
+            return {
+                ...state,
+                username: '',
+                first_name: '',
+                last_name: '',
+                email: '',
+                is_staff: false
+            }
+        case UPDATE_USER_PROFILE_SUCCESS:
+            return {
+                ...state,
+                username: payload.username,
+                first_name: payload.profile.first_name,
+                last_name: payload.profile.last_name,
+                email: payload.profile.email
+            }
+        case UPDATE_IS_STAFF:
+            return {
+                ...state,
+                is_staff: payload.is_staff
+            }
+        case UPDATE_USER_PROFILE_FAIL:
+            return {
+                ...state
+            }
+        default:
+            return state
+    }
+}
