@@ -8,5 +8,6 @@ urlpatterns = [
     path('login', index),
     path('register', index),
     path('dashboard', index),
-    path('comics', index)
+    path('comics', index),
+    path('about', index)
 ]
