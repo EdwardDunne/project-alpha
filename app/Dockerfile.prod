@@ -1,3 +1,18 @@
+#################
+# FRONTEND BUILD #
+#################
+
+FROM node:18-alpine as frontend-builder
+
+WORKDIR /app/frontend
+
+COPY ./frontend/package*.json ./
+RUN npm install
+
+COPY ./frontend ./
+RUN npm run build
+
+
 ###########
 # BUILDER #
 ###########
@@ -61,6 +76,9 @@ RUN chmod +x  $APP_HOME/entrypoint.prod.sh
 
 # copy project
 COPY . $APP_HOME
+
+# copy frontend build output
+COPY --from=frontend-builder /app/frontend/static $APP_HOME/frontend/static
 
 # chown all the files to the app user
 RUN chown -R app:app $APP_HOME
