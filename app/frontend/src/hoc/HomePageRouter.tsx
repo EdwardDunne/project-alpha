@@ -24,6 +24,9 @@ const HomePageRouter: React.FC<Props> = ({ checkAuthenticated, load_user, isAuth
         load_user();
     }, []);
 
+    if (window.location.hostname === 'dunneweb.com')
+            window.location.replace('https://www.omnitrackers.com/about')
+
     return (
         <Routes>
             <Route path="/" element={<ComicsPage />}/>
