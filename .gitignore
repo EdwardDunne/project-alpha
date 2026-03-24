@@ -3,3 +3,5 @@ node_modules
 env/
 mediafiles
 .DS_Store
+app/frontend/static/frontend/
+app/frontend/src/.DS_Store
