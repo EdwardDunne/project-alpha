@@ -41,7 +41,7 @@ const DashboardPage: React.FC<Props> = ({
     }
 
     return (
-        <div className='container mx-auto max-w-lg px-4 py-8'>
+        <div className='w-full md:max-w-lg mx-auto px-4 py-8'>
             <h1 className='text-[2.4rem] font-semibold mb-2'>User Dashboard</h1>
             <p className='text-gray-500 text-[1.4rem] mb-6'>Update your profile below</p>
 
