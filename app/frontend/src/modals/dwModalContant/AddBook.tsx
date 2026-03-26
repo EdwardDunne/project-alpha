@@ -22,8 +22,8 @@ interface AddBookFormData {
     team: string;
 }
 
-const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
-const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
+const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-[1.4rem] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+const labelClass = 'block text-[1.4rem] font-medium text-gray-700 mb-1'
 
 const AddBook: React.FC<Props> = ({ setDwModalOpen }) => {
 
@@ -49,7 +49,7 @@ const AddBook: React.FC<Props> = ({ setDwModalOpen }) => {
 
     return (
         <div className='flex flex-col w-full'>
-            <h2 className='text-2xl font-semibold text-center py-4 border-b border-gray-100'>Add Book</h2>
+            <h2 className='text-[2.4rem] font-semibold text-center py-4 border-b border-gray-100'>Add Book</h2>
             <div className='flex-1 overflow-y-auto max-h-[60vh] px-1 py-3 space-y-3'>
                 {[
                     { name: 'title',       label: 'Title',       type: 'text' },

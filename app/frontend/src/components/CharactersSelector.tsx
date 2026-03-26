@@ -37,8 +37,12 @@ const CharactersSelector: React.FC<Props> = ({ setCharacter, variant = 'standard
                 options={characterOptions}
                 getOptionLabel={(option) => option['name']}
                 renderInput={params =>
-                    <TextField {...params} label="Character" variant={variant} />}
+                    <TextField {...params} label="Character" variant={variant}
+                        InputProps={{ ...params.InputProps, sx: { fontSize: '1.6rem' } }}
+                        InputLabelProps={{ ...params.InputLabelProps, sx: { fontSize: '1.6rem' } }}
+                    />}
                 onChange={(e, character) => setCharacter(character)}
+                slotProps={{ paper: { sx: { fontSize: '1.6rem' } } }}
             />
         </div>
     )

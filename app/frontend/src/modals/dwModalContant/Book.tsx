@@ -9,17 +9,17 @@ interface Props {
 
 const Book: React.FC<Props> = ({ book }) => {
     return (
-        <div className='flex justify-around items-center flex-row gap-6'>
+        <div className='flex flex-col md:flex-row justify-around items-center gap-6'>
             <div className='flex-none'>
                 <img
-                    className='w-48 rounded-[10px]'
+                    className='w-32 md:w-48 rounded-[1rem]'
                     src={`${window.location.origin}${book.thumbnail}`}
                     alt={book.title}
                 />
             </div>
             <div className='flex flex-col items-center'>
-                <div className='text-lg font-bold text-center mb-4'>{book.title}</div>
-                <div className='flex flex-col gap-1.5 text-sm'>
+                <div className='text-[1.8rem] font-bold text-center mb-4'>{book.title}</div>
+                <div className='flex flex-col gap-1.5 text-[1.4rem]'>
                     <span><b>Publisher</b>: {book.publisher_name}</span>
                     <span><b>Character</b>: {book.character_name}</span>
                     <span><b>Author</b>: {book.author}</span>

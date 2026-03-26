@@ -13,7 +13,7 @@ const DunneWebModal: React.FC<Props> = ({ onClose, children }) => {
             <div className='modal-overlay' onClick={onClose}/>
             <div className='dunne-web-modal'>
                 <button
-                    className='absolute top-2.5 right-2.5 w-9 h-9 rounded-full border-2 border-brand bg-white text-brand font-bold text-sm hover:bg-brand hover:text-white transition-colors'
+                    className='absolute top-2.5 right-2.5 w-9 h-9 rounded-full border-2 border-brand bg-white text-brand font-bold text-[1.4rem] hover:bg-brand hover:text-white transition-colors'
                     onClick={onClose}
                 >
                     ✕

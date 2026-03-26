@@ -37,8 +37,12 @@ const PublishersSelector: React.FC<Props> = ({ setPublisher, variant = 'standard
                 options={publisherOptions}
                 getOptionLabel={(option) => option['name']}
                 renderInput={params =>
-                    <TextField {...params} label="Publisher" variant={variant} />}
+                    <TextField {...params} label="Publisher" variant={variant}
+                        InputProps={{ ...params.InputProps, sx: { fontSize: '1.6rem' } }}
+                        InputLabelProps={{ ...params.InputLabelProps, sx: { fontSize: '1.6rem' } }}
+                    />}
                 onChange={(e, publisher) => setPublisher(publisher)}
+                slotProps={{ paper: { sx: { fontSize: '1.6rem' } } }}
             />
         </div>
     )

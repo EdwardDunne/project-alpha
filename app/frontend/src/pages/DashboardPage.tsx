@@ -12,8 +12,8 @@ interface Props {
     email_global: string;
 }
 
-const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
-const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
+const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-[1.4rem] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+const labelClass = 'block text-[1.4rem] font-medium text-gray-700 mb-1'
 
 const DashboardPage: React.FC<Props> = ({
     delete_account,
@@ -42,8 +42,8 @@ const DashboardPage: React.FC<Props> = ({
 
     return (
         <div className='container mx-auto max-w-lg px-4 py-8'>
-            <h1 className='text-2xl font-semibold mb-2'>User Dashboard</h1>
-            <p className='text-gray-500 text-sm mb-6'>Update your profile below</p>
+            <h1 className='text-[2.4rem] font-semibold mb-2'>User Dashboard</h1>
+            <p className='text-gray-500 text-[1.4rem] mb-6'>Update your profile below</p>
 
             <div className='bg-white p-6 rounded-lg shadow-md mb-6'>
                 <form onSubmit={onSubmit}>
@@ -90,7 +90,7 @@ const DashboardPage: React.FC<Props> = ({
             </div>
 
             <div className='bg-white p-6 rounded-lg shadow-md border border-red-100'>
-                <p className='text-gray-600 text-sm mb-3'>Click the button below to permanently delete your account.</p>
+                <p className='text-gray-600 text-[1.4rem] mb-3'>Click the button below to permanently delete your account.</p>
                 <button
                     className='px-5 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-semibold'
                     onClick={() => delete_account()}
