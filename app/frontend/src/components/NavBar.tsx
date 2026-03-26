@@ -39,6 +39,9 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
                 <NavLink className={linkClass} to="/about">About Me</NavLink>
             </li>
             <li className='list-none px-2.5 py-2'>
+                <NavLink className={linkClass} to="/changelog">Changelog</NavLink>
+            </li>
+            <li className='list-none px-2.5 py-2'>
                 <a className={linkClass + ' cursor-pointer'} onClick={logout} href='#!'>Logout</a>
             </li>
         </>
@@ -54,6 +57,9 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
                 <NavLink className={mobileLinkClass} to="/about" onClick={close}>About Me</NavLink>
             </li>
             <li className='list-none'>
+                <NavLink className={mobileLinkClass} to="/changelog" onClick={close}>Changelog</NavLink>
+            </li>
+            <li className='list-none'>
                 <a className={mobileLinkClass + ' cursor-pointer'} onClick={() => { logout(); close(); }} href='#!'>Logout</a>
             </li>
         </>
@@ -63,6 +69,9 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
         <>
             <li className='list-none px-2.5 py-2'>
                 <NavLink className={linkClass} to="/about">About Me</NavLink>
+            </li>
+            <li className='list-none px-2.5 py-2'>
+                <NavLink className={linkClass} to="/changelog">Changelog</NavLink>
             </li>
             <li className='list-none px-2.5 py-2'>
                 <NavLink className={linkClass} to="/login">Login</NavLink>
@@ -77,6 +86,9 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
         <>
             <li className='list-none'>
                 <NavLink className={mobileLinkClass} to="/about" onClick={close}>About Me</NavLink>
+            </li>
+            <li className='list-none'>
+                <NavLink className={mobileLinkClass} to="/changelog" onClick={close}>Changelog</NavLink>
             </li>
             <li className='list-none'>
                 <NavLink className={mobileLinkClass} to="/login" onClick={close}>Login</NavLink>

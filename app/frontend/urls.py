@@ -9,5 +9,6 @@ urlpatterns = [
     path('register', index),
     path('dashboard', index),
     path('comics', index),
-    path('about', index)
+    path('about', index),
+    path('changelog', index)
 ]
