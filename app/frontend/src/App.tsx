@@ -16,16 +16,9 @@ export const darkTheme = createTheme({
 
 const App: React.FC = () => {
 
-    const appStyles: React.CSSProperties = {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'column',
-    }
-
     return (
         <Provider store={store}>
-            <div style={appStyles}>
+            <div className='flex flex-col w-full min-h-[100dvh]'>
                 <NavBar />
                 <HomePageRouter />
                 <ToastContainer

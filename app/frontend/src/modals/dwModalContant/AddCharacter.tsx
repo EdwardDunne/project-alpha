@@ -8,8 +8,8 @@ interface Props {
     setDwModalOpen: (open: boolean) => void;
 }
 
-const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
-const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
+const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-[1.4rem] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+const labelClass = 'block text-[1.4rem] font-medium text-gray-700 mb-1'
 
 const AddCharacter: React.FC<Props> = ({ setDwModalOpen }) => {
 
@@ -24,7 +24,7 @@ const AddCharacter: React.FC<Props> = ({ setDwModalOpen }) => {
 
     return (
         <div className='flex flex-col w-full'>
-            <h2 className='text-2xl font-semibold text-center py-4 border-b border-gray-100'>Add Character</h2>
+            <h2 className='text-[2.4rem] font-semibold text-center py-4 border-b border-gray-100'>Add Character</h2>
             <div className='flex-1 py-4 space-y-3'>
                 <div>
                     <label className={labelClass} htmlFor='name'>Name</label>

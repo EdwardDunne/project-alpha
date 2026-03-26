@@ -19,8 +19,8 @@ export default function ResumeModal({ open, children, onClose }: Props) {
                 {
                     height: '80vh',
                     width: '80vw',
-                    maxWidth: '1060px',
-                    padding: '20px',
+                    maxWidth: '106rem',
+                    padding: '2rem',
                     justifyContent: 'space-between',
                     flexDirection: 'column',
                     flexWrap: 'nowrap',
@@ -32,13 +32,12 @@ export default function ResumeModal({ open, children, onClose }: Props) {
                 </span>
                 <span className="modal-footer-btns-container">
                     <button
-                        className="btn btn-primary close-btn"
-                        style={{marginRight: '10px'}}
+                        className='px-5 py-2 mr-4 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold'
                         onClick={() => { window.open("https://drive.google.com/u/1/uc?id=1486IJXRqbg4imoPuZxW6JDQVPuTHjbGd&export=download", "_blank"); }}
                     >
                         Download
                     </button>
-                    <button className="btn btn-primary close-btn" onClick={onClose}>Close</button>
+                    <button className='px-5 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold' onClick={onClose}>Close</button>
                 </span>
             </div>
         </>,

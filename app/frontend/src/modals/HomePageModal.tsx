@@ -24,7 +24,7 @@ export default function HomePageModal({ open, children, onClose, modalType }: Pr
                     {content}
                 </span>
                 <span className="modal-footer-btns-container">
-                    <button className="btn btn-primary close-btn" onClick={onClose}>Close</button>
+                    <button className='px-5 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold' onClick={onClose}>Close</button>
                 </span>
             </div>
         </>,

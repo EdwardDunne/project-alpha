@@ -10,8 +10,8 @@ interface Props {
     isAuthenticated: boolean | null;
 }
 
-const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
-const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
+const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-[1.4rem] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+const labelClass = 'block text-[1.4rem] font-medium text-gray-700 mb-1'
 
 const LoginPage: React.FC<Props> = ({ login, isAuthenticated }) => {
 
@@ -33,7 +33,7 @@ const LoginPage: React.FC<Props> = ({ login, isAuthenticated }) => {
         <div className='w-full max-w-sm mx-auto mt-20 px-4'>
             <form onSubmit={onSubmit} className='bg-white p-8 rounded-lg shadow-md'>
                 <CSRFToken />
-                <h1 className='text-2xl font-semibold text-center mb-6'>Sign in to DunneWeb</h1>
+                <h1 className='text-[2.4rem] font-semibold text-center mb-6'>Sign in to Omni Trackers</h1>
 
                 <div className='mb-4'>
                     <label className={labelClass} htmlFor='username'>Username</label>
@@ -65,7 +65,7 @@ const LoginPage: React.FC<Props> = ({ login, isAuthenticated }) => {
                 </div>
 
                 <div className='mb-4'>
-                    <label className='flex items-center gap-2 text-sm text-gray-600 cursor-pointer'>
+                    <label className='flex items-center gap-2 text-[1.4rem] text-gray-600 cursor-pointer'>
                         <input type='checkbox' value='remember-me' className='rounded' />
                         Remember me
                     </label>
@@ -78,7 +78,7 @@ const LoginPage: React.FC<Props> = ({ login, isAuthenticated }) => {
                     Sign in
                 </button>
             </form>
-            <p className='mt-4 text-center text-sm text-gray-600'>
+            <p className='mt-4 text-center text-[1.4rem] text-gray-600'>
                 Don't have an account? <Link className='text-brand hover:underline' to='/register'>Sign Up</Link>
             </p>
         </div>

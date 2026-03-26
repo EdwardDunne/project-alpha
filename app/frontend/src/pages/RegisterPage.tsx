@@ -10,8 +10,8 @@ interface Props {
     isAuthenticated: boolean | null;
 }
 
-const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
-const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
+const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-[1.4rem] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+const labelClass = 'block text-[1.4rem] font-medium text-gray-700 mb-1'
 
 const RegisterPage: React.FC<Props> = ({ register, isAuthenticated }) => {
 
@@ -36,8 +36,8 @@ const RegisterPage: React.FC<Props> = ({ register, isAuthenticated }) => {
     return (
         <div className='container mx-auto max-w-md mt-12 px-4'>
             <div className='bg-white p-8 rounded-lg shadow-md'>
-                <h1 className='text-2xl font-semibold mb-1'>Register for an Account</h1>
-                <p className='text-gray-500 text-sm mb-6'>Create an account for Omni Trackers</p>
+                <h1 className='text-[2.4rem] font-semibold mb-1'>Register for an Account</h1>
+                <p className='text-gray-500 text-[1.4rem] mb-6'>Create an account for Omni Trackers</p>
                 <form onSubmit={onSubmit}>
                     <CSRFToken />
                     <div className='mb-4'>
@@ -85,7 +85,7 @@ const RegisterPage: React.FC<Props> = ({ register, isAuthenticated }) => {
                         Register
                     </button>
                 </form>
-                <p className='mt-4 text-center text-sm text-gray-600'>
+                <p className='mt-4 text-center text-[1.4rem] text-gray-600'>
                     Already have an account? <Link className='text-brand hover:underline' to='/login'>Sign In</Link>
                 </p>
             </div>

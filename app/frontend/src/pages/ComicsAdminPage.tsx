@@ -34,7 +34,8 @@ const ComicsAdmin: React.FC<Props> = ({
     const [selectedResultSet, setselectedResultSet] = useState('dunneweb-db');
     const [selectedBook, setSelectedBook] = useState<BookType>({} as BookType);
     const [dwModalOpen, setDwModalOpen] = useState(false);
-    const [dwModalType, setDwModalType] = useState('book')
+    const [dwModalType, setDwModalType] = useState('book');
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
         allBooks.length ? handleChange(selectedResultSet) : getAllBooks()
@@ -45,8 +46,8 @@ const ComicsAdmin: React.FC<Props> = ({
     useEffect(() => { if (selectedResultSet === 'marvel-amz') setDisplayedBooks(marvel_scraped_comics) }, [marvel_scraped_comics])
     useEffect(() => { if (selectedResultSet === 'marvel-api') setDisplayedBooks(marvel_api_comics) }, [marvel_api_comics]);
 
-    const getMarvelOmnis  = (e: React.MouseEvent) => { e.preventDefault(); get_marvel_omnis(); }
-    const scrapeDCOmnis   = (e: React.MouseEvent) => { e.preventDefault(); scrape_dc_omnis(); }
+    const getMarvelOmnis    = (e: React.MouseEvent) => { e.preventDefault(); get_marvel_omnis(); }
+    const scrapeDCOmnis     = (e: React.MouseEvent) => { e.preventDefault(); scrape_dc_omnis(); }
     const scrapeMarvelOmnis = (e: React.MouseEvent) => { e.preventDefault(); scrape_marvel_omnis(); }
 
     const handleChange = (event: any) => {
@@ -63,7 +64,7 @@ const ComicsAdmin: React.FC<Props> = ({
     function displayBooks(book: any, i: number, omniListType: string) {
         let title = '';
         switch (omniListType) {
-            case 'marvelApi':    title = book.title; break;
+            case 'marvelApi':     title = book.title; break;
             case 'dcScraped':
             case 'marvelScraped': title = book.book_title; break;
         }
@@ -71,15 +72,15 @@ const ComicsAdmin: React.FC<Props> = ({
         return (
             <div
                 key={i}
-                className='m-[5px] w-[700px] border border-gray-200 rounded-[10px] flex justify-start cursor-pointer hover:border-gray-400 transition-colors'
+                className='m-[0.5rem] w-full md:w-[70rem] border border-gray-200 rounded-[1rem] flex justify-start cursor-pointer hover:border-gray-400 transition-colors'
                 onClick={() => { setDwModalOpen(true); setDwModalType('book'); setSelectedBook(book) }}
             >
                 <div className='flex justify-center items-center w-[30%]'>
-                    <img src={`${window.location.origin}${book.thumbnail}`} className='h-[200px] object-contain my-4 rounded-[10px]' alt="..."/>
+                    <img src={`${window.location.origin}${book.thumbnail}`} className='h-[20rem] object-contain my-4 rounded-[1rem]' alt="..."/>
                 </div>
                 <div className='flex flex-col justify-center items-start w-[70%] p-4'>
                     <h5 className='font-semibold mb-2'>{title}</h5>
-                    <div className='flex flex-col gap-1 text-sm text-gray-600'>
+                    <div className='flex flex-col gap-1 text-[1.4rem] text-gray-600'>
                         <span><b>Publisher</b>: {book.publisher_name}</span>
                         <span><b>Character</b>: {book.character_name}</span>
                         <span><b>Author</b>: {book.author}</span>
@@ -90,7 +91,43 @@ const ComicsAdmin: React.FC<Props> = ({
         )
     }
 
-    const addBtn = 'mx-[5px] bg-brand hover:bg-brand-dark'
+    const addBtn = 'mx-[0.5rem] bg-brand hover:bg-brand-dark'
+
+    const sidebarContent = (
+        <div className='list-none text-white w-full p-[2rem] flex flex-col h-full'>
+            <ul className='list-none p-0'>
+                <li className='w-full flex justify-center items-center text-center p-2.5 font-semibold text-gray-300 uppercase tracking-wider'>Actions</li>
+                {[
+                    { label: 'Get Marvel Omnis',    handler: getMarvelOmnis },
+                    { label: 'Scrape DC Omnis',     handler: scrapeDCOmnis },
+                    { label: 'Scrape Marvel Omnis', handler: scrapeMarvelOmnis },
+                ].map(({ label, handler }) => (
+                    <li key={label} className='p-2.5' onClick={e => { handler(e as any); setSidebarOpen(false); }}>
+                        <a href="#" className='text-white no-underline hover:text-gray-300 transition-colors text-[1.4rem]'>
+                            {label}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+            <div className='flex flex-col mt-2 gap-1'>
+                {[
+                    { label: 'Add Book',      type: 'addBook' },
+                    { label: 'Add Character', type: 'addCharacter' },
+                    { label: 'Add Publisher', type: 'addPublisher' },
+                ].map(({ label, type }) => (
+                    <Button
+                        key={type}
+                        className={addBtn}
+                        sx={{ backgroundColor: '#536de6', '&:hover': { backgroundColor: '#4558c2' }, margin: '0.2rem', fontSize: '1.4rem' }}
+                        variant="contained"
+                        onClick={() => { setDwModalOpen(true); setDwModalType(type); setSidebarOpen(false); }}
+                    >
+                        {label}
+                    </Button>
+                ))}
+            </div>
+        </div>
+    );
 
     return (
         <>
@@ -104,58 +141,55 @@ const ComicsAdmin: React.FC<Props> = ({
         }
 
         <div className='flex w-full h-full'>
-            {/* Sidebar */}
-            <div className='flex h-[410px] fixed p-0'>
-                <div className='list-none bg-[#313a46] text-white px-5 py-5 m-[15px] rounded-[5px] flex flex-col'>
-                    <ul className='list-none p-0'>
-                        <li className='p-2.5 font-semibold text-gray-300 text-xs uppercase tracking-wider'>Actions</li>
-                        {[
-                            { label: 'Get Marvel Omnis',  handler: getMarvelOmnis },
-                            { label: 'Scrape DC Omnis',   handler: scrapeDCOmnis },
-                            { label: 'Scrape Marvel Omnis', handler: scrapeMarvelOmnis },
-                        ].map(({ label, handler }) => (
-                            <li key={label} className='p-2.5' onClick={handler}>
-                                <a href="#" className='text-white no-underline hover:text-gray-300 transition-colors text-sm'>
-                                    {label}
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
-                    <div className='flex flex-col mt-2 gap-1'>
-                        {[
-                            { label: 'Add Book',      type: 'addBook' },
-                            { label: 'Add Character', type: 'addCharacter' },
-                            { label: 'Add Publisher', type: 'addPublisher' },
-                        ].map(({ label, type }) => (
-                            <Button
-                                key={type}
-                                className={addBtn}
-                                sx={{ backgroundColor: '#536de6', '&:hover': { backgroundColor: '#4558c2' }, margin: '2px' }}
-                                variant="contained"
-                                size="small"
-                                onClick={() => { setDwModalOpen(true); setDwModalType(type) }}
-                            >
-                                {label}
-                            </Button>
-                        ))}
-                    </div>
-                </div>
+
+            {/* Desktop sidebar */}
+            <div className='hidden md:flex w-[30rem] h-[41rem] fixed p-0 bg-[#313a46] m-[2rem] rounded-[0.5rem]'>
+                {sidebarContent}
+            </div>
+
+            {/* Mobile: floating button */}
+            <button
+                className='md:hidden fixed bottom-8 right-8 z-50 w-14 h-14 bg-brand text-white rounded-full shadow-lg flex items-center justify-center text-[2.4rem] leading-none'
+                onClick={() => setSidebarOpen(true)}
+                aria-label="Open admin menu"
+            >
+                ☰
+            </button>
+
+            {/* Mobile: backdrop */}
+            {sidebarOpen && (
+                <div
+                    className='md:hidden fixed inset-0 bg-black/50 z-40'
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
+            {/* Mobile: slide-in drawer */}
+            <div className={`md:hidden fixed top-0 left-0 h-full w-[30rem] max-w-[85vw] bg-[#313a46] z-50 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <button
+                    className='absolute top-4 right-4 text-white text-[2.4rem] leading-none z-10'
+                    onClick={() => setSidebarOpen(false)}
+                    aria-label="Close menu"
+                >
+                    ✕
+                </button>
+                {sidebarContent}
             </div>
 
             {/* Main content */}
-            <div className='w-[calc(100%-265px)] ml-[265px]'>
-                <div className='h-[70px] flex justify-center items-center'>
-                    <h4 className='font-semibold m-0'>Comics Admin</h4>
+            <div className='w-full md:w-[calc(100%-31.5rem)] md:ml-[31.5rem]'>
+                <div className='h-[7rem] flex justify-center items-center'>
+                    <h4 className='font-semibold m-0 text-[3rem]'>Comics Admin</h4>
                 </div>
-                <div className='flex justify-center items-center mb-4'>
-                    <ToggleButtonGroup color="primary" value={selectedResultSet} onChange={handleChange}>
-                        <ToggleButton value="dunneweb-db">Omni Trackers Comics</ToggleButton>
+                <div className='flex justify-center items-center mb-4 overflow-x-auto px-2'>
+                    <ToggleButtonGroup color="primary" value={selectedResultSet} onChange={handleChange} sx={{ '& .MuiToggleButton-root': { fontSize: '1.4rem' } }}>
+                        <ToggleButton value="dunneweb-db">Omni Trackers</ToggleButton>
                         <ToggleButton value="marvel-api">Marvel API</ToggleButton>
                         <ToggleButton value="dc-amz">DC AMZ</ToggleButton>
                         <ToggleButton value="marvel-amz">Marvel AMZ</ToggleButton>
                     </ToggleButtonGroup>
                 </div>
-                <div className='flex flex-col items-center overflow-y-scroll h-[calc(100vh-200px)]'>
+                <div className='flex flex-col items-center overflow-y-scroll h-[calc(100vh-20rem)] px-2'>
                     {displayedBooks.map((book, i) =>
                         displayBooks(book, i,
                             selectedResultSet === 'dunneweb-db' ? 'marvelApi' :
@@ -171,10 +205,10 @@ const ComicsAdmin: React.FC<Props> = ({
 }
 
 const mapStateToProps = (state: RootState) => ({
-    marvel_api_comics:   state.comics.marvel_api_comics,
-    dc_scraped_comics:   state.comics.dc_scraped_comics,
+    marvel_api_comics:     state.comics.marvel_api_comics,
+    dc_scraped_comics:     state.comics.dc_scraped_comics,
     marvel_scraped_comics: state.comics.marvel_scraped_comics,
-    allBooks:            state.comics.all_books,
+    allBooks:              state.comics.all_books,
 })
 
 export default connect(mapStateToProps, {
