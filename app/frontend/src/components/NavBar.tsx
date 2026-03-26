@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { connect } from 'react-redux';
 import { logout } from '../actions/auth';
@@ -10,10 +10,33 @@ interface Props {
     logout: () => void;
 }
 
+const INFO_TEXT = "Omni Trackers is built to make finding and collecting comic book omnibuses easier than ever — with plans to expand to all collected editions. Browse and filter by character, publisher, and more, follow dynamic reading orders, and build out your collection without missing a single volume. Every entry is backed by cover art, not just text, and all data is stored in a dedicated, carefully curated database so the information you need is always easy to find.";
+
 const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
 
     const [menuOpen, setMenuOpen] = useState(false);
+    const [infoOpen, setInfoOpen] = useState(false);
+    const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const infoRef = useRef<HTMLDivElement>(null);
     const close = () => setMenuOpen(false);
+
+    const handleInfoEnter = () => {
+        if (closeTimeout.current) clearTimeout(closeTimeout.current);
+        setInfoOpen(true);
+    };
+    const handleInfoLeave = () => {
+        closeTimeout.current = setTimeout(() => setInfoOpen(false), 150);
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (infoRef.current && !infoRef.current.contains(e.target as Node)) {
+                setInfoOpen(false);
+            }
+        };
+        if (infoOpen) document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [infoOpen]);
 
     const linkClass = 'no-underline text-gray-500 hover:text-gray-700 transition-colors whitespace-nowrap'
     const mobileLinkClass = 'no-underline text-gray-700 hover:text-brand transition-colors text-[1.6rem] py-3 px-4 block border-b border-gray-100'
@@ -103,7 +126,29 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
         <>
         {/* Nav bar */}
         <nav className='flex justify-between items-center w-full px-4 bg-[#dbdbdb] h-[6rem] shrink-0'>
-            <Link className='text-black/90 no-underline text-[2rem] font-bold whitespace-nowrap' to="/">Omni Trackers</Link>
+            <div className='flex items-center gap-2'>
+                <Link className='text-black/90 no-underline text-[2rem] font-bold whitespace-nowrap' to="/">Omni Trackers</Link>
+                <div className='relative flex items-center' ref={infoRef}>
+                    <button
+                        className='w-[2rem] h-[2rem] rounded-full bg-gray-400 hover:bg-gray-500 text-white text-[1.2rem] font-bold flex items-center justify-center transition-colors leading-none'
+                        onMouseEnter={handleInfoEnter}
+                        onMouseLeave={handleInfoLeave}
+                        onClick={() => setInfoOpen(o => !o)}
+                        aria-label="About Omni Trackers"
+                    >
+                        i
+                    </button>
+                    {infoOpen && (
+                        <div
+                            className='fixed top-[7rem] left-4 z-50 w-[32rem] max-w-[calc(100vw-2rem)] bg-white border border-gray-200 rounded-lg shadow-lg p-4 text-[1.4rem] text-gray-700 leading-relaxed'
+                            onMouseEnter={handleInfoEnter}
+                            onMouseLeave={handleInfoLeave}
+                        >
+                            {INFO_TEXT}
+                        </div>
+                    )}
+                </div>
+            </div>
 
             {/* Desktop links — hidden on mobile */}
             <ul className='hidden md:flex items-center list-none m-0 p-0'>
