@@ -34,7 +34,7 @@ const RegisterPage: React.FC<Props> = ({ register, isAuthenticated }) => {
     if (accountCreated)  return <Navigate to='/login' />;
 
     return (
-        <div className='w-full md:max-w-md mx-auto mt-12 px-4'>
+        <div className='w-full md:max-w-[48rem] mx-auto mt-12 px-4'>
             <div className='bg-white p-8 rounded-lg shadow-md'>
                 <h1 className='text-[2.4rem] font-semibold mb-1'>Register for an Account</h1>
                 <p className='text-gray-500 text-[1.4rem] mb-6'>Create an account for Omni Trackers</p>
