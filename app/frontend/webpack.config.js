@@ -2,7 +2,10 @@
 const path = require("path");
 const webpack = require("webpack");
 
+const isProd = process.env.NODE_ENV === "production";
+
 module.exports = {
+  mode: isProd ? "production" : "development",
   entry: "./src/index.tsx",
   output: {
     path: path.resolve(__dirname, "./static/frontend"),
@@ -35,15 +38,14 @@ module.exports = {
     ],
   },
   optimization: {
-    minimize: true,
+    minimize: isProd,
   },
   plugins: [
     new webpack.DefinePlugin({
       "process.env": {
-        // This has effect on the react lib size
-        NODE_ENV: JSON.stringify("development"),
+        NODE_ENV: JSON.stringify(isProd ? "production" : "development"),
       },
     }),
   ],
-  devtool: 'eval-source-map'
+  devtool: isProd ? false : 'eval-source-map',
 };

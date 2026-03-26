@@ -30,7 +30,7 @@ const LoginPage: React.FC<Props> = ({ login, isAuthenticated }) => {
         return <Navigate to='/dashboard' />;
 
     return (
-        <div className='w-full max-w-sm mx-auto mt-20 px-4'>
+        <div className='w-full md:max-w-sm mx-auto mt-20 px-4'>
             <form onSubmit={onSubmit} className='bg-white p-8 rounded-lg shadow-md'>
                 <CSRFToken />
                 <h1 className='text-[2.4rem] font-semibold text-center mb-6'>Sign in to Omni Trackers</h1>
