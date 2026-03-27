@@ -8,12 +8,14 @@ interface Props {
 }
 
 const Book: React.FC<Props> = ({ book }) => {
+    const coverImg = book.thumbnail ? `${window.location.origin}${book.thumbnail}` : book.coverImg
+
     return (
         <div className='flex flex-col md:flex-row justify-around items-center gap-6'>
             <div className='flex-none'>
                 <img
                     className='w-32 md:w-48 rounded-[1rem]'
-                    src={`${window.location.origin}${book.thumbnail}`}
+                    src={`${coverImg}`}
                     alt={book.title}
                 />
             </div>

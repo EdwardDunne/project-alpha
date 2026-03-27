@@ -9,6 +9,7 @@ export interface Book {
     publisher_name: string;
     character: number;
     character_name: string;
+    coverImg?: string;
 }
 
 export interface Character {
