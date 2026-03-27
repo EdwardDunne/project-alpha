@@ -10,7 +10,7 @@ interface Props {
     logout: () => void;
 }
 
-const INFO_TEXT = "Omni Trackers is built to make finding and collecting comic book omnibuses easier than ever — with plans to expand to all collected editions. Browse and filter by character, publisher, and more, follow dynamic reading orders, and build out your collection without missing a single volume. Every entry is backed by cover art, not just text, and all data is stored in a dedicated, carefully curated database so the information you need is always easy to find.";
+const INFO_TEXT = "Omni Trackers is built to make finding and collecting comic book omnibuses easier than ever, with plans to expand to all collected editions. Browse and filter by character, publisher, and more, follow dynamic reading orders, and build out your collection without missing a single volume. Every entry is backed by cover art, not just text, and all data is stored in a dedicated, carefully curated database so the information you need is always easy to find.";
 
 const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
 
@@ -20,11 +20,13 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
     const infoRef = useRef<HTMLDivElement>(null);
     const close = () => setMenuOpen(false);
 
-    const handleInfoEnter = () => {
+    const handleInfoEnter = (e: React.PointerEvent) => {
+        if (e.pointerType === 'touch') return;
         if (closeTimeout.current) clearTimeout(closeTimeout.current);
         setInfoOpen(true);
     };
-    const handleInfoLeave = () => {
+    const handleInfoLeave = (e: React.PointerEvent) => {
+        if (e.pointerType === 'touch') return;
         closeTimeout.current = setTimeout(() => setInfoOpen(false), 150);
     };
 
@@ -131,8 +133,8 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
                 <div className='relative flex items-center' ref={infoRef}>
                     <button
                         className='w-[2rem] h-[2rem] rounded-full bg-gray-400 hover:bg-gray-500 text-white text-[1.2rem] font-bold flex items-center justify-center transition-colors leading-none'
-                        onMouseEnter={handleInfoEnter}
-                        onMouseLeave={handleInfoLeave}
+                        onPointerEnter={handleInfoEnter}
+                        onPointerLeave={handleInfoLeave}
                         onClick={() => setInfoOpen(o => !o)}
                         aria-label="About Omni Trackers"
                     >
