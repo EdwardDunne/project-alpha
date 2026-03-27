@@ -42,12 +42,18 @@ const ComicsAdmin: React.FC<Props> = ({
     }, [])
 
     useEffect(() => { setDisplayedBooks(allBooks) }, [allBooks])
-    useEffect(() => { if (selectedResultSet === 'dc-amz') setDisplayedBooks(dc_scraped_comics) }, [dc_scraped_comics])
-    useEffect(() => { if (selectedResultSet === 'marvel-amz') setDisplayedBooks(marvel_scraped_comics) }, [marvel_scraped_comics])
+    useEffect(() => { 
+        if (selectedResultSet === 'dc-walts') 
+            setDisplayedBooks(dc_scraped_comics.sort((a, b) => a.title.localeCompare(b.title))) 
+        }, [dc_scraped_comics])
+    useEffect(() => { if (selectedResultSet === 'marvel-walts') setDisplayedBooks(marvel_scraped_comics) }, [marvel_scraped_comics])
     useEffect(() => { if (selectedResultSet === 'marvel-api') setDisplayedBooks(marvel_api_comics) }, [marvel_api_comics]);
 
-    const getMarvelOmnis    = (e: React.MouseEvent) => { e.preventDefault(); get_marvel_omnis(); }
-    const scrapeDCOmnis     = (e: React.MouseEvent) => { e.preventDefault(); scrape_dc_omnis(); }
+    const getMarvelOmnis = (e: React.MouseEvent) => { e.preventDefault(); get_marvel_omnis(); }
+    const scrapeDCOmnis = (e: React.MouseEvent) => {
+        e.preventDefault()
+        scrape_dc_omnis()
+    }
     const scrapeMarvelOmnis = (e: React.MouseEvent) => { e.preventDefault(); scrape_marvel_omnis(); }
 
     const handleChange = (event: any) => {
@@ -56,17 +62,25 @@ const ComicsAdmin: React.FC<Props> = ({
         setDisplayedBooks(
             v === 'dunneweb-db' ? allBooks :
             v === 'marvel-api'  ? marvel_api_comics :
-            v === 'dc-amz'      ? dc_scraped_comics :
-            v === 'marvel-amz'  ? marvel_scraped_comics : marvel_scraped_comics
+            v === 'dc-walts'      ? dc_scraped_comics :
+            v === 'marvel-walts'  ? marvel_scraped_comics : marvel_scraped_comics
         );
     };
 
     function displayBooks(book: any, i: number, omniListType: string) {
         let title = '';
+        let coverImage = `${window.location.origin}${book.thumbnail}`
         switch (omniListType) {
-            case 'marvelApi':     title = book.title; break;
+            case 'marvelApi': 
+                title = book.title
+                break
             case 'dcScraped':
-            case 'marvelScraped': title = book.book_title; break;
+                title = book.title
+                coverImage = book.coverImg
+                break
+            case 'marvelScraped':
+                title = book.book_title
+                break
         }
 
         return (
@@ -76,7 +90,7 @@ const ComicsAdmin: React.FC<Props> = ({
                 onClick={() => { setDwModalOpen(true); setDwModalType('book'); setSelectedBook(book) }}
             >
                 <div className='flex justify-center items-center w-[30%]'>
-                    <img src={`${window.location.origin}${book.thumbnail}`} className='h-[20rem] object-contain my-4 rounded-[1rem]' alt="..."/>
+                    <img src={`${coverImage}`} className='h-[20rem] object-contain my-4 rounded-[1rem]' alt="..."/>
                 </div>
                 <div className='flex flex-col justify-center items-start w-[70%] p-4'>
                     <h5 className='font-semibold mb-2'>{title}</h5>
@@ -102,7 +116,10 @@ const ComicsAdmin: React.FC<Props> = ({
                     { label: 'Scrape DC Omnis',     handler: scrapeDCOmnis },
                     { label: 'Scrape Marvel Omnis', handler: scrapeMarvelOmnis },
                 ].map(({ label, handler }) => (
-                    <li key={label} className='p-2.5' onClick={e => { handler(e as any); setSidebarOpen(false); }}>
+                    <li key={label} className='p-2.5' onClick={e => { 
+                        handler(e as any) 
+                        setSidebarOpen(false)
+                    }}>
                         <a href="#" className='text-white no-underline hover:text-gray-300 transition-colors text-[1.4rem]'>
                             {label}
                         </a>
@@ -111,7 +128,7 @@ const ComicsAdmin: React.FC<Props> = ({
             </ul>
             <div className='flex flex-col mt-2 gap-1'>
                 {[
-                    { label: 'Add Book',      type: 'addBook' },
+                    { label: 'Add Book', type: 'addBook' },
                     { label: 'Add Character', type: 'addCharacter' },
                     { label: 'Add Publisher', type: 'addPublisher' },
                 ].map(({ label, type }) => (
@@ -120,7 +137,11 @@ const ComicsAdmin: React.FC<Props> = ({
                         className={addBtn}
                         sx={{ backgroundColor: '#536de6', '&:hover': { backgroundColor: '#4558c2' }, margin: '0.2rem', fontSize: '1.4rem' }}
                         variant="contained"
-                        onClick={() => { setDwModalOpen(true); setDwModalType(type); setSidebarOpen(false); }}
+                        onClick={() => { 
+                            setDwModalOpen(true)
+                            setDwModalType(type)
+                            setSidebarOpen(false)
+                        }}
                     >
                         {label}
                     </Button>
@@ -133,7 +154,7 @@ const ComicsAdmin: React.FC<Props> = ({
         <>
         {dwModalOpen &&
             <DunneWebModal onClose={() => setDwModalOpen(false)}>
-                {dwModalType === 'book'         ? <Book book={selectedBook} setDwModalOpen={setDwModalOpen}/> :
+                {dwModalType === 'book' ? <Book book={selectedBook} setDwModalOpen={setDwModalOpen}/> :
                  dwModalType === 'addBook'       ? <AddBook setDwModalOpen={setDwModalOpen}/> :
                  dwModalType === 'addCharacter'  ? <AddCharacter setDwModalOpen={setDwModalOpen}/> :
                  dwModalType === 'addPublisher'  ? <AddPublisher setDwModalOpen={setDwModalOpen}/> : ''}
@@ -185,16 +206,17 @@ const ComicsAdmin: React.FC<Props> = ({
                     <ToggleButtonGroup color="primary" value={selectedResultSet} onChange={handleChange} sx={{ '& .MuiToggleButton-root': { fontSize: '1.4rem' } }}>
                         <ToggleButton value="dunneweb-db">Omni Trackers</ToggleButton>
                         <ToggleButton value="marvel-api">Marvel API</ToggleButton>
-                        <ToggleButton value="dc-amz">DC AMZ</ToggleButton>
-                        <ToggleButton value="marvel-amz">Marvel AMZ</ToggleButton>
+                        <ToggleButton value="dc-walts">DC Walts</ToggleButton>
+                        <ToggleButton value="marvel-walts">Marvel Walts</ToggleButton>
                     </ToggleButtonGroup>
                 </div>
                 <div className='flex flex-col items-center overflow-y-scroll h-[calc(100vh-20rem)] px-2'>
+                    {selectedResultSet === 'dc-walts' && `Scraped Books Count: ${displayedBooks.length}`}
                     {displayedBooks.map((book, i) =>
                         displayBooks(book, i,
                             selectedResultSet === 'dunneweb-db' ? 'marvelApi' :
                             selectedResultSet === 'marvel-api'  ? 'marvelApi' :
-                            selectedResultSet === 'dc-amz'      ? 'dcScraped' : 'marvelScraped'
+                            selectedResultSet === 'dc-walts' ? 'dcScraped' : 'marvelScraped'
                         )
                     )}
                 </div>

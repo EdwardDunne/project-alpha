@@ -51,7 +51,7 @@ export const scrape_dc_omnis = () => async (dispatch: Dispatch) => {
 
     const toastId = toast.loading("Scraping DC Omnis...");
     try {
-        const res = await axios.get(`${window.location.origin}/api/scrape-dc-omnis2`, config);
+        const res = await axios.get(`${window.location.origin}/api/scrape-walts-dc`, config);
 
         if (res.data.error) {
             toast.dismiss(toastId);
