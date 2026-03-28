@@ -10,8 +10,9 @@ interface Props {
 const DunneWebModal: React.FC<Props> = ({ onClose, children }) => {
     return ReactDom.createPortal(
         <>
-            <div className='modal-overlay' onClick={onClose}/>
-            <div className='dunne-web-modal'>
+            <div className='fixed inset-0 bg-black/[0.43] z-[1000]' onClick={onClose}/>
+            <div className='fixed bg-white z-[1001] rounded-[0.6rem] max-h-[90dvh] overflow-y-auto w-[92vw] px-[2rem] py-[2.5rem] md:w-[50vw] md:px-[5rem] md:py-[5rem]'
+                style={{top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}>
                 <button
                     className='absolute top-2.5 right-2.5 w-9 h-9 rounded-full border-2 border-brand bg-white text-brand font-bold text-[1.4rem] hover:bg-brand hover:text-white transition-colors'
                     onClick={onClose}
