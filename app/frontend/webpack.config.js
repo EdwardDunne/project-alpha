@@ -10,7 +10,6 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "./static/frontend"),
     filename: "[name].js",
-    hashFunction: 'sha256',
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js"],

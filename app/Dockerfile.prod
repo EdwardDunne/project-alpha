@@ -10,7 +10,7 @@ COPY ./frontend/package*.json ./
 RUN npm install
 
 COPY ./frontend ./
-RUN NODE_ENV=production npm run build
+RUN NODE_OPTIONS=--openssl-legacy-provider NODE_ENV=production npm run build
 
 
 ###########
