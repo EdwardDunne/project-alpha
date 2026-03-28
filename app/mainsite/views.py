@@ -1,5 +1,6 @@
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.utils.decorators import method_decorator
+from django.core.cache import cache
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions
@@ -7,6 +8,8 @@ from django.contrib import auth
 from django.contrib.auth.models import User
 from mainsite.models import Book, Character, Publisher, UserProfile
 from .serializers import BookSerializer, CharacterSerializer, PublisherSerializer, UserSerializer, UserProfileSerializer
+
+CACHE_TTL = 60 * 60 * 24  # 24 hours
 
 
 @method_decorator(ensure_csrf_cookie, name='dispatch')
@@ -189,9 +192,18 @@ class GetBooksView(APIView):
             action = data['action']
 
             if action == 'get_all_books':
+                if not request.user.is_staff:
+                    cached = cache.get('all_books')
+                    if cached is not None:
+                        return Response({'success': 'true', 'books': cached})
+
                 all_books = [BookSerializer(book).data for book in Book.objects.all()]
+
+                if not request.user.is_staff:
+                    cache.set('all_books', all_books, CACHE_TTL)
+
                 return Response({'success': 'true', 'books': all_books})
-            
+
             return Response({'error': 'no action'})
         except:
             return Response({'error': 'Something went wrong when updating publishers'})
