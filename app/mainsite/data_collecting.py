@@ -100,79 +100,65 @@ class ScrapeWaltsDC(APIView):
 
     def get(self, request, format=None):
         omnis = []
+        next_page_url = request.query_params.get('nextPageUrl')
+
         try:
             walts_base_url = 'https://waltscomicshop.com'
-            url = 'https://waltscomicshop.com/collections/dc-omnibus-collections?sort_by=title-ascending&page=1'
+            url = walts_base_url + next_page_url
+            # url = 'https://waltscomicshop.com/collections/dc-omnibus-collections?sort_by=title-ascending&page=1'
             
             response = requests.get(url)
             soup = BeautifulSoup(response.content, 'html.parser')
 
-            # Get the number of pages in this result set
             pagination_container = soup.find('div', {'class': 'pagination'})
             next_page_url = pagination_container.find('a', {'class': 'pagination__next'})['href']
-            # total_page_count = pagination_container.find_all(True, {'class': 's-pagination-item'})[-2].getText()
-            # total_page_count = int(total_page_count) + 1
 
-            
+            # while(next_page_url):
 
-            # product-list product-list--collection
-            # product-item
+            books = soup.find_all("div", {'class':['product-item']})
 
-            # page_counter = 2
-            while(next_page_url):
+            for book_item in books:
+                book_details_url = book_item.find('a', {'class': 'product-item__image-wrapper'})['href']
+                book_response = requests.get(walts_base_url + book_details_url)
+                book_soup = BeautifulSoup(book_response.content, 'html.parser')
 
-                books = soup.find_all("div", {'class':['product-item']})
+                cover_img = 'https:' + book_soup.find('img', {'class': 'product-gallery__image'})['src']
 
-                for book_item in books:
-                    book_details_url = book_item.find('a', {'class': 'product-item__image-wrapper'})['href']
-                    book_response = requests.get(walts_base_url + book_details_url)
-                    book_soup = BeautifulSoup(book_response.content, 'html.parser')
+                title_node = book_soup.find('h1', {'class': 'product-meta__title'})
+                title = title_node.get_text() if title_node else ''
 
-                    cover_img = 'https:' + book_soup.find('img', {'class': 'product-gallery__image'})['src']
+                description_node = book_soup.find('div', {'class': 'product-block-list__item--description'})
+                description = description_node.get_text() if description_node else ''
 
-                    title_node = book_soup.find('h1', {'class': 'product-meta__title'})
-                    title = title_node.get_text() if title_node else ''
-
-                    description_node = book_soup.find('div', {'class': 'product-block-list__item--description'})
-                    description = description_node.get_text() if description_node else ''
-
-                    page_count = 100
+                page_count = 100
 
 
-                    omni = {
-                        # 'book_asin': book_asin,
-                        'title': title,
-                        'description': description,
-                        'publisher_name': 'DC Comics',
-                        'author': '',
-                        'artist': '',
-                        'pageCount': page_count,
-                        'coverImg': cover_img,
-                        'bookUrl': book_details_url
-                    }
-                    # omnis.append(omni)
+                omni = {
+                    'title': title,
+                    'description': description,
+                    'publisher_name': 'DC Comics',
+                    'author': '',
+                    'artist': '',
+                    'page_count': page_count,
+                    'thumbnail_url': cover_img,
+                    'book_url': book_details_url
+                }
 
-                    print(omni)
-                    omnis.append(omni)
+                # print(omni)
+                omnis.append(omni)
 
-                pagination_container = soup.find('div', {'class': 'pagination'})
-                next_page_node = pagination_container.find('a', {'class': 'pagination__next'})
-                next_page_url = next_page_node['href'] if next_page_node else None
+            # pagination_container = soup.find('div', {'class': 'pagination'})
+            # next_page_node = pagination_container.find('a', {'class': 'pagination__next'})
+            # next_page_url = next_page_node['href'] if next_page_node else None
 
-                if next_page_url:
-                    response = requests.get(walts_base_url + next_page_url)
-                    soup = BeautifulSoup(response.content, 'html.parser')
-
-
-                # next_page_url = 'https://www.amazon.com/s?k=omnibus&i=stripbooks&rh=n%3A193766%2Cp_n_feature_eighteen_browse-bin%3A7421487011%2Cp_n_feature_nineteen_browse-bin%3A7421491011&s=date-desc-rank&dc&page=' + str(page_counter) + '&qid=1667757863&rnid=7421489011&ref=sr_pg_1'
-                # response = requests.get(next_page_url, headers=headers)
-                # soup = BeautifulSoup(response.content, 'html.parser')
-
-                # page_counter += 1
+            # if next_page_url:
+            #     response = requests.get(walts_base_url + next_page_url)
+            #     soup = BeautifulSoup(response.content, 'html.parser')
 
             return Response({
                 'success': True,
-                'books': omnis
+                'books': omnis,
+                'next_page_url': next_page_url
             })
 
         except Exception as e:
