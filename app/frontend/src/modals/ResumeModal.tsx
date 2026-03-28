@@ -14,23 +14,14 @@ export default function ResumeModal({ open, children, onClose }: Props) {
 
     return ReactDom.createPortal(
         <>
-            <div className='modal-overlay' onClick={onClose}/>
-            <div className='hex-modal' style={
-                {
-                    height: '80vh',
-                    width: '80vw',
-                    maxWidth: '106rem',
-                    padding: '2rem',
-                    justifyContent: 'space-between',
-                    flexDirection: 'column',
-                    flexWrap: 'nowrap',
-                }}>
-                <h1 style={{textAlign: 'center', width: '100%'}}>{modal_title}</h1>
-                <span style={{textAlign: 'center', width: '100%', height: '60vh', overflow: 'scroll'}}>
-                <img src="https://drive.google.com/thumbnail?id=1486IJXRqbg4imoPuZxW6JDQVPuTHjbGd&sz=w1000" alt=""/>
-                <img src="https://drive.google.com/thumbnail?id=1uxFUcBdgGHew7DUdjlfhkSBU02XdyKK3&sz=w1000" alt=""/>
+            <div className='fixed inset-0 bg-black/[0.43] z-[1000]' onClick={onClose}/>
+            <div className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white z-[1001] rounded-[0.6rem] max-h-[90dvh] overflow-y-auto w-[92vw] px-[2rem] py-[2.5rem] md:w-[80vw] md:max-w-[106rem] md:h-[80vh] md:p-[2rem] flex flex-col flex-nowrap justify-between items-center'>
+                <h1 className='text-center w-full'>{modal_title}</h1>
+                <span className='text-center w-full h-[60vh] overflow-scroll'>
+                    <img src="https://drive.google.com/thumbnail?id=1486IJXRqbg4imoPuZxW6JDQVPuTHjbGd&sz=w1000" alt=""/>
+                    <img src="https://drive.google.com/thumbnail?id=1uxFUcBdgGHew7DUdjlfhkSBU02XdyKK3&sz=w1000" alt=""/>
                 </span>
-                <span className="modal-footer-btns-container">
+                <span className='flex justify-end items-center w-full'>
                     <button
                         className='px-5 py-2 mr-4 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold'
                         onClick={() => { window.open("https://drive.google.com/u/1/uc?id=1486IJXRqbg4imoPuZxW6JDQVPuTHjbGd&export=download", "_blank"); }}

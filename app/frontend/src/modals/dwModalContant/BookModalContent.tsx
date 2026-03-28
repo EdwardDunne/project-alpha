@@ -35,7 +35,7 @@ const BookModalContent: React.FC<Props> = ({ book }) => {
                     <span>
                         <b>Author</b>: {book.author}
                     </span>
-                    <span className="max-h-28 overflow-y-scroll">
+                    <span className="max-h-28 overflow-y-auto">
                         <b>Description</b>: {book.description}
                     </span>
                     <span>
