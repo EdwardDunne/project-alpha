@@ -143,16 +143,18 @@ class UpdateUserProfileView(APIView):
             email = data['email']
 
             user = User.objects.get(id=user.id)
+            UserProfile.objects.get_or_create(user=user)
             UserProfile.objects.filter(user=user).update(
                 first_name=first_name,
                 last_name=last_name,
                 email=email
             )
-            
+
             user_profile = UserProfile.objects.get(user=user)
             user_profile = UserProfileSerializer(user_profile)
             return Response({'profile': user_profile.data, 'username': str(user.username)})
-        except:
+        except Exception as e:
+            print(e)
             return Response({'error': 'Something went wrong when updating user profile'})
 
 class BookView(APIView):
