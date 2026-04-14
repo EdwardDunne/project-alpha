@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react"
 import {
     get_marvel_omnis,
     getAllBooks,
-    scrape_dc_omnis,
+    scrape_dc_omnis_walts,
+    scrape_dc_omnis_panel_bound,
     scrape_marvel_omnis,
 } from "../actions/comics"
 import { connect } from "react-redux"
@@ -16,13 +17,16 @@ import AddCharacterModalContent from "../modals/dwModalContant/AddCharacterModal
 import { RootState } from "../reducers"
 import { type Book } from "types"
 import BookModalContent from "modals/dwModalContant/BookModalContent"
+import { ScrapedBooksPage } from "reducers/comics"
 
 type Props = {
     get_marvel_omnis: () => void
     marvel_api_comics: Book[]
-    scrape_dc_omnis: (nextPageUrlDcWalts?: string) => void
+    scrape_dc_omnis_walts: (nextPageUrlDcWalts?: string) => void
+    scrape_dc_omnis_panel_bound: (nextPageUrlPbWalts?: string) => void
     scrape_marvel_omnis: () => void
-    waltsDcScrapeResponse: { nextPageUrl: string; books: Book[] }
+    waltsDcScrapeResponse: ScrapedBooksPage
+    pbDcScrapeResponse: ScrapedBooksPage
     marvel_scraped_comics: Book[]
     allBooks: Book[]
     getAllBooks: () => void
@@ -31,9 +35,11 @@ type Props = {
 const ComicsAdmin: React.FC<Props> = ({
     get_marvel_omnis,
     marvel_api_comics,
-    scrape_dc_omnis,
+    scrape_dc_omnis_walts,
+    scrape_dc_omnis_panel_bound,
     scrape_marvel_omnis,
     waltsDcScrapeResponse,
+    pbDcScrapeResponse,
     marvel_scraped_comics,
     allBooks,
     getAllBooks,
@@ -48,6 +54,8 @@ const ComicsAdmin: React.FC<Props> = ({
 
     const [prevPageUrlDcWalts, setPrevPageUrlDcWalts] = useState<string>("")
     const [nextPageUrlDcWalts, setNextPageUrlDcWalts] = useState<string>("")
+    const [prevPageUrlDcPb, setPrevPageUrlDcPb] = useState<string>("")
+    const [nextPageUrlDcPb, setNextPageUrlDcPb] = useState<string>("")
 
     useEffect(() => {
         allBooks.length ? handleChange(selectedResultSet) : getAllBooks()
@@ -58,15 +66,36 @@ const ComicsAdmin: React.FC<Props> = ({
     }, [allBooks])
 
     useEffect(() => {
-        if (selectedResultSet === "dc-walts")
+        if (selectedResultSet === "dc-walts") {
             setDisplayedBooks(
                 [...waltsDcScrapeResponse.books].sort((a, b) =>
                     a.title.localeCompare(b.title),
                 ),
             )
+        } else if (selectedResultSet === "dc-pb") {
+            setDisplayedBooks(
+                [...pbDcScrapeResponse.books].sort((a, b) =>
+                    a.title.localeCompare(b.title),
+                ),
+            )
+        }
+
         setPrevPageUrlDcWalts(nextPageUrlDcWalts)
         setNextPageUrlDcWalts(waltsDcScrapeResponse.nextPageUrl)
     }, [waltsDcScrapeResponse])
+
+    useEffect(() => {
+        if (selectedResultSet === "dc-pb") {
+            setDisplayedBooks(
+                [...pbDcScrapeResponse.books].sort((a, b) =>
+                    a.title.localeCompare(b.title),
+                ),
+            )
+        }
+
+        setPrevPageUrlDcPb(nextPageUrlDcPb)
+        setNextPageUrlDcPb(pbDcScrapeResponse.nextPageUrl)
+    }, [pbDcScrapeResponse])
 
     useEffect(() => {
         if (selectedResultSet === "marvel-walts")
@@ -83,13 +112,22 @@ const ComicsAdmin: React.FC<Props> = ({
         get_marvel_omnis()
     }
 
-    const scrapeDCOmnis = (e: React.MouseEvent) => {
+    const scrapeDComnisWalts = (e: React.MouseEvent) => {
         e.preventDefault()
-        scrape_dc_omnis()
+        scrape_dc_omnis_walts()
     }
 
     const getNewPageDcWalts = (nextPageUrl: string) => {
-        scrape_dc_omnis(nextPageUrl)
+        scrape_dc_omnis_walts(nextPageUrl)
+    }
+
+    const scrapeDComnisPB = (e: React.MouseEvent) => {
+        e.preventDefault()
+        scrape_dc_omnis_panel_bound()
+    }
+
+    const getNewPageDcPB = (nextPageUrl: string) => {
+        scrape_dc_omnis_panel_bound(nextPageUrl)
     }
 
     const scrapeMarvelOmnis = (e: React.MouseEvent) => {
@@ -97,23 +135,23 @@ const ComicsAdmin: React.FC<Props> = ({
         scrape_marvel_omnis()
     }
 
-    const handleChange = (event: any) => {
-        const v = event?.target?.value ?? "dunneweb-db"
-        setselectedResultSet(v)
+    const handleChange = (event) => {
+        const tab = event?.target?.value ?? "dunneweb-db"
+        setselectedResultSet(tab)
         setDisplayedBooks(
-            v === "dunneweb-db"
+            tab === "dunneweb-db"
                 ? allBooks
-                : v === "marvel-api"
-                  ? marvel_api_comics
-                  : v === "dc-walts"
+                : tab === "dc-pb"
+                  ? pbDcScrapeResponse.books
+                  : tab === "dc-walts"
                     ? waltsDcScrapeResponse.books
-                    : v === "marvel-walts"
+                    : tab === "marvel-walts"
                       ? marvel_scraped_comics
                       : marvel_scraped_comics,
         )
     }
 
-    function displayBooks(book: Book, i: number, omniListType: string) {
+    function displayBook(book: Book, i: number, omniListType: string) {
         console.log(book)
         let title = ""
         let thumbnail_url = `${window.location.origin}${book.thumbnail}`
@@ -184,7 +222,11 @@ const ComicsAdmin: React.FC<Props> = ({
                     { label: "Get Marvel Omnis", handler: getMarvelOmnis },
                     {
                         label: "Scrape DC Omnis - Walts",
-                        handler: scrapeDCOmnis,
+                        handler: scrapeDComnisWalts,
+                    },
+                    {
+                        label: "Scrape DC Omnis - Panel Bound",
+                        handler: scrapeDComnisPB,
                     },
                     {
                         label: "Scrape Marvel Omnis",
@@ -373,8 +415,8 @@ const ComicsAdmin: React.FC<Props> = ({
                             <ToggleButton value="dunneweb-db">
                                 Omni Trackers
                             </ToggleButton>
-                            <ToggleButton value="marvel-api">
-                                Marvel API
+                            <ToggleButton value="dc-pb">
+                                DC Panel Bound
                             </ToggleButton>
                             <ToggleButton value="dc-walts">
                                 DC Walts
@@ -389,13 +431,13 @@ const ComicsAdmin: React.FC<Props> = ({
                             `Scraped Books Count: ${displayedBooks.length}`}
                         {pagination()}
                         {displayedBooks.map((book, i) =>
-                            displayBooks(
+                            displayBook(
                                 book,
                                 i,
                                 selectedResultSet === "dunneweb-db"
                                     ? "marvelApi"
-                                    : selectedResultSet === "marvel-api"
-                                      ? "marvelApi"
+                                    : selectedResultSet === "dc-pb"
+                                      ? "dcScraped"
                                       : selectedResultSet === "dc-walts"
                                         ? "dcScraped"
                                         : "marvelScraped",
@@ -412,13 +454,15 @@ const ComicsAdmin: React.FC<Props> = ({
 const mapStateToProps = (state: RootState) => ({
     marvel_api_comics: state.comics.marvel_api_comics,
     waltsDcScrapeResponse: state.comics.waltsDcScrapeResponse,
+    pbDcScrapeResponse: state.comics.pbDcScrapeResponse,
     marvel_scraped_comics: state.comics.marvel_scraped_comics,
     allBooks: state.comics.all_books,
 })
 
 export default connect(mapStateToProps, {
     get_marvel_omnis,
-    scrape_dc_omnis,
+    scrape_dc_omnis_walts,
+    scrape_dc_omnis_panel_bound,
     scrape_marvel_omnis,
     getAllBooks,
 })(ComicsAdmin)

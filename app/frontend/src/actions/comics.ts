@@ -5,8 +5,10 @@ import { toast } from "react-toastify"
 import {
     LOAD_MARVEL_API_OMNIS_SUCCESS,
     LOAD_MARVEL_API_OMNIS_FAIL,
-    LOAD_DC_SCRAPED_OMNIS_SUCCESS,
-    LOAD_DC_SCRAPED_OMNIS_FAIL,
+    LOAD_DC_SCRAPED_OMNIS_WALTS_SUCCESS,
+    LOAD_DC_SCRAPED_OMNIS_WALTS_FAIL,
+    LOAD_DC_SCRAPED_OMNIS_PB_SUCCESS,
+    LOAD_DC_SCRAPED_OMNIS_PB_FAIL,
     LOAD_MARVEL_SCRAPED_OMNIS_SUCCESS,
     LOAD_MARVEL_SCRAPED_OMNIS_FAIL,
     LOAD_CHARACTERS_FAIL,
@@ -27,7 +29,7 @@ export const get_marvel_omnis = () => async (dispatch: Dispatch) => {
     try {
         const res = await axios.get(
             `${window.location.origin}/api/get-marvel-omnis`,
-            config,
+            config as AxiosRequestConfig<string>,
         )
 
         if (res.data.error) {
@@ -45,6 +47,7 @@ export const get_marvel_omnis = () => async (dispatch: Dispatch) => {
             })
         }
     } catch (error) {
+        console.error(error)
         toast.dismiss(toastId)
         toast.error("Something went wrong...")
         dispatch({
@@ -53,7 +56,53 @@ export const get_marvel_omnis = () => async (dispatch: Dispatch) => {
     }
 }
 
-export const scrape_dc_omnis =
+export const scrape_dc_omnis_panel_bound =
+    (nextPageUrl?: string) => async (dispatch: Dispatch) => {
+        const defaultPBDCUrl =
+            "/collections/dc-comics?filter.p.product_type=Omnibus&page=1&sort_by=title-ascending"
+
+        const config = {
+            headers: httpUtil.get_headers("GET") as AxiosRequestHeaders,
+        }
+
+        const toastId = toast.loading("Scraping DC Omnis (Panel Bound)...")
+        try {
+            const res = await axios.get(
+                `${window.location.origin}/api/scrape-pb-dc`,
+                {
+                    ...config,
+                    params: {
+                        nextPageUrl: nextPageUrl ?? defaultPBDCUrl,
+                        publisher: "dc",
+                    },
+                } as AxiosRequestConfig,
+            )
+
+            if (res.data.error) {
+                toast.dismiss(toastId)
+                toast.error("Something went wrong...")
+                dispatch({
+                    type: LOAD_DC_SCRAPED_OMNIS_PB_FAIL,
+                })
+            } else {
+                toast.dismiss(toastId)
+                toast.success("DC Omnis Scraped!")
+                dispatch({
+                    type: LOAD_DC_SCRAPED_OMNIS_PB_SUCCESS,
+                    payload: res.data,
+                })
+            }
+        } catch (error) {
+            console.error(error)
+            toast.dismiss(toastId)
+            toast.error("Something went wrong...")
+            dispatch({
+                type: LOAD_DC_SCRAPED_OMNIS_PB_FAIL,
+            })
+        }
+    }
+
+export const scrape_dc_omnis_walts =
     (nextPageUrl?: string) => async (dispatch: Dispatch) => {
         const defaultWaltsDCUrl =
             "/collections/dc-omnibus-collections?sort_by=title-ascending&page=1"
@@ -62,13 +111,16 @@ export const scrape_dc_omnis =
             headers: httpUtil.get_headers("GET") as AxiosRequestHeaders,
         }
 
-        const toastId = toast.loading("Scraping DC Omnis...")
+        const toastId = toast.loading("Scraping DC Omnis (Walts)...")
         try {
             const res = await axios.get(
                 `${window.location.origin}/api/scrape-walts-dc`,
                 {
                     ...config,
-                    params: { nextPageUrl: nextPageUrl ?? defaultWaltsDCUrl },
+                    params: {
+                        nextPageUrl: nextPageUrl ?? defaultWaltsDCUrl,
+                        publisher: "dc",
+                    },
                 } as AxiosRequestConfig,
             )
 
@@ -76,21 +128,22 @@ export const scrape_dc_omnis =
                 toast.dismiss(toastId)
                 toast.error("Something went wrong...")
                 dispatch({
-                    type: LOAD_DC_SCRAPED_OMNIS_FAIL,
+                    type: LOAD_DC_SCRAPED_OMNIS_WALTS_FAIL,
                 })
             } else {
                 toast.dismiss(toastId)
                 toast.success("DC Omnis Scraped!")
                 dispatch({
-                    type: LOAD_DC_SCRAPED_OMNIS_SUCCESS,
+                    type: LOAD_DC_SCRAPED_OMNIS_WALTS_SUCCESS,
                     payload: res.data,
                 })
             }
         } catch (error) {
+            console.error(error)
             toast.dismiss(toastId)
             toast.error("Something went wrong...")
             dispatch({
-                type: LOAD_DC_SCRAPED_OMNIS_FAIL,
+                type: LOAD_DC_SCRAPED_OMNIS_WALTS_FAIL,
             })
         }
     }
@@ -104,7 +157,7 @@ export const scrape_marvel_omnis = () => async (dispatch: Dispatch) => {
     try {
         const res = await axios.get(
             `${window.location.origin}/api/scrape-marvel-omnis`,
-            config,
+            config as AxiosRequestConfig<string>,
         )
 
         if (res.data.error) {
@@ -122,6 +175,7 @@ export const scrape_marvel_omnis = () => async (dispatch: Dispatch) => {
             })
         }
     } catch (error) {
+        console.error(error)
         toast.dismiss(toastId)
         toast.error("Something went wrong...")
         dispatch({
@@ -141,7 +195,7 @@ export const getAllCharacters = () => async (dispatch: Dispatch) => {
     try {
         const res = await axios.get(
             `${window.location.origin}/api/comics/get-characters`,
-            config,
+            config as AxiosRequestConfig<string>,
         )
         if (res.data.error) {
             toast.error("Error getting characters...")
@@ -171,7 +225,7 @@ export const getAllPublishers = () => async (dispatch: Dispatch) => {
     try {
         const res = await axios.get(
             `${window.location.origin}/api/comics/get-publishers`,
-            config,
+            config as AxiosRequestConfig<string>,
         )
         if (res.data.error) {
             toast.error("Error getting publishers...")
@@ -202,7 +256,7 @@ export const getAllBooks = () => async (dispatch: Dispatch) => {
     try {
         const res = await axios.get(
             `${window.location.origin}/api/comics/get-omnis`,
-            config,
+            config as AxiosRequestConfig<string>,
         )
         if (res.data.error) {
             toast.error("Error getting books...")
@@ -239,11 +293,11 @@ export const addPublisher = async (
         const res = await axios.post(
             `${window.location.origin}/api/comics/add-publisher`,
             body,
-            config,
+            config as AxiosRequestConfig<string>,
         )
         if (res["data"]["new_publisher"]) {
             toast.success("Publisher Added!")
-            store.dispatch(getAllPublishers() as any) // Refresh publishers
+            store.dispatch(getAllPublishers()) // Refresh publishers
             setDwModalOpen(false)
         } else {
             toast.error("Something went wrong...")
@@ -271,11 +325,11 @@ export const addCharacter = async (
         const res = await axios.post(
             `${window.location.origin}/api/comics/add-character`,
             body,
-            config,
+            config as AxiosRequestConfig<string>,
         )
         if (res["data"]["new_character"]) {
             toast.success("Character Added!")
-            store.dispatch(getAllCharacters() as any) // Refresh characters
+            store.dispatch(getAllCharacters()) // Refresh characters
             setDwModalOpen(false)
         } else {
             toast.error("Something went wrong...")
@@ -318,11 +372,11 @@ export const addBook = async (
         const res = await axios.post(
             `${window.location.origin}/api/comics/add-book`,
             _formData,
-            config,
+            config as AxiosRequestConfig<FormData>,
         )
         if (res["data"]["new_book"]) {
             toast.success("Book Added!")
-            store.dispatch(getAllBooks() as any) // Refresh Books
+            store.dispatch(getAllBooks()) // Refresh Books
             setDwModalOpen(false)
         } else {
             toast.error("Something went wrong...")
