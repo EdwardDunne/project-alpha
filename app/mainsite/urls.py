@@ -4,7 +4,7 @@ from project_alpha import settings
 from django.conf.urls.static import static
 
 from .views import BookView, CharacterView, GetBooksView, GetCharactersView, GetPublishersView, PublisherView, UpdateUserProfileView, SignupView, GetCSRFToken, LoginView, LogoutView, CheckAuthenticatedView, DeleteAccountView, GetUsersView, GetUserProfileView
-from .data_collecting import ScrapeWaltsDC, TestMarvelApi, MarvelOmnis, DCOmnisScarpe, AmazonDetailsScrape, DCOmnisScarpe2, MarvelOmnisScarpe
+from .data_collecting import ScrapeWalts, ScrapePB, TestMarvelApi, MarvelOmnis, DCOmnisScarpe, AmazonDetailsScrape, DCOmnisScarpe2, MarvelOmnisScarpe
 
 urlpatterns = [
     path('csrf-cookie', GetCSRFToken.as_view()),
@@ -20,7 +20,8 @@ urlpatterns = [
     path('get-marvel-omnis', MarvelOmnis.as_view()),
     path('scrape-dc-omnis', DCOmnisScarpe.as_view()),
     path('scrape-dc-omnis2', DCOmnisScarpe2.as_view()),
-    path('scrape-walts-dc', ScrapeWaltsDC.as_view()),
+    path('scrape-walts-dc', ScrapeWalts.as_view()),
+    path('scrape-pb-dc', ScrapePB.as_view()),
     path('scrape-marvel-omnis', MarvelOmnisScarpe.as_view()),
     path('scrape-amazon-details', AmazonDetailsScrape.as_view()),
     path('comics/add-book', BookView.as_view()),

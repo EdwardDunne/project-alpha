@@ -2,8 +2,10 @@ import { AnyAction } from "redux"
 import {
     LOAD_MARVEL_API_OMNIS_SUCCESS,
     LOAD_MARVEL_API_OMNIS_FAIL,
-    LOAD_DC_SCRAPED_OMNIS_SUCCESS,
-    LOAD_DC_SCRAPED_OMNIS_FAIL,
+    LOAD_DC_SCRAPED_OMNIS_WALTS_SUCCESS,
+    LOAD_DC_SCRAPED_OMNIS_WALTS_FAIL,
+    LOAD_DC_SCRAPED_OMNIS_PB_SUCCESS,
+    LOAD_DC_SCRAPED_OMNIS_PB_FAIL,
     LOAD_MARVEL_SCRAPED_OMNIS_SUCCESS,
     LOAD_MARVEL_SCRAPED_OMNIS_FAIL,
     LOAD_CHARACTERS_SUCCESS,
@@ -15,9 +17,15 @@ import {
 } from "../actions/types"
 import { Book, Character, Publisher } from "../types"
 
-interface ComicsState {
+export type ScrapedBooksPage = {
+    nextPageUrl: string
+    books: Book[]
+}
+
+type ComicsState = {
     marvel_api_comics: any[]
-    waltsDcScrapeResponse: { nextPageUrl: string; books: any[] }
+    waltsDcScrapeResponse: ScrapedBooksPage
+    pbDcScrapeResponse: ScrapedBooksPage
     marvel_scraped_comics: any[]
     all_characters: Character[]
     all_publishers: Publisher[]
@@ -27,6 +35,7 @@ interface ComicsState {
 const initialState: ComicsState = {
     marvel_api_comics: [],
     waltsDcScrapeResponse: { nextPageUrl: "", books: [] },
+    pbDcScrapeResponse: { nextPageUrl: "", books: [] },
     marvel_scraped_comics: [],
     all_characters: [],
     all_publishers: [],
@@ -50,7 +59,7 @@ export default function comicsReducer(
                 ...state,
                 marvel_api_comics: [],
             }
-        case LOAD_DC_SCRAPED_OMNIS_SUCCESS:
+        case LOAD_DC_SCRAPED_OMNIS_WALTS_SUCCESS:
             return {
                 ...state,
                 waltsDcScrapeResponse: {
@@ -58,10 +67,23 @@ export default function comicsReducer(
                     books: payload.books,
                 },
             }
-        case LOAD_DC_SCRAPED_OMNIS_FAIL:
+        case LOAD_DC_SCRAPED_OMNIS_WALTS_FAIL:
             return {
                 ...state,
                 waltsDcScrapeResponse: initialState.waltsDcScrapeResponse,
+            }
+        case LOAD_DC_SCRAPED_OMNIS_PB_SUCCESS:
+            return {
+                ...state,
+                pbDcScrapeResponse: {
+                    nextPageUrl: payload.next_page_url,
+                    books: payload.books,
+                },
+            }
+        case LOAD_DC_SCRAPED_OMNIS_PB_FAIL:
+            return {
+                ...state,
+                pbDcScrapeResponse: initialState.pbDcScrapeResponse,
             }
         case LOAD_MARVEL_SCRAPED_OMNIS_SUCCESS:
             return {
