@@ -11,6 +11,8 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
 import ToggleButton from "@mui/material/ToggleButton"
 import Button from "@mui/material/Button"
 import DunneWebModal from "../modals/DunneWebModal"
+import FloatingMenuButton from "../components/FloatingMenuButton"
+import SidePanel from "../components/SidePanel"
 import AddBookModalContent from "../modals/dwModalContant/AddBookModalContent"
 import AddPublisherModalContent from "../modals/dwModalContant/AddPublisherModalContent"
 import AddCharacterModalContent from "../modals/dwModalContant/AddCharacterModalContent"
@@ -351,51 +353,17 @@ const ComicsAdmin: React.FC<Props> = ({
             )}
 
             <div className="flex w-full h-full">
-                {/* Desktop sidebar */}
-                <div
-                    className="hidden md:flex w-[30rem] h-[41rem] fixed 
-                        p-0 bg-[#313a46] m-[2rem] rounded-[0.5rem]"
-                >
+                <SidePanel open={sidebarOpen} onClose={() => setSidebarOpen(false)} closeAriaLabel="Close menu">
                     {sidebarContent}
-                </div>
+                </SidePanel>
 
                 {/* Mobile: floating button */}
-                <button
-                    className="md:hidden fixed bottom-8 right-8 z-50 w-14 h-14 bg-brand 
-                    text-white rounded-full shadow-lg flex items-center 
-                    justify-center text-[2.4rem] leading-none"
-                    onClick={() => setSidebarOpen(true)}
-                    aria-label="Open admin menu"
-                >
-                    ☰
-                </button>
-
-                {/* Mobile: backdrop */}
-                {sidebarOpen && (
-                    <div
-                        className="md:hidden fixed inset-0 bg-black/50 z-40"
-                        onClick={() => setSidebarOpen(false)}
-                    />
+                {!sidebarOpen && (
+                    <FloatingMenuButton onClick={() => setSidebarOpen(true)} ariaLabel="Open admin menu" />
                 )}
 
-                {/* Mobile: slide-in drawer */}
-                <div
-                    className={`md:hidden fixed top-0 left-0 h-full w-[30rem] max-w-[85vw] 
-                    bg-[#313a46] z-50 transition-transform duration-300 
-                    ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
-                >
-                    <button
-                        className="absolute top-4 right-4 text-white text-[2.4rem] leading-none z-10"
-                        onClick={() => setSidebarOpen(false)}
-                        aria-label="Close menu"
-                    >
-                        ✕
-                    </button>
-                    {sidebarContent}
-                </div>
-
                 {/* Main content */}
-                <div className="w-full md:w-[calc(100%-31.5rem)] md:ml-[31.5rem]">
+                <div className="w-full md:flex-1">
                     <div className="h-[7rem] flex justify-center items-center">
                         <h4 className="font-semibold m-0 text-[3rem]">
                             Comics Admin

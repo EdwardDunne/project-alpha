@@ -1,6 +1,7 @@
 import React from "react";
 import HomePageRouter from "./hoc/HomePageRouter";
 import NavBar from "./components/NavBar";
+import Footer from "./components/Footer";
 
 import { Provider } from 'react-redux';
 import store from './store';
@@ -20,7 +21,10 @@ const App: React.FC = () => {
         <Provider store={store}>
             <div className='flex flex-col w-full min-h-[100dvh]'>
                 <NavBar />
-                <HomePageRouter />
+                <main className='flex-1 flex flex-col'>
+                    <HomePageRouter />
+                </main>
+                <Footer />
                 <ToastContainer
                     position="top-right"
                     autoClose={5000}

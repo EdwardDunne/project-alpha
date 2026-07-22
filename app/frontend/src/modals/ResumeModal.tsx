@@ -18,7 +18,7 @@ export default function ResumeModal({ open, children, onClose }: Props) {
                 onClick={onClose}
             />
             <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white z-[1001] rounded-[0.6rem] max-h-[90dvh] overflow-y-auto w-[92vw] px-[2rem] py-[2.5rem] md:w-[80vw] md:max-w-[106rem] md:h-[80vh] md:p-[2rem] flex flex-col flex-nowrap justify-between items-center">
-                <h1 className="text-center w-full">{modal_title}</h1>
+                <h1 className="text-center w-full text-[2.4rem] font-semibold">{modal_title}</h1>
                 <span className="w-full h-[60vh]">
                     <iframe
                         src="https://drive.google.com/file/d/1pA9HMsiar6KLBY7l8xwGwx5LuUM3vttn/preview"

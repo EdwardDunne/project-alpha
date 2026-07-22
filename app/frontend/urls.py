@@ -1,15 +1,9 @@
-from django.urls import path, include
+from django.urls import re_path
 from .views import index
 
+# Any path reaching this point (i.e. not matched by admin/, api-auth/, api/,
+# or media/) belongs to the SPA. React Router owns client-side routing and
+# 404 handling from here.
 urlpatterns = [
-    path('', index),
-    path('comics-admin', index),
-    path('login', index),
-    path('register', index),
-    path('forgot-password', index),
-    path('reset-password/<str:uidb64>/<str:token>', index),
-    path('dashboard', index),
-    path('comics', index),
-    path('about', index),
-    path('changelog', index)
+    re_path(r'^.*$', index),
 ]

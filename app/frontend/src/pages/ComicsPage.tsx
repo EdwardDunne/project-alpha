@@ -6,6 +6,8 @@ import { darkTheme } from "../App"
 import PublishersSelector from "../components/PublishersSelector"
 import CharactersSelector from "../components/CharactersSelector"
 import DunneWebModal from "../modals/DunneWebModal"
+import FloatingMenuButton from "../components/FloatingMenuButton"
+import SidePanel from "../components/SidePanel"
 import { Book, Character, Publisher } from "../types"
 import { RootState } from "../reducers"
 import BookModalContent from "modals/dwModalContant/BookModalContent"
@@ -96,44 +98,17 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
                 id="admin-main-container"
                 className="flex w-full h-full"
             >
-                {/* Desktop sidebar — hidden on mobile */}
-                <div className="hidden md:flex w-[30rem] h-[41rem] fixed p-0 bg-[#313a46] m-[2rem] rounded-[0.5rem]">
+                <SidePanel open={filterOpen} onClose={() => setFilterOpen(false)} closeAriaLabel="Close filters">
                     {filterPanel}
-                </div>
+                </SidePanel>
 
                 {/* Mobile: floating filter button — hidden on desktop */}
-                <button
-                    className="md:hidden fixed bottom-8 right-8 z-50 w-14 h-14 bg-brand text-white rounded-full shadow-lg flex items-center justify-center text-[2.4rem] leading-none"
-                    onClick={() => setFilterOpen(true)}
-                    aria-label="Open filters"
-                >
-                    ☰
-                </button>
-
-                {/* Mobile: backdrop */}
-                {filterOpen && (
-                    <div
-                        className="md:hidden fixed inset-0 bg-black/50 z-40"
-                        onClick={() => setFilterOpen(false)}
-                    />
+                {!filterOpen && (
+                    <FloatingMenuButton onClick={() => setFilterOpen(true)} ariaLabel="Open filters" />
                 )}
 
-                {/* Mobile: slide-in drawer */}
-                <div
-                    className={`md:hidden fixed top-0 left-0 h-full w-[32rem] max-w-[85vw] bg-[#313a46] z-50 transition-transform duration-300 ${filterOpen ? "translate-x-0" : "-translate-x-full"}`}
-                >
-                    <button
-                        className="absolute top-4 right-4 text-white text-[2.4rem] leading-none"
-                        onClick={() => setFilterOpen(false)}
-                        aria-label="Close filters"
-                    >
-                        ✕
-                    </button>
-                    {filterPanel}
-                </div>
-
                 {/* Main content */}
-                <div className="flex flex-col items-center w-full md:w-[calc(100%-31.5rem)] md:ml-[31.5rem] h-[calc(100dvh-6rem)] pt-5">
+                <div className="flex flex-col items-center w-full md:flex-1 h-[calc(100dvh-6rem)] pt-5">
                     <h4 className="text-center mb-4 font-semibold text-[3rem]">
                         Comics
                     </h4>
