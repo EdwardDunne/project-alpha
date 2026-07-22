@@ -34,7 +34,7 @@ export const load_user = () => async (dispatch: Dispatch) => {
     }
 };
 
-export const update_profile = (first_name: string, last_name: string, email: string) => async (dispatch: Dispatch) => {
+export const update_profile = (first_name: string, last_name: string) => async (dispatch: Dispatch) => {
     const config = {
         headers: httpUtil.get_headers('PUT')
     };
@@ -42,14 +42,13 @@ export const update_profile = (first_name: string, last_name: string, email: str
     const body = JSON.stringify({
         'withCredentials': true,
         'first_name': first_name,
-        'last_name': last_name,
-        'email': email
+        'last_name': last_name
     });
 
     try {
         const res = await axios.put(`${window.location.origin}/api/profile/user/update`, body, config);
 
-        if (res.data.profile && res.data.username) {
+        if (res.data.profile) {
             toast.success('Profile Updated!');
             dispatch({
                 type: UPDATE_USER_PROFILE_SUCCESS,
