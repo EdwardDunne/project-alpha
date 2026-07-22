@@ -5,3 +5,12 @@
 :root {
   --toastify-color-success: #536de6;
 }
+
+/* iOS Safari zooms in on focus when a form field's computed font-size is
+   under 16px. The app's rem scale (html { font-size: 62.5% }) means
+   text-[1.4rem] etc. renders at 14px, so force 16px on mobile only. */
+@media (max-width: 767px) {
+  input {
+    font-size: 1.6rem !important;
+  }
+}
