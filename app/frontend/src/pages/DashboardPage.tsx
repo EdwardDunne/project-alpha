@@ -6,13 +6,14 @@ import { RootState } from '../reducers';
 
 interface Props {
     delete_account: () => void;
-    update_profile: (first_name: string, last_name: string, email: string) => void;
+    update_profile: (first_name: string, last_name: string) => void;
     first_name_global: string;
     last_name_global: string;
     email_global: string;
 }
 
 const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-[1.4rem] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+const disabledInputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-[1.4rem] bg-gray-100 text-gray-500 cursor-not-allowed'
 const labelClass = 'block text-[1.4rem] font-medium text-gray-700 mb-1'
 
 const DashboardPage: React.FC<Props> = ({
@@ -22,13 +23,12 @@ const DashboardPage: React.FC<Props> = ({
     last_name_global,
     email_global
 }) => {
-    const [formData, setFormData] = useState({ first_name: '', last_name: '', email: '' });
+    const [formData, setFormData] = useState({ first_name: '', last_name: '' });
 
     useEffect(() => {
         setFormData({
             first_name: first_name_global,
-            last_name: last_name_global,
-            email: email_global
+            last_name: last_name_global
         });
     }, [first_name_global]);
 
@@ -37,7 +37,7 @@ const DashboardPage: React.FC<Props> = ({
 
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        update_profile(formData.first_name, formData.last_name, formData.email);
+        update_profile(formData.first_name, formData.last_name);
     }
 
     return (
@@ -72,12 +72,12 @@ const DashboardPage: React.FC<Props> = ({
                     <div className='mb-6'>
                         <label className={labelClass} htmlFor='email'>Email</label>
                         <input
-                            className={inputClass}
-                            type='text'
+                            className={disabledInputClass}
+                            type='email'
                             name='email'
-                            placeholder='Email'
-                            onChange={onChange}
-                            value={formData.email}
+                            value={email_global}
+                            disabled
+                            readOnly
                         />
                     </div>
                     <button

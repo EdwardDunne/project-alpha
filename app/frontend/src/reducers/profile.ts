@@ -8,7 +8,6 @@ import {
 } from '../actions/types';
 
 interface ProfileState {
-    username: string;
     first_name: string;
     last_name: string;
     email: string;
@@ -16,7 +15,6 @@ interface ProfileState {
 }
 
 const initialState: ProfileState = {
-    username: '',
     first_name: '',
     last_name: '',
     email: '',
@@ -30,7 +28,6 @@ export default function profileReducer(state: ProfileState = initialState, actio
         case LOAD_USER_PROFILE_SUCCESS:
             return {
                 ...state,
-                username: payload.username,
                 first_name: payload.profile.first_name,
                 last_name: payload.profile.last_name,
                 email: payload.profile.email,
@@ -39,7 +36,6 @@ export default function profileReducer(state: ProfileState = initialState, actio
         case LOAD_USER_PROFILE_FAIL:
             return {
                 ...state,
-                username: '',
                 first_name: '',
                 last_name: '',
                 email: '',
@@ -48,7 +44,6 @@ export default function profileReducer(state: ProfileState = initialState, actio
         case UPDATE_USER_PROFILE_SUCCESS:
             return {
                 ...state,
-                username: payload.username,
                 first_name: payload.profile.first_name,
                 last_name: payload.profile.last_name,
                 email: payload.profile.email

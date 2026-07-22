@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Dispatch } from 'redux';
+import { toast } from 'react-toastify';
 import { load_user } from './profile';
 import httpUtil from '../utils/httpUtil';
 import {
@@ -47,12 +48,12 @@ export const checkAuthenticated = () => async (dispatch: Dispatch) => {
     }
 };
 
-export const login = (username: string, password: string) => async (dispatch: Dispatch) => {
+export const login = (email: string, password: string) => async (dispatch: Dispatch) => {
     const config = {
         headers: httpUtil.get_headers('POST')
     };
 
-    const body = JSON.stringify({ username, password });
+    const body = JSON.stringify({ email, password });
 
     try {
         const res = await axios.post(`${window.location.origin}/api/login`, body, config);
@@ -64,11 +65,13 @@ export const login = (username: string, password: string) => async (dispatch: Di
 
             dispatch(load_user() as any);
         } else {
+            toast.error(res.data.error || 'Invalid email or password.');
             dispatch({
                 type: LOGIN_FAIL
             });
         }
     } catch (error) {
+        toast.error('Something went wrong logging in. Please try again.');
         dispatch({
             type: LOGIN_FAIL
         });
@@ -103,17 +106,18 @@ export const logout = () => async (dispatch: Dispatch) => {
     }
 };
 
-export const register = (username: string, password: string, re_password: string) => async (dispatch: Dispatch) => {
+export const register = (email: string, password: string, re_password: string) => async (dispatch: Dispatch) => {
     const config = {
         headers: httpUtil.get_headers('POST')
     };
 
-    const body = JSON.stringify({ username, password, re_password });
+    const body = JSON.stringify({ email, password, re_password });
 
     try {
         const res = await axios.post(`${window.location.origin}/api/register`, body, config);
 
         if (res.data.error) {
+            toast.error(res.data.error);
             dispatch({
                 type: REGISTER_FAIL
             });
@@ -123,11 +127,58 @@ export const register = (username: string, password: string, re_password: string
             });
         }
     } catch (error) {
+        toast.error('Something went wrong registering. Please try again.');
         dispatch({
             type: REGISTER_FAIL
         });
     }
 }
+
+export const request_password_reset = async (email: string): Promise<boolean> => {
+    const config = {
+        headers: httpUtil.get_headers('POST')
+    };
+
+    const body = JSON.stringify({ email });
+
+    try {
+        const res = await axios.post(`${window.location.origin}/api/password-reset/request`, body, config);
+
+        if (res.data.success) {
+            toast.success(res.data.success);
+            return true;
+        } else {
+            toast.error(res.data.error || 'Something went wrong. Please try again.');
+            return false;
+        }
+    } catch (error) {
+        toast.error('Something went wrong. Please try again.');
+        return false;
+    }
+};
+
+export const reset_password = async (uidb64: string, token: string, password: string, re_password: string): Promise<boolean> => {
+    const config = {
+        headers: httpUtil.get_headers('POST')
+    };
+
+    const body = JSON.stringify({ uidb64, token, password, re_password });
+
+    try {
+        const res = await axios.post(`${window.location.origin}/api/password-reset/confirm`, body, config);
+
+        if (res.data.success) {
+            toast.success(res.data.success);
+            return true;
+        } else {
+            toast.error(res.data.error || 'Something went wrong. Please try again.');
+            return false;
+        }
+    } catch (error) {
+        toast.error('Something went wrong. Please try again.');
+        return false;
+    }
+};
 
 export const delete_account = () => async (dispatch: Dispatch) => {
     const config = {

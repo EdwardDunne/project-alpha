@@ -6,7 +6,7 @@ import CSRFToken from '../components/CSRFToken';
 import { RootState } from '../reducers';
 
 interface Props {
-    register: (username: string, password: string, re_password: string) => void;
+    register: (email: string, password: string, re_password: string) => void;
     isAuthenticated: boolean | null;
 }
 
@@ -15,9 +15,9 @@ const labelClass = 'block text-[1.4rem] font-medium text-gray-700 mb-1'
 
 const RegisterPage: React.FC<Props> = ({ register, isAuthenticated }) => {
 
-    const [formData, setFormData] = useState({ username: '', password: '', re_password: '' });
+    const [formData, setFormData] = useState({ email: '', password: '', re_password: '' });
     const [accountCreated, setAccountCreated] = useState(false);
-    const { username, password, re_password } = formData;
+    const { email, password, re_password } = formData;
 
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) =>
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -25,7 +25,7 @@ const RegisterPage: React.FC<Props> = ({ register, isAuthenticated }) => {
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (password === re_password) {
-            register(username, password, re_password);
+            register(email, password, re_password);
             setAccountCreated(true);
         }
     }
@@ -41,14 +41,14 @@ const RegisterPage: React.FC<Props> = ({ register, isAuthenticated }) => {
                 <form onSubmit={onSubmit}>
                     <CSRFToken />
                     <div className='mb-4'>
-                        <label className={labelClass}>Username</label>
+                        <label className={labelClass}>Email</label>
                         <input
                             className={inputClass}
-                            type='text'
-                            placeholder='Username*'
-                            name='username'
+                            type='email'
+                            placeholder='Email*'
+                            name='email'
                             onChange={onChange}
-                            value={username}
+                            value={email}
                             required
                         />
                     </div>
