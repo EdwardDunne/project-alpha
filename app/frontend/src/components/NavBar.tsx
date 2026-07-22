@@ -3,6 +3,9 @@ import { Link, NavLink } from 'react-router-dom'
 import { connect } from 'react-redux';
 import { logout } from '../actions/auth';
 import { RootState } from '../reducers';
+import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 interface Props {
     isAuthenticated: boolean | null;
@@ -43,6 +46,8 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
     const linkClass = 'no-underline text-gray-500 hover:text-gray-700 transition-colors whitespace-nowrap'
     const mobileLinkClass = 'no-underline text-gray-700 hover:text-brand transition-colors text-[1.6rem] py-3 px-4 block border-b border-gray-100'
 
+    const iconProps = { sx: { fontSize: '2.4rem' } }
+
     const comicAdminLink = (
         <li className='list-none px-2.5 py-2'>
             <NavLink className={linkClass} to="/comics-admin">Comics Admin</NavLink>
@@ -67,7 +72,9 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
                 <NavLink className={linkClass} to="/changelog">Changelog</NavLink>
             </li>
             <li className='list-none px-2.5 py-2'>
-                <a className={linkClass + ' cursor-pointer'} onClick={logout} href='#!'>Logout</a>
+                <a className={linkClass + ' cursor-pointer inline-flex items-center gap-1'} onClick={logout} href='#!'>
+                    <LogoutIcon {...iconProps} /> Logout
+                </a>
             </li>
         </>
     );
@@ -85,7 +92,9 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
                 <NavLink className={mobileLinkClass} to="/changelog" onClick={close}>Changelog</NavLink>
             </li>
             <li className='list-none'>
-                <a className={mobileLinkClass + ' cursor-pointer'} onClick={() => { logout(); close(); }} href='#!'>Logout</a>
+                <a className={mobileLinkClass + ' cursor-pointer flex items-center gap-2'} onClick={() => { logout(); close(); }} href='#!'>
+                    <LogoutIcon {...iconProps} /> Logout
+                </a>
             </li>
         </>
     );
@@ -99,10 +108,12 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
                 <NavLink className={linkClass} to="/changelog">Changelog</NavLink>
             </li>
             <li className='list-none px-2.5 py-2'>
-                <NavLink className={linkClass} to="/login">Login</NavLink>
+                <NavLink className={linkClass} to="/register">Register</NavLink>
             </li>
             <li className='list-none px-2.5 py-2'>
-                <NavLink className={linkClass} to="/register">Register</NavLink>
+                <NavLink className={linkClass + ' inline-flex items-center gap-1'} to="/login">
+                    <LoginIcon {...iconProps} /> Login
+                </NavLink>
             </li>
         </>
     );
@@ -116,10 +127,12 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
                 <NavLink className={mobileLinkClass} to="/changelog" onClick={close}>Changelog</NavLink>
             </li>
             <li className='list-none'>
-                <NavLink className={mobileLinkClass} to="/login" onClick={close}>Login</NavLink>
+                <NavLink className={mobileLinkClass} to="/register" onClick={close}>Register</NavLink>
             </li>
             <li className='list-none'>
-                <NavLink className={mobileLinkClass} to="/register" onClick={close}>Register</NavLink>
+                <NavLink className={mobileLinkClass + ' flex items-center gap-2'} to="/login" onClick={close}>
+                    <LoginIcon {...iconProps} /> Login
+                </NavLink>
             </li>
         </>
     );
@@ -132,13 +145,13 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
                 <Link className='text-black/90 no-underline text-[2rem] font-bold whitespace-nowrap' to="/">Omni Trackers</Link>
                 <div className='relative flex items-center' ref={infoRef}>
                     <button
-                        className='w-[2rem] h-[2rem] rounded-full bg-gray-400 hover:bg-gray-500 text-white text-[1.2rem] font-bold flex items-center justify-center transition-colors leading-none'
+                        className='w-[2.6rem] h-[2.6rem] rounded-full bg-gray-400 hover:bg-gray-500 text-white flex items-center justify-center transition-colors'
                         onPointerEnter={handleInfoEnter}
                         onPointerLeave={handleInfoLeave}
                         onClick={() => setInfoOpen(o => !o)}
                         aria-label="About Omni Trackers"
                     >
-                        i
+                        <InfoOutlinedIcon sx={{ fontSize: '1.8rem' }} />
                     </button>
                     {infoOpen && (
                         <div
