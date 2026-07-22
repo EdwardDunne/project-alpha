@@ -142,7 +142,7 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
                     </button>
                     {infoOpen && (
                         <div
-                            className='fixed top-[7rem] left-4 z-50 w-[32rem] max-w-[calc(100vw-2rem)] bg-white border border-gray-200 rounded-lg shadow-lg p-4 text-[1.4rem] text-gray-700 leading-relaxed'
+                            className='fixed top-[7rem] left-4 z-[60] w-[32rem] max-w-[calc(100vw-2rem)] bg-white border border-gray-200 rounded-lg shadow-lg p-4 text-[1.4rem] text-gray-700 leading-relaxed'
                             onMouseEnter={handleInfoEnter}
                             onMouseLeave={handleInfoLeave}
                         >
@@ -162,19 +162,32 @@ const NavBar: React.FC<Props> = ({ isAuthenticated, is_staff, logout }) => {
 
             {/* Hamburger button — hidden on desktop */}
             <button
-                className='md:hidden flex items-center justify-center w-10 h-10 text-[2.4rem] text-gray-600'
+                className='md:hidden flex items-center justify-center w-10 h-10'
                 onClick={() => setMenuOpen(o => !o)}
                 aria-label="Toggle menu"
             >
-                {menuOpen ? '✕' : '☰'}
+                <span className='relative w-6 h-6 flex items-center justify-center'>
+                    {menuOpen ? (
+                        <>
+                            <span className='absolute w-6 h-[3px] bg-gray-600 rounded-full rotate-45' />
+                            <span className='absolute w-6 h-[3px] bg-gray-600 rounded-full -rotate-45' />
+                        </>
+                    ) : (
+                        <span className='flex flex-col items-center justify-center gap-[5px]'>
+                            <span className='block w-6 h-[3px] bg-gray-600 rounded-full' />
+                            <span className='block w-6 h-[3px] bg-gray-600 rounded-full' />
+                            <span className='block w-6 h-[3px] bg-gray-600 rounded-full' />
+                        </span>
+                    )}
+                </span>
             </button>
         </nav>
 
         {/* Mobile dropdown menu */}
         {menuOpen && (
             <>
-                <div className='fixed inset-0 z-40' onClick={close} />
-                <ul className='md:hidden fixed top-[6rem] left-0 right-0 bg-white z-50 list-none m-0 p-0 shadow-lg'>
+                <div className='fixed inset-0 z-[55]' onClick={close} />
+                <ul className='md:hidden fixed top-[6rem] left-0 right-0 bg-white z-[60] list-none m-0 p-0 shadow-lg'>
                     <li className='list-none'>
                         <NavLink className={mobileLinkClass} to="/" onClick={close}>Comics</NavLink>
                     </li>

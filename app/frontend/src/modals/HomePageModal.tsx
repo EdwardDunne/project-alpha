@@ -19,7 +19,7 @@ export default function HomePageModal({ open, children, onClose, modalType }: Pr
         <>
             <div className='fixed inset-0 bg-black/[0.43] z-[1000]' onClick={onClose}/>
             <div className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white z-[1001] rounded-[0.6rem] max-h-[90dvh] overflow-y-auto w-[92vw] px-[2rem] py-[2.5rem] md:w-[50vw] md:p-[5rem] flex justify-start items-center flex-wrap'>
-                <h1 className='text-center w-full'>{modal_title}</h1>
+                <h1 className='text-center w-full text-[2.4rem] font-semibold'>{modal_title}</h1>
                 <span className='text-center w-full'>
                     {content}
                 </span>

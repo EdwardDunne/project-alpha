@@ -1,0 +1,63 @@
+import React, { useState } from "react"
+
+interface Props {
+    open: boolean
+    onClose: () => void
+    closeAriaLabel: string
+    children: React.ReactNode
+}
+
+const SidePanel: React.FC<Props> = ({
+    open,
+    onClose,
+    closeAriaLabel,
+    children,
+}) => {
+    const [collapsed, setCollapsed] = useState(false)
+
+    return (
+        <>
+            {/* Desktop sidebar — hidden on mobile, collapsible via the tab on its edge */}
+            <div className="hidden md:flex sticky top-[6rem] h-[calc(100dvh-6rem)] shrink-0">
+                <div
+                    className={`h-full bg-[#313a46] overflow-hidden transition-all duration-300 ${collapsed ? "w-0" : "w-[30rem]"}`}
+                >
+                    <div className="w-[30rem] h-full">{children}</div>
+                </div>
+                <button
+                    className="w-8 shrink-0 mt-4 h-14 bg-brand text-white rounded-r-md shadow-lg flex items-center justify-center text-[4.2rem] leading-none"
+                    onClick={() => setCollapsed((c) => !c)}
+                    aria-label={
+                        collapsed ? "Expand sidebar" : "Collapse sidebar"
+                    }
+                >
+                    {collapsed ? "›" : "‹"}
+                </button>
+            </div>
+
+            {/* Mobile: backdrop */}
+            {open && (
+                <div
+                    className="md:hidden fixed inset-0 z-[55] bg-black/50"
+                    onClick={onClose}
+                />
+            )}
+
+            {/* Mobile: slide-in drawer */}
+            <div
+                className={`md:hidden fixed top-0 left-0 h-full w-[30rem] max-w-[85vw] bg-[#313a46] z-[60] transition-transform duration-300 ${open ? "translate-x-0" : "-translate-x-full"}`}
+            >
+                <button
+                    className="absolute top-4 right-4 text-white text-[2.4rem] leading-none z-10"
+                    onClick={onClose}
+                    aria-label={closeAriaLabel}
+                >
+                    ✕
+                </button>
+                {children}
+            </div>
+        </>
+    )
+}
+
+export default SidePanel

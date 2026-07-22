@@ -8,6 +8,7 @@ import ResetPasswordPage from "../pages/ResetPasswordPage";
 import DashboardPage from "../pages/DashboardPage";
 import ComicsPage from "../pages/ComicsPage";
 import ChangelogPage from "../pages/ChangelogPage";
+import NotFoundPage from "../pages/NotFoundPage";
 import { checkAuthenticated } from "../actions/auth";
 import { load_user } from "../actions/profile";
 import { connect } from 'react-redux';
@@ -43,6 +44,7 @@ const HomePageRouter: React.FC<Props> = ({ checkAuthenticated, load_user }) => {
                 <PrivateRoute>
                     <DashboardPage />
                 </PrivateRoute>} />
+            <Route path="*" element={<NotFoundPage />} />
         </Routes>
     )
 }

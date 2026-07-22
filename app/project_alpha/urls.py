@@ -24,8 +24,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include('mainsite.urls')),
-    path('', include('frontend.urls'))
 ]
 
 if bool(settings.DEBUG):
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Catch-all: hands any unmatched path to the SPA so React Router can render
+# it (including a branded 404), instead of Django's raw 404. Must stay last.
+urlpatterns += [path('', include('frontend.urls'))]
