@@ -25,6 +25,8 @@ class GetCSRFToken(APIView):
         return Response({'success': 'CSRF cookie set'})
 
 class CheckAuthenticatedView(APIView):
+    permission_classes = (permissions.AllowAny, )
+
     def get(self, request, format=None):
         try:
             isAuthenticated = request.user.is_authenticated
@@ -256,6 +258,7 @@ class BookView(APIView):
             return Response({'error': 'Something went wrong when updating books'})
         
 class GetBooksView(APIView):
+    permission_classes = (permissions.AllowAny, )
 
     def get(self, request, format=None):
         try:
@@ -294,7 +297,9 @@ class CharacterView(APIView):
         except:
             return Response({'error': 'Something went wrong when updating publishers'})
 
-class GetCharactersView(APIView):  
+class GetCharactersView(APIView):
+    permission_classes = (permissions.AllowAny, )
+
     def get(self, request, format=None):
         try:
             data = self.request.query_params
@@ -324,7 +329,9 @@ class PublisherView(APIView):
         except:
             return Response({'error': 'Something went wrong when updating publishers'})
         
-class GetPublishersView(APIView):        
+class GetPublishersView(APIView):
+    permission_classes = (permissions.AllowAny, )
+
     def get(self, request, format=None):
         try:
             data = self.request.query_params
