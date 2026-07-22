@@ -12,10 +12,13 @@ interface Props {
 
 const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-[1.4rem] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
 const labelClass = 'block text-[1.4rem] font-medium text-gray-700 mb-1'
+const REMEMBERED_EMAIL_KEY = 'rememberedEmail'
 
 const LoginPage: React.FC<Props> = ({ login, isAuthenticated }) => {
 
-    const [formData, setFormData] = useState({ email: '', password: '' });
+    const rememberedEmail = localStorage.getItem(REMEMBERED_EMAIL_KEY) || ''
+    const [formData, setFormData] = useState({ email: rememberedEmail, password: '' });
+    const [rememberEmail, setRememberEmail] = useState(!!rememberedEmail);
     const { email, password } = formData;
 
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -23,6 +26,13 @@ const LoginPage: React.FC<Props> = ({ login, isAuthenticated }) => {
 
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        if (rememberEmail) {
+            localStorage.setItem(REMEMBERED_EMAIL_KEY, email);
+        } else {
+            localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+        }
+
         login(email, password);
     }
 
@@ -66,8 +76,13 @@ const LoginPage: React.FC<Props> = ({ login, isAuthenticated }) => {
 
                 <div className='mb-4 flex items-center justify-between'>
                     <label className='flex items-center gap-2 text-[1.4rem] text-gray-600 cursor-pointer'>
-                        <input type='checkbox' value='remember-me' className='rounded' />
-                        Remember me
+                        <input
+                            type='checkbox'
+                            className='rounded'
+                            checked={rememberEmail}
+                            onChange={(e) => setRememberEmail(e.target.checked)}
+                        />
+                        Remember email
                     </label>
                     <Link className='text-[1.4rem] text-brand hover:underline' to='/forgot-password'>Forgot password?</Link>
                 </div>
