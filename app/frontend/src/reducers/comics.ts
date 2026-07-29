@@ -1,13 +1,7 @@
 import { AnyAction } from "redux"
 import {
-    LOAD_MARVEL_API_OMNIS_SUCCESS,
-    LOAD_MARVEL_API_OMNIS_FAIL,
-    LOAD_DC_SCRAPED_OMNIS_WALTS_SUCCESS,
-    LOAD_DC_SCRAPED_OMNIS_WALTS_FAIL,
     LOAD_DC_SCRAPED_OMNIS_PB_SUCCESS,
     LOAD_DC_SCRAPED_OMNIS_PB_FAIL,
-    LOAD_MARVEL_SCRAPED_OMNIS_SUCCESS,
-    LOAD_MARVEL_SCRAPED_OMNIS_FAIL,
     LOAD_CHARACTERS_SUCCESS,
     LOAD_CHARACTERS_FAIL,
     LOAD_PUBLISHERS_SUCCESS,
@@ -23,20 +17,14 @@ export type ScrapedBooksPage = {
 }
 
 type ComicsState = {
-    marvel_api_comics: any[]
-    waltsDcScrapeResponse: ScrapedBooksPage
     pbDcScrapeResponse: ScrapedBooksPage
-    marvel_scraped_comics: any[]
     all_characters: Character[]
     all_publishers: Publisher[]
     all_books: Book[]
 }
 
 const initialState: ComicsState = {
-    marvel_api_comics: [],
-    waltsDcScrapeResponse: { nextPageUrl: "", books: [] },
     pbDcScrapeResponse: { nextPageUrl: "", books: [] },
-    marvel_scraped_comics: [],
     all_characters: [],
     all_publishers: [],
     all_books: [],
@@ -49,29 +37,6 @@ export default function comicsReducer(
     const { type, payload } = action
 
     switch (type) {
-        case LOAD_MARVEL_API_OMNIS_SUCCESS:
-            return {
-                ...state,
-                marvel_api_comics: payload.books,
-            }
-        case LOAD_MARVEL_API_OMNIS_FAIL:
-            return {
-                ...state,
-                marvel_api_comics: [],
-            }
-        case LOAD_DC_SCRAPED_OMNIS_WALTS_SUCCESS:
-            return {
-                ...state,
-                waltsDcScrapeResponse: {
-                    nextPageUrl: payload.next_page_url,
-                    books: payload.books,
-                },
-            }
-        case LOAD_DC_SCRAPED_OMNIS_WALTS_FAIL:
-            return {
-                ...state,
-                waltsDcScrapeResponse: initialState.waltsDcScrapeResponse,
-            }
         case LOAD_DC_SCRAPED_OMNIS_PB_SUCCESS:
             return {
                 ...state,
@@ -84,16 +49,6 @@ export default function comicsReducer(
             return {
                 ...state,
                 pbDcScrapeResponse: initialState.pbDcScrapeResponse,
-            }
-        case LOAD_MARVEL_SCRAPED_OMNIS_SUCCESS:
-            return {
-                ...state,
-                marvel_scraped_comics: payload.books,
-            }
-        case LOAD_MARVEL_SCRAPED_OMNIS_FAIL:
-            return {
-                ...state,
-                marvel_scraped_comics: [],
             }
         case LOAD_CHARACTERS_SUCCESS:
             return {

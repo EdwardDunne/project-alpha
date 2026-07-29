@@ -3,14 +3,8 @@ import { Dispatch } from "redux"
 import httpUtil from "../utils/httpUtil"
 import { toast } from "react-toastify"
 import {
-    LOAD_MARVEL_API_OMNIS_SUCCESS,
-    LOAD_MARVEL_API_OMNIS_FAIL,
-    LOAD_DC_SCRAPED_OMNIS_WALTS_SUCCESS,
-    LOAD_DC_SCRAPED_OMNIS_WALTS_FAIL,
     LOAD_DC_SCRAPED_OMNIS_PB_SUCCESS,
     LOAD_DC_SCRAPED_OMNIS_PB_FAIL,
-    LOAD_MARVEL_SCRAPED_OMNIS_SUCCESS,
-    LOAD_MARVEL_SCRAPED_OMNIS_FAIL,
     LOAD_CHARACTERS_FAIL,
     LOAD_CHARACTERS_SUCCESS,
     LOAD_PUBLISHERS_FAIL,
@@ -19,42 +13,6 @@ import {
     LOAD_BOOKS_SUCCESS,
 } from "./types"
 import store from "../store"
-
-export const get_marvel_omnis = () => async (dispatch: Dispatch) => {
-    const config = {
-        headers: httpUtil.get_headers("GET"),
-    }
-
-    const toastId = toast.loading("Getting Omnis from Marvel API...")
-    try {
-        const res = await axios.get(
-            `${window.location.origin}/api/get-marvel-omnis`,
-            config as AxiosRequestConfig<string>,
-        )
-
-        if (res.data.error) {
-            toast.dismiss(toastId)
-            toast.error("Something went wrong...")
-            dispatch({
-                type: LOAD_MARVEL_API_OMNIS_FAIL,
-            })
-        } else {
-            toast.dismiss(toastId)
-            toast.success("Marvel API Success!")
-            dispatch({
-                type: LOAD_MARVEL_API_OMNIS_SUCCESS,
-                payload: res.data,
-            })
-        }
-    } catch (error) {
-        console.error(error)
-        toast.dismiss(toastId)
-        toast.error("Something went wrong...")
-        dispatch({
-            type: LOAD_MARVEL_API_OMNIS_FAIL,
-        })
-    }
-}
 
 export const scrape_dc_omnis_panel_bound =
     (nextPageUrl?: string) => async (dispatch: Dispatch) => {
@@ -101,88 +59,6 @@ export const scrape_dc_omnis_panel_bound =
             })
         }
     }
-
-export const scrape_dc_omnis_walts =
-    (nextPageUrl?: string) => async (dispatch: Dispatch) => {
-        const defaultWaltsDCUrl =
-            "/collections/dc-omnibus-collections?sort_by=title-ascending&page=1"
-
-        const config = {
-            headers: httpUtil.get_headers("GET") as AxiosRequestHeaders,
-        }
-
-        const toastId = toast.loading("Scraping DC Omnis (Walts)...")
-        try {
-            const res = await axios.get(
-                `${window.location.origin}/api/scrape-walts-dc`,
-                {
-                    ...config,
-                    params: {
-                        nextPageUrl: nextPageUrl ?? defaultWaltsDCUrl,
-                        publisher: "dc",
-                    },
-                } as AxiosRequestConfig,
-            )
-
-            if (res.data.error) {
-                toast.dismiss(toastId)
-                toast.error("Something went wrong...")
-                dispatch({
-                    type: LOAD_DC_SCRAPED_OMNIS_WALTS_FAIL,
-                })
-            } else {
-                toast.dismiss(toastId)
-                toast.success("DC Omnis Scraped!")
-                dispatch({
-                    type: LOAD_DC_SCRAPED_OMNIS_WALTS_SUCCESS,
-                    payload: res.data,
-                })
-            }
-        } catch (error) {
-            console.error(error)
-            toast.dismiss(toastId)
-            toast.error("Something went wrong...")
-            dispatch({
-                type: LOAD_DC_SCRAPED_OMNIS_WALTS_FAIL,
-            })
-        }
-    }
-
-export const scrape_marvel_omnis = () => async (dispatch: Dispatch) => {
-    const config = {
-        headers: httpUtil.get_headers("GET"),
-    }
-
-    const toastId = toast.loading("Scraping Marvel Omnis...")
-    try {
-        const res = await axios.get(
-            `${window.location.origin}/api/scrape-marvel-omnis`,
-            config as AxiosRequestConfig<string>,
-        )
-
-        if (res.data.error) {
-            toast.dismiss(toastId)
-            toast.error("Something went wrong...")
-            dispatch({
-                type: LOAD_MARVEL_SCRAPED_OMNIS_FAIL,
-            })
-        } else {
-            toast.dismiss(toastId)
-            toast.success("Marvel Omnis Scraped!")
-            dispatch({
-                type: LOAD_MARVEL_SCRAPED_OMNIS_SUCCESS,
-                payload: res.data,
-            })
-        }
-    } catch (error) {
-        console.error(error)
-        toast.dismiss(toastId)
-        toast.error("Something went wrong...")
-        dispatch({
-            type: LOAD_MARVEL_SCRAPED_OMNIS_FAIL,
-        })
-    }
-}
 
 export const getAllCharacters = () => async (dispatch: Dispatch) => {
     const config = {
@@ -376,6 +252,57 @@ export const addBook = async (
         )
         if (res["data"]["new_book"]) {
             toast.success("Book Added!")
+            store.dispatch(getAllBooks()) // Refresh Books
+            setDwModalOpen(false)
+        } else {
+            toast.error("Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+export const updateBook = async (
+    formData: {
+        id: number
+        publisher: string
+        format: string
+        title: string
+        author: string
+        description: string
+        thumbnail_url: string
+        thumbnail: File | string
+        page_count: number
+        character: string
+        team: string
+    },
+    setDwModalOpen: (open: boolean) => void,
+) => {
+    const config = {
+        headers: httpUtil.get_headers("POSTFILE"),
+    }
+
+    const _formData = new FormData()
+    _formData.append("id", formData.id.toString())
+    if (formData.thumbnail) _formData.append("thumbnail", formData.thumbnail)
+    _formData.append("title", formData.title)
+    _formData.append("author", formData.author)
+    _formData.append("description", formData.description)
+    _formData.append("page_count", formData.page_count.toString())
+    _formData.append("publisher", formData.publisher)
+    _formData.append("character", formData.character)
+
+    console.log(_formData)
+
+    try {
+        const res = await axios.put(
+            `${window.location.origin}/api/comics/add-book`,
+            _formData,
+            config as AxiosRequestConfig<FormData>,
+        )
+        if (res["data"]["new_book"]) {
+            toast.success("Book Updated!")
             store.dispatch(getAllBooks()) // Refresh Books
             setDwModalOpen(false)
         } else {
