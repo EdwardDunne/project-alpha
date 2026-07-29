@@ -10,10 +10,12 @@ interface Props {
     variant?: 'standard' | 'outlined' | 'filled';
     allPublishers: Publisher[];
     getAllPublishers: () => void;
+    initialPublisherId?: number;
 }
 
-const PublishersSelector: React.FC<Props> = ({ setPublisher, variant = 'standard', allPublishers, getAllPublishers }) => {
+const PublishersSelector: React.FC<Props> = ({ setPublisher, variant = 'standard', allPublishers, getAllPublishers, initialPublisherId }) => {
     const [publisherOptions, setPublisherOptions] = useState<Publisher[]>([])
+    const [selectedPublisher, setSelectedPublisher] = useState<Publisher | null>(null)
 
     useEffect(() => {
         allPublishers.length ? _setPublisherOptions(allPublishers) : getAllPublishers()
@@ -22,6 +24,16 @@ const PublishersSelector: React.FC<Props> = ({ setPublisher, variant = 'standard
     useEffect(() => {
         _setPublisherOptions(allPublishers)
     }, [allPublishers]);
+
+    useEffect(() => {
+        if (initialPublisherId && !selectedPublisher) {
+            const match = publisherOptions.find(p => p.id === initialPublisherId)
+            if (match) {
+                setSelectedPublisher(match)
+                setPublisher(match)
+            }
+        }
+    }, [initialPublisherId, publisherOptions]);
 
     const _setPublisherOptions = (publishers: Publisher[]) => {
         setPublisherOptions(
@@ -35,13 +47,14 @@ const PublishersSelector: React.FC<Props> = ({ setPublisher, variant = 'standard
             <Autocomplete
                 id="publisher-selector"
                 options={publisherOptions}
+                value={selectedPublisher}
                 getOptionLabel={(option) => option['name']}
                 renderInput={params =>
                     <TextField {...params} label="Publisher" variant={variant}
                         InputProps={{ ...params.InputProps, sx: { fontSize: '1.6rem' } }}
                         InputLabelProps={{ ...params.InputLabelProps, sx: { fontSize: '1.6rem' } }}
                     />}
-                onChange={(e, publisher) => setPublisher(publisher)}
+                onChange={(e, publisher) => { setSelectedPublisher(publisher); setPublisher(publisher) }}
                 slotProps={{ paper: { sx: { fontSize: '1.6rem' } } }}
             />
         </div>

@@ -10,10 +10,12 @@ interface Props {
     variant?: 'standard' | 'outlined' | 'filled';
     allCharacters: Character[];
     getAllCharacters: () => void;
+    initialCharacterId?: number;
 }
 
-const CharactersSelector: React.FC<Props> = ({ setCharacter, variant = 'standard', allCharacters, getAllCharacters }) => {
+const CharactersSelector: React.FC<Props> = ({ setCharacter, variant = 'standard', allCharacters, getAllCharacters, initialCharacterId }) => {
     const [characterOptions, setCharacterOptions] = useState<Character[]>([])
+    const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
 
     useEffect(() => {
         allCharacters.length ? _setCharacterOptions(allCharacters) : getAllCharacters()
@@ -22,6 +24,16 @@ const CharactersSelector: React.FC<Props> = ({ setCharacter, variant = 'standard
     useEffect(() => {
         _setCharacterOptions(allCharacters)
     }, [allCharacters]);
+
+    useEffect(() => {
+        if (initialCharacterId && !selectedCharacter) {
+            const match = characterOptions.find(c => c.id === initialCharacterId)
+            if (match) {
+                setSelectedCharacter(match)
+                setCharacter(match)
+            }
+        }
+    }, [initialCharacterId, characterOptions]);
 
     const _setCharacterOptions = (characters: Character[]) => {
         setCharacterOptions(
@@ -35,13 +47,14 @@ const CharactersSelector: React.FC<Props> = ({ setCharacter, variant = 'standard
             <Autocomplete
                 id="character-selector"
                 options={characterOptions}
+                value={selectedCharacter}
                 getOptionLabel={(option) => option['name']}
                 renderInput={params =>
                     <TextField {...params} label="Character" variant={variant}
                         InputProps={{ ...params.InputProps, sx: { fontSize: '1.6rem' } }}
                         InputLabelProps={{ ...params.InputLabelProps, sx: { fontSize: '1.6rem' } }}
                     />}
-                onChange={(e, character) => setCharacter(character)}
+                onChange={(e, character) => { setSelectedCharacter(character); setCharacter(character) }}
                 slotProps={{ paper: { sx: { fontSize: '1.6rem' } } }}
             />
         </div>

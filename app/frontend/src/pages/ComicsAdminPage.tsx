@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react"
 import {
-    get_marvel_omnis,
     getAllBooks,
-    scrape_dc_omnis_walts,
     scrape_dc_omnis_panel_bound,
-    scrape_marvel_omnis,
 } from "../actions/comics"
 import { connect } from "react-redux"
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
@@ -13,38 +10,25 @@ import Button from "@mui/material/Button"
 import DunneWebModal from "../modals/DunneWebModal"
 import FloatingMenuButton from "../components/FloatingMenuButton"
 import SidePanel from "../components/SidePanel"
-import AddBookModalContent from "../modals/dwModalContant/AddBookModalContent"
+import AddEditBookModalContent from "../modals/dwModalContant/AddEditBookModalContent"
 import AddPublisherModalContent from "../modals/dwModalContant/AddPublisherModalContent"
 import AddCharacterModalContent from "../modals/dwModalContant/AddCharacterModalContent"
 import { RootState } from "../reducers"
 import { type Book } from "types"
-import BookModalContent from "modals/dwModalContant/BookModalContent"
 import { ScrapedBooksPage } from "reducers/comics"
 
 type Props = {
-    get_marvel_omnis: () => void
-    marvel_api_comics: Book[]
-    scrape_dc_omnis_walts: (nextPageUrlDcWalts?: string) => void
-    scrape_dc_omnis_panel_bound: (nextPageUrlPbWalts?: string) => void
-    scrape_marvel_omnis: () => void
-    waltsDcScrapeResponse: ScrapedBooksPage
-    pbDcScrapeResponse: ScrapedBooksPage
-    marvel_scraped_comics: Book[]
-    allBooks: Book[]
     getAllBooks: () => void
+    scrape_dc_omnis_panel_bound: (nextPageUrlPbWalts?: string) => void
+    pbDcScrapeResponse: ScrapedBooksPage
+    allBooks: Book[]
 }
 
 const ComicsAdmin: React.FC<Props> = ({
-    get_marvel_omnis,
-    marvel_api_comics,
-    scrape_dc_omnis_walts,
-    scrape_dc_omnis_panel_bound,
-    scrape_marvel_omnis,
-    waltsDcScrapeResponse,
-    pbDcScrapeResponse,
-    marvel_scraped_comics,
-    allBooks,
     getAllBooks,
+    scrape_dc_omnis_panel_bound,
+    pbDcScrapeResponse,
+    allBooks,
 }) => {
     const [displayedBooks, setDisplayedBooks] = useState<Book[]>([])
     const [selectedResultSet, setselectedResultSet] = useState("dunneweb-db")
@@ -54,8 +38,6 @@ const ComicsAdmin: React.FC<Props> = ({
     const [dwModalType, setDwModalType] = useState("book")
     const [sidebarOpen, setSidebarOpen] = useState(false)
 
-    const [prevPageUrlDcWalts, setPrevPageUrlDcWalts] = useState<string>("")
-    const [nextPageUrlDcWalts, setNextPageUrlDcWalts] = useState<string>("")
     const [prevPageUrlDcPb, setPrevPageUrlDcPb] = useState<string>("")
     const [nextPageUrlDcPb, setNextPageUrlDcPb] = useState<string>("")
 
@@ -66,25 +48,6 @@ const ComicsAdmin: React.FC<Props> = ({
     useEffect(() => {
         setDisplayedBooks(allBooks)
     }, [allBooks])
-
-    useEffect(() => {
-        if (selectedResultSet === "dc-walts") {
-            setDisplayedBooks(
-                [...waltsDcScrapeResponse.books].sort((a, b) =>
-                    a.title.localeCompare(b.title),
-                ),
-            )
-        } else if (selectedResultSet === "dc-pb") {
-            setDisplayedBooks(
-                [...pbDcScrapeResponse.books].sort((a, b) =>
-                    a.title.localeCompare(b.title),
-                ),
-            )
-        }
-
-        setPrevPageUrlDcWalts(nextPageUrlDcWalts)
-        setNextPageUrlDcWalts(waltsDcScrapeResponse.nextPageUrl)
-    }, [waltsDcScrapeResponse])
 
     useEffect(() => {
         if (selectedResultSet === "dc-pb") {
@@ -99,30 +62,6 @@ const ComicsAdmin: React.FC<Props> = ({
         setNextPageUrlDcPb(pbDcScrapeResponse.nextPageUrl)
     }, [pbDcScrapeResponse])
 
-    useEffect(() => {
-        if (selectedResultSet === "marvel-walts")
-            setDisplayedBooks(marvel_scraped_comics)
-    }, [marvel_scraped_comics])
-
-    useEffect(() => {
-        if (selectedResultSet === "marvel-api")
-            setDisplayedBooks(marvel_api_comics)
-    }, [marvel_api_comics])
-
-    const getMarvelOmnis = (e: React.MouseEvent) => {
-        e.preventDefault()
-        get_marvel_omnis()
-    }
-
-    const scrapeDComnisWalts = (e: React.MouseEvent) => {
-        e.preventDefault()
-        scrape_dc_omnis_walts()
-    }
-
-    const getNewPageDcWalts = (nextPageUrl: string) => {
-        scrape_dc_omnis_walts(nextPageUrl)
-    }
-
     const scrapeDComnisPB = (e: React.MouseEvent) => {
         e.preventDefault()
         scrape_dc_omnis_panel_bound()
@@ -132,25 +71,10 @@ const ComicsAdmin: React.FC<Props> = ({
         scrape_dc_omnis_panel_bound(nextPageUrl)
     }
 
-    const scrapeMarvelOmnis = (e: React.MouseEvent) => {
-        e.preventDefault()
-        scrape_marvel_omnis()
-    }
-
     const handleChange = (event) => {
         const tab = event?.target?.value ?? "dunneweb-db"
         setselectedResultSet(tab)
-        setDisplayedBooks(
-            tab === "dunneweb-db"
-                ? allBooks
-                : tab === "dc-pb"
-                  ? pbDcScrapeResponse.books
-                  : tab === "dc-walts"
-                    ? waltsDcScrapeResponse.books
-                    : tab === "marvel-walts"
-                      ? marvel_scraped_comics
-                      : marvel_scraped_comics,
-        )
+        setDisplayedBooks(tab === "dc-pb" ? pbDcScrapeResponse.books : allBooks)
     }
 
     function displayBook(book: Book, i: number, omniListType: string) {
@@ -165,15 +89,12 @@ const ComicsAdmin: React.FC<Props> = ({
                 title = book.title
                 thumbnail_url = book.thumbnail_url
                 break
-            case "marvelScraped":
-                title = book.title
-                break
         }
 
         return (
             <div
                 key={i}
-                className="m-[0.5rem] w-full md:w-[70rem] border border-gray-200 rounded-[1rem] 
+                className="m-[0.5rem] w-full md:w-[70rem] border border-gray-200 rounded-[1rem]
                     flex justify-start cursor-pointer hover:border-gray-400 transition-colors"
                 onClick={() => {
                     setDwModalOpen(true)
@@ -215,24 +136,15 @@ const ComicsAdmin: React.FC<Props> = ({
         <div className="list-none text-white w-full p-[2rem] flex flex-col h-full">
             <ul className="list-none p-0">
                 <li
-                    className="w-full flex justify-center items-center text-center p-2.5 
+                    className="w-full flex justify-center items-center text-center p-2.5
                         font-semibold text-gray-300 uppercase tracking-wider"
                 >
                     Actions
                 </li>
                 {[
-                    { label: "Get Marvel Omnis", handler: getMarvelOmnis },
-                    {
-                        label: "Scrape DC Omnis - Walts",
-                        handler: scrapeDComnisWalts,
-                    },
                     {
                         label: "Scrape DC Omnis - Panel Bound",
                         handler: scrapeDComnisPB,
-                    },
-                    {
-                        label: "Scrape Marvel Omnis",
-                        handler: scrapeMarvelOmnis,
                     },
                 ].map(({ label, handler }) => (
                     <li
@@ -245,7 +157,7 @@ const ComicsAdmin: React.FC<Props> = ({
                     >
                         <a
                             href="#"
-                            className="text-white no-underline hover:text-gray-300 
+                            className="text-white no-underline hover:text-gray-300
                             transition-colors text-[1.4rem]"
                         >
                             {label}
@@ -285,7 +197,7 @@ const ComicsAdmin: React.FC<Props> = ({
     const pagination = () => {
         return (
             <div className="w-full md:w-[70rem] flex items-center justify-end">
-                {prevPageUrlDcWalts && (
+                {prevPageUrlDcPb && (
                     <Button
                         className={addBtn}
                         sx={{
@@ -298,13 +210,13 @@ const ComicsAdmin: React.FC<Props> = ({
                         }}
                         variant="contained"
                         onClick={() => {
-                            getNewPageDcWalts(prevPageUrlDcWalts)
+                            getNewPageDcPB(prevPageUrlDcPb)
                         }}
                     >
                         Back
                     </Button>
                 )}
-                {nextPageUrlDcWalts && (
+                {nextPageUrlDcPb && (
                     <Button
                         className={addBtn}
                         sx={{
@@ -317,7 +229,7 @@ const ComicsAdmin: React.FC<Props> = ({
                         }}
                         variant="contained"
                         onClick={() => {
-                            getNewPageDcWalts(nextPageUrlDcWalts)
+                            getNewPageDcPB(nextPageUrlDcPb)
                         }}
                     >
                         Next
@@ -332,12 +244,12 @@ const ComicsAdmin: React.FC<Props> = ({
             {dwModalOpen && (
                 <DunneWebModal onClose={() => setDwModalOpen(false)}>
                     {dwModalType === "book" ? (
-                        <BookModalContent
+                        <AddEditBookModalContent
                             book={selectedBook}
                             setDwModalOpen={setDwModalOpen}
                         />
                     ) : dwModalType === "addBook" ? (
-                        <AddBookModalContent setDwModalOpen={setDwModalOpen} />
+                        <AddEditBookModalContent setDwModalOpen={setDwModalOpen} />
                     ) : dwModalType === "addCharacter" ? (
                         <AddCharacterModalContent
                             setDwModalOpen={setDwModalOpen}
@@ -386,17 +298,9 @@ const ComicsAdmin: React.FC<Props> = ({
                             <ToggleButton value="dc-pb">
                                 DC Panel Bound
                             </ToggleButton>
-                            <ToggleButton value="dc-walts">
-                                DC Walts
-                            </ToggleButton>
-                            <ToggleButton value="marvel-walts">
-                                Marvel Walts
-                            </ToggleButton>
                         </ToggleButtonGroup>
                     </div>
                     <div className="flex flex-col items-center overflow-y-scroll h-[calc(100vh-20rem)] px-2">
-                        {selectedResultSet === "dc-walts" &&
-                            `Scraped Books Count: ${displayedBooks.length}`}
                         {pagination()}
                         {displayedBooks.map((book, i) =>
                             displayBook(
@@ -404,11 +308,7 @@ const ComicsAdmin: React.FC<Props> = ({
                                 i,
                                 selectedResultSet === "dunneweb-db"
                                     ? "marvelApi"
-                                    : selectedResultSet === "dc-pb"
-                                      ? "dcScraped"
-                                      : selectedResultSet === "dc-walts"
-                                        ? "dcScraped"
-                                        : "marvelScraped",
+                                    : "dcScraped",
                             ),
                         )}
                         {pagination()}
@@ -420,17 +320,11 @@ const ComicsAdmin: React.FC<Props> = ({
 }
 
 const mapStateToProps = (state: RootState) => ({
-    marvel_api_comics: state.comics.marvel_api_comics,
-    waltsDcScrapeResponse: state.comics.waltsDcScrapeResponse,
     pbDcScrapeResponse: state.comics.pbDcScrapeResponse,
-    marvel_scraped_comics: state.comics.marvel_scraped_comics,
     allBooks: state.comics.all_books,
 })
 
 export default connect(mapStateToProps, {
-    get_marvel_omnis,
-    scrape_dc_omnis_walts,
     scrape_dc_omnis_panel_bound,
-    scrape_marvel_omnis,
     getAllBooks,
 })(ComicsAdmin)
