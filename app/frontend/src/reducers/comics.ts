@@ -6,10 +6,12 @@ import {
     LOAD_CHARACTERS_FAIL,
     LOAD_PUBLISHERS_SUCCESS,
     LOAD_PUBLISHERS_FAIL,
+    LOAD_AUTHORS_SUCCESS,
+    LOAD_AUTHORS_FAIL,
     LOAD_BOOKS_SUCCESS,
     LOAD_BOOKS_FAIL,
 } from "../actions/types"
-import { Book, Character, Publisher } from "../types"
+import { Book, Character, Publisher, Author } from "../types"
 
 export type ScrapedBooksPage = {
     nextPageUrl: string
@@ -20,6 +22,7 @@ type ComicsState = {
     pbDcScrapeResponse: ScrapedBooksPage
     all_characters: Character[]
     all_publishers: Publisher[]
+    all_authors: Author[]
     all_books: Book[]
 }
 
@@ -27,6 +30,7 @@ const initialState: ComicsState = {
     pbDcScrapeResponse: { nextPageUrl: "", books: [] },
     all_characters: [],
     all_publishers: [],
+    all_authors: [],
     all_books: [],
 }
 
@@ -69,6 +73,16 @@ export default function comicsReducer(
             return {
                 ...state,
                 all_publishers: [],
+            }
+        case LOAD_AUTHORS_SUCCESS:
+            return {
+                ...state,
+                all_authors: payload.authors,
+            }
+        case LOAD_AUTHORS_FAIL:
+            return {
+                ...state,
+                all_authors: [],
             }
         case LOAD_BOOKS_SUCCESS:
             return {

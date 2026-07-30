@@ -13,6 +13,7 @@ import SidePanel from "../components/SidePanel"
 import AddEditBookModalContent from "../modals/dwModalContant/AddEditBookModalContent"
 import AddPublisherModalContent from "../modals/dwModalContant/AddPublisherModalContent"
 import AddCharacterModalContent from "../modals/dwModalContant/AddCharacterModalContent"
+import AddAuthorModalContent from "../modals/dwModalContant/AddAuthorModalContent"
 import { RootState } from "../reducers"
 import { type Book } from "types"
 import { ScrapedBooksPage } from "reducers/comics"
@@ -116,10 +117,10 @@ const ComicsAdmin: React.FC<Props> = ({
                             <b>Publisher</b>: {book.publisher_name}
                         </span>
                         <span>
-                            <b>Character</b>: {book.character_name}
+                            <b>Characters</b>: {book.character_names?.join(", ")}
                         </span>
                         <span>
-                            <b>Author</b>: {book.author}
+                            <b>Authors</b>: {book.author_names?.join(", ")}
                         </span>
                         <span>
                             <b>Page Count</b>: {book.page_count}
@@ -170,6 +171,7 @@ const ComicsAdmin: React.FC<Props> = ({
                     { label: "Add Book", type: "addBook" },
                     { label: "Add Character", type: "addCharacter" },
                     { label: "Add Publisher", type: "addPublisher" },
+                    { label: "Add Author", type: "addAuthor" },
                 ].map(({ label, type }) => (
                     <Button
                         key={type}
@@ -256,6 +258,10 @@ const ComicsAdmin: React.FC<Props> = ({
                         />
                     ) : dwModalType === "addPublisher" ? (
                         <AddPublisherModalContent
+                            setDwModalOpen={setDwModalOpen}
+                        />
+                    ) : dwModalType === "addAuthor" ? (
+                        <AddAuthorModalContent
                             setDwModalOpen={setDwModalOpen}
                         />
                     ) : (

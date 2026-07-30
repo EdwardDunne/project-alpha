@@ -6,16 +6,17 @@ import { Character } from '../types';
 import { RootState } from '../reducers';
 
 interface Props {
-    setCharacter: (character: Character | null) => void;
+    setCharacters: (characters: Character[]) => void;
     variant?: 'standard' | 'outlined' | 'filled';
     allCharacters: Character[];
     getAllCharacters: () => void;
-    initialCharacterId?: number;
+    initialCharacterIds?: number[];
 }
 
-const CharactersSelector: React.FC<Props> = ({ setCharacter, variant = 'standard', allCharacters, getAllCharacters, initialCharacterId }) => {
+const CharactersMultiSelector: React.FC<Props> = ({ setCharacters, variant = 'standard', allCharacters, getAllCharacters, initialCharacterIds }) => {
     const [characterOptions, setCharacterOptions] = useState<Character[]>([])
-    const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
+    const [selectedCharacters, setSelectedCharacters] = useState<Character[]>([])
+    const [hasAppliedInitial, setHasAppliedInitial] = useState(false)
 
     useEffect(() => {
         allCharacters.length ? _setCharacterOptions(allCharacters) : getAllCharacters()
@@ -26,14 +27,15 @@ const CharactersSelector: React.FC<Props> = ({ setCharacter, variant = 'standard
     }, [allCharacters]);
 
     useEffect(() => {
-        if (initialCharacterId && !selectedCharacter) {
-            const match = characterOptions.find(c => c.id === initialCharacterId)
-            if (match) {
-                setSelectedCharacter(match)
-                setCharacter(match)
+        if (initialCharacterIds?.length && !hasAppliedInitial && characterOptions.length) {
+            const matches = characterOptions.filter(c => initialCharacterIds.includes(c.id))
+            if (matches.length) {
+                setSelectedCharacters(matches)
+                setCharacters(matches)
+                setHasAppliedInitial(true)
             }
         }
-    }, [initialCharacterId, characterOptions]);
+    }, [initialCharacterIds, characterOptions]);
 
     const _setCharacterOptions = (characters: Character[]) => {
         setCharacterOptions(
@@ -45,18 +47,21 @@ const CharactersSelector: React.FC<Props> = ({ setCharacter, variant = 'standard
     return (
         <div className='mt-3'>
             <Autocomplete
-                id="character-selector"
+                multiple
+                id="character-multi-selector"
                 options={characterOptions}
-                value={selectedCharacter}
+                value={selectedCharacters}
                 getOptionLabel={(option) => option['name']}
                 renderInput={params =>
-                    <TextField {...params} label="Character" variant={variant}
+                    <TextField {...params} label="Characters" variant={variant}
                         InputProps={{ ...params.InputProps, sx: { fontSize: '1.6rem' } }}
                         InputLabelProps={{ ...params.InputLabelProps, sx: { fontSize: '1.6rem' } }}
                     />}
-                onChange={(e, character) => { setSelectedCharacter(character); setCharacter(character) }}
+                onChange={(e, characters) => { setSelectedCharacters(characters); setCharacters(characters) }}
                 slotProps={{ paper: { sx: { fontSize: '1.6rem' } } }}
                 sx={{
+                    '& .MuiChip-root': { height: 'auto', paddingY: '4px' },
+                    '& .MuiChip-label': { fontSize: '1.4rem', whiteSpace: 'normal' },
                     '& .MuiAutocomplete-popupIndicator svg': { fontSize: '2rem' },
                     '& .MuiAutocomplete-clearIndicator svg': { fontSize: '2rem' },
                 }}
@@ -68,4 +73,4 @@ const CharactersSelector: React.FC<Props> = ({ setCharacter, variant = 'standard
 const mapStateToProps = (state: RootState) => ({
     allCharacters: state.comics.all_characters
 })
-export default connect(mapStateToProps, { getAllCharacters })(CharactersSelector)
+export default connect(mapStateToProps, { getAllCharacters })(CharactersMultiSelector)

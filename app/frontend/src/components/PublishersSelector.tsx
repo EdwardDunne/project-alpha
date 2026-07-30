@@ -56,6 +56,10 @@ const PublishersSelector: React.FC<Props> = ({ setPublisher, variant = 'standard
                     />}
                 onChange={(e, publisher) => { setSelectedPublisher(publisher); setPublisher(publisher) }}
                 slotProps={{ paper: { sx: { fontSize: '1.6rem' } } }}
+                sx={{
+                    '& .MuiAutocomplete-popupIndicator svg': { fontSize: '2rem' },
+                    '& .MuiAutocomplete-clearIndicator svg': { fontSize: '2rem' },
+                }}
             />
         </div>
     )

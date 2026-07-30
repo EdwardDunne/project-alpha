@@ -9,6 +9,8 @@ import {
     LOAD_CHARACTERS_SUCCESS,
     LOAD_PUBLISHERS_FAIL,
     LOAD_PUBLISHERS_SUCCESS,
+    LOAD_AUTHORS_FAIL,
+    LOAD_AUTHORS_SUCCESS,
     LOAD_BOOKS_FAIL,
     LOAD_BOOKS_SUCCESS,
 } from "./types"
@@ -121,6 +123,36 @@ export const getAllPublishers = () => async (dispatch: Dispatch) => {
     }
 }
 
+export const getAllAuthors = () => async (dispatch: Dispatch) => {
+    const config = {
+        headers: httpUtil.get_headers("GET"),
+        params: {
+            action: "get_all",
+        },
+    }
+    try {
+        const res = await axios.get(
+            `${window.location.origin}/api/comics/get-authors`,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res.data.error) {
+            toast.error("Error getting authors...")
+            dispatch({
+                type: LOAD_AUTHORS_FAIL,
+            })
+        } else {
+            dispatch({
+                type: LOAD_AUTHORS_SUCCESS,
+                payload: res.data,
+            })
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+        return {}
+    }
+}
+
 export const getAllBooks = () => async (dispatch: Dispatch) => {
     const config = {
         headers: httpUtil.get_headers("GET"),
@@ -183,6 +215,37 @@ export const addPublisher = async (
     }
 }
 
+export const addAuthor = async (
+    formData: { name: string },
+    setDwModalOpen: (open: boolean) => void,
+) => {
+    const config = {
+        headers: httpUtil.get_headers("POST"),
+    }
+
+    const body = JSON.stringify({
+        name: formData.name,
+    })
+
+    try {
+        const res = await axios.post(
+            `${window.location.origin}/api/comics/add-author`,
+            body,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res["data"]["new_author"]) {
+            toast.success("Author Added!")
+            store.dispatch(getAllAuthors()) // Refresh authors
+            setDwModalOpen(false)
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
 export const addCharacter = async (
     formData: { name: string; publisher: string },
     setDwModalOpen: (open: boolean) => void,
@@ -220,12 +283,12 @@ export const addBook = async (
         publisher: string
         format: string
         title: string
-        author: string
+        authors: string[]
         description: string
         thumbnail_url: string
         thumbnail: File | string
         page_count: number
-        character: string
+        characters: string[]
         team: string
     },
     setDwModalOpen: (open: boolean) => void,
@@ -237,11 +300,11 @@ export const addBook = async (
     const _formData = new FormData()
     _formData.append("thumbnail", formData.thumbnail)
     _formData.append("title", formData.title)
-    _formData.append("author", formData.author)
+    formData.authors.forEach(id => _formData.append("authors", id))
     _formData.append("description", formData.description)
     _formData.append("page_count", formData.page_count.toString())
     _formData.append("publisher", formData.publisher)
-    _formData.append("character", formData.character)
+    formData.characters.forEach(id => _formData.append("characters", id))
 
     try {
         const res = await axios.post(
@@ -268,12 +331,12 @@ export const updateBook = async (
         publisher: string
         format: string
         title: string
-        author: string
+        authors: string[]
         description: string
         thumbnail_url: string
         thumbnail: File | string
         page_count: number
-        character: string
+        characters: string[]
         team: string
     },
     setDwModalOpen: (open: boolean) => void,
@@ -286,11 +349,11 @@ export const updateBook = async (
     _formData.append("id", formData.id.toString())
     if (formData.thumbnail) _formData.append("thumbnail", formData.thumbnail)
     _formData.append("title", formData.title)
-    _formData.append("author", formData.author)
+    formData.authors.forEach(id => _formData.append("authors", id))
     _formData.append("description", formData.description)
     _formData.append("page_count", formData.page_count.toString())
     _formData.append("publisher", formData.publisher)
-    _formData.append("character", formData.character)
+    formData.characters.forEach(id => _formData.append("characters", id))
 
     try {
         const res = await axios.put(
