@@ -47,7 +47,7 @@ const AddEditBookModalContent: React.FC<Props> = ({ setDwModalOpen, book }) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
 
     const setPublisher = (publisher: Publisher | null) => {
-        if (publisher) setFormData(prev => ({ ...prev, publisher: publisher["key"] }))
+        if (publisher) setFormData(prev => ({ ...prev, publisher: String(publisher["id"]) }))
     }
     const setCharacter = (character: Character | null) => {
         if (character)

@@ -19,7 +19,7 @@ const AddCharacterModalContent: React.FC<Props> = ({ setDwModalOpen }) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
 
     const setPublisher = (publisher: Publisher | null) => {
-        if (publisher) setFormData({ ...formData, publisher: publisher["key"] })
+        if (publisher) setFormData({ ...formData, publisher: String(publisher["id"]) })
     }
 
     return (
