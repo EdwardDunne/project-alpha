@@ -21,6 +21,13 @@ logger = logging.getLogger(__name__)
 CACHE_TTL = 60 * 60 * 24  # 24 hours
 
 
+def serializer_error_message(serializer):
+    return '; '.join(
+        f"{field}: {' '.join(str(message) for message in messages)}"
+        for field, messages in serializer.errors.items()
+    )
+
+
 @method_decorator(ensure_csrf_cookie, name='dispatch')
 class GetCSRFToken(APIView):
     permission_classes = (permissions.AllowAny, )
@@ -44,37 +51,6 @@ class CheckAuthenticatedView(APIView):
         except Exception as e:
             logger.exception('Something went wrong with checking authentication: %s', e)
             return Response({'error': f'Something went wrong with checking authentication: {str(e)}'})
-
-@method_decorator(csrf_protect, name='dispatch')
-class LoginView(APIView):
-    permission_classes = (permissions.AllowAny, )
-
-    def post(self, request, format=None):
-        try:
-            data = self.request.data
-
-            email = data['email']
-            password = data['password']
-
-            existing_user = User.objects.filter(email__iexact=email).first()
-
-            if existing_user is None:
-                return Response({ 'error': 'No account found with that email' })
-
-            if not existing_user.is_active:
-                return Response({ 'error': 'This account is inactive' })
-
-            user = auth.authenticate(username=existing_user.username, password=password)
-
-            if user is not None:
-                auth.login(request, user)
-                return Response({ 'success': 'User Authenticated' })
-            else:
-                return Response({ 'error': 'Incorrect password' })
-        except Exception as e:
-            logger.exception('Something went wrong when logging in: %s', e)
-            return Response({ 'error': f'Something went wrong when logging in: {str(e)}' })
-
 
 @method_decorator(csrf_protect, name='dispatch')
 class PasswordResetRequestView(APIView):
@@ -139,6 +115,36 @@ class PasswordResetConfirmView(APIView):
             logger.exception('Something went wrong when resetting password: %s', e)
             return Response({'error': f'Something went wrong when resetting your password: {str(e)}'})
 
+@method_decorator(csrf_protect, name='dispatch')
+class LoginView(APIView):
+    permission_classes = (permissions.AllowAny, )
+
+    def post(self, request, format=None):
+        try:
+            data = self.request.data
+
+            email = data['email']
+            password = data['password']
+
+            existing_user = User.objects.filter(email__iexact=email).first()
+
+            if existing_user is None:
+                return Response({ 'error': 'No account found with that email' })
+
+            if not existing_user.is_active:
+                return Response({ 'error': 'This account is inactive' })
+
+            user = auth.authenticate(username=existing_user.username, password=password)
+
+            if user is not None:
+                auth.login(request, user)
+                return Response({ 'success': 'User Authenticated' })
+            else:
+                return Response({ 'error': 'Incorrect password' })
+        except Exception as e:
+            logger.exception('Something went wrong when logging in: %s', e)
+            return Response({ 'error': f'Something went wrong when logging in: {str(e)}' })
+
 class LogoutView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -202,7 +208,7 @@ class GetUsersView(APIView):
 
         return Response(users.data)
 
-class GetUserProfileView(APIView):
+class UserProfileView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, format=None):
@@ -219,9 +225,6 @@ class GetUserProfileView(APIView):
         except Exception as e:
             logger.exception('Something went wrong when retrieving user profile: %s', e)
             return Response({'error': f'Something went wrong when retrieving user profile: {str(e)}'})
-
-class UpdateUserProfileView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
 
     def put(self, request, format=None):
         try:
@@ -246,58 +249,10 @@ class UpdateUserProfileView(APIView):
             return Response({'error': f'Something went wrong when updating user profile: {str(e)}'})
 
 class BookView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def post(self, request, format=None):
-        try:
-            data = self.request.data
-            new_book = Book.objects.create(
-                title=data['title'],
-                author=data['author'],
-                description=data['description'],
-                page_count=data['page_count'],
-                thumbnail=request.FILES['thumbnail'],
-                publisher=Publisher.objects.get(key=data['publisher']),
-                character=Character.objects.get(id=data['character'])
-            )
-            new_book = BookSerializer(new_book)
-            return Response({'success': 'true', 'new_book': new_book.data})
-
-        # Book thumbnail url example
-        # http://localhost:8000/media/uploads/book-thumbnails/comics-hex-img.jpg
-
-        except Exception as e:
-            logger.exception('Something went wrong when adding new book: %s', e)
-            return Response({'error': f'Something went wrong when adding new book: {str(e)}'})
-
-    def put(self, request, format=None):
-        try:
-            data = self.request.data
-            book = Book.objects.get(id=data['id'])
-
-            logger.debug('Updating book %s with publisher %s', book.id, data['publisher'])
-
-            book.title = data['title']
-            book.author = data['author']
-            book.description = data['description']
-            book.page_count = data['page_count']
-            book.publisher = Publisher.objects.get(key=data['publisher'])
-            book.character = Character.objects.get(id=data['character'])
-
-            if 'thumbnail' in request.FILES:
-                book.thumbnail = request.FILES['thumbnail']
-
-            book.save()
-
-            updated_book = BookSerializer(book)
-            return Response({'success': 'true', 'new_book': updated_book.data})
-
-        except Exception as e:
-            logger.exception('Something went wrong when updating the book: %s', e)
-            return Response({'error': f'Something went wrong when updating the book: {str(e)}'})
-
-class GetBooksView(APIView):
-    permission_classes = (permissions.AllowAny, )
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get(self, request, format=None):
         try:
@@ -322,24 +277,45 @@ class GetBooksView(APIView):
             logger.exception('Something went wrong when retrieving books: %s', e)
             return Response({'error': f'Something went wrong when retrieving books: {str(e)}'})
 
-class CharacterView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
-
     def post(self, request, format=None):
         try:
-            data = self.request.data
-            new_character = Character.objects.create(
-                name=data['name'],
-                publisher=Publisher.objects.get(key=data['publisher'])
-            )
-            new_character = CharacterSerializer(new_character)
-            return Response({'success': 'true', 'new_character': new_character.data})
-        except Exception as e:
-            logger.exception('Something went wrong when creating character: %s', e)
-            return Response({'error': f'Something went wrong when retrieving characters: {str(e)}'})
+            serializer = BookSerializer(data=request.data)
+            if not serializer.is_valid():
+                logger.warning('Book creation failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
 
-class GetCharactersView(APIView):
-    permission_classes = (permissions.AllowAny, )
+            new_book = serializer.save()
+            return Response({'success': 'true', 'new_book': BookSerializer(new_book).data})
+
+        # Book thumbnail url example
+        # http://localhost:8000/media/uploads/book-thumbnails/comics-hex-img.jpg
+
+        except Exception as e:
+            logger.exception('Something went wrong when adding new book: %s', e)
+            return Response({'error': f'Something went wrong when adding new book: {str(e)}'})
+
+    def put(self, request, format=None):
+        try:
+            data = self.request.data
+            book = Book.objects.get(id=data['id'])
+
+            serializer = BookSerializer(book, data=request.data, partial=True)
+            if not serializer.is_valid():
+                logger.warning('Book update failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
+
+            updated_book = serializer.save()
+            return Response({'success': 'true', 'new_book': BookSerializer(updated_book).data})
+
+        except Exception as e:
+            logger.exception('Something went wrong when updating the book: %s', e)
+            return Response({'error': f'Something went wrong when updating the book: {str(e)}'})
+
+class CharacterView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get(self, request, format=None):
         try:
@@ -354,26 +330,26 @@ class GetCharactersView(APIView):
             return Response({'error': 'no action'})
         except Exception as e:
             logger.exception('Something went wrong when retrieving characters: %s', e)
-            return Response({'error': f'Something went wrong when updating publishers: {str(e)}'})
-
-class PublisherView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+            return Response({'error': f'Something went wrong when retrieving characters: {str(e)}'})
 
     def post(self, request, format=None):
         try:
-            data = self.request.data
-            new_publisher = Publisher.objects.create(
-                key=data['key'],
-                name=data['name']
-            )
-            new_publisher = PublisherSerializer(new_publisher)
-            return Response({'success': 'true', 'new_publisher': new_publisher.data})
-        except Exception as e:
-            logger.exception('Something went wrong when creating publisher: %s', e)
-            return Response({'error': f'Something went wrong when updating publishers: {str(e)}'})
+            serializer = CharacterSerializer(data=request.data)
+            if not serializer.is_valid():
+                logger.warning('Character creation failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
 
-class GetPublishersView(APIView):
-    permission_classes = (permissions.AllowAny, )
+            new_character = serializer.save()
+            return Response({'success': 'true', 'new_character': CharacterSerializer(new_character).data})
+        except Exception as e:
+            logger.exception('Something went wrong when creating character: %s', e)
+            return Response({'error': f'Something went wrong when creating character: {str(e)}'})
+
+class PublisherView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def get(self, request, format=None):
         try:
@@ -389,3 +365,16 @@ class GetPublishersView(APIView):
         except Exception as e:
             logger.exception('Something went wrong when retrieving publishers: %s', e)
             return Response({'error': f'Something went wrong when retrieving publishers: {str(e)}'})
+
+    def post(self, request, format=None):
+        try:
+            serializer = PublisherSerializer(data=request.data)
+            if not serializer.is_valid():
+                logger.warning('Publisher creation failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
+
+            new_publisher = serializer.save()
+            return Response({'success': 'true', 'new_publisher': PublisherSerializer(new_publisher).data})
+        except Exception as e:
+            logger.exception('Something went wrong when creating publisher: %s', e)
+            return Response({'error': f'Something went wrong when creating publisher: {str(e)}'})

@@ -13,7 +13,7 @@ export type Book = {
     thumbnail_url?: string
     marvel_id?: number
     price?: number
-    isbn?: number
+    isbn?: string
 }
 
 export type Character = {
@@ -24,6 +24,5 @@ export type Character = {
 
 export type Publisher = {
     id: number
-    key: string
     name: string
 }

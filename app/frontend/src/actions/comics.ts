@@ -153,7 +153,7 @@ export const getAllBooks = () => async (dispatch: Dispatch) => {
 }
 
 export const addPublisher = async (
-    formData: { key: string; name: string },
+    formData: { name: string },
     setDwModalOpen: (open: boolean) => void,
 ) => {
     const config = {
@@ -161,7 +161,6 @@ export const addPublisher = async (
     }
 
     const body = JSON.stringify({
-        key: formData.key,
         name: formData.name,
     })
 
@@ -176,7 +175,7 @@ export const addPublisher = async (
             store.dispatch(getAllPublishers()) // Refresh publishers
             setDwModalOpen(false)
         } else {
-            toast.error("Something went wrong...")
+            toast.error(res.data.error || "Something went wrong...")
         }
     } catch (error) {
         console.error(error)
@@ -208,7 +207,7 @@ export const addCharacter = async (
             store.dispatch(getAllCharacters()) // Refresh characters
             setDwModalOpen(false)
         } else {
-            toast.error("Something went wrong...")
+            toast.error(res.data.error || "Something went wrong...")
         }
     } catch (error) {
         console.error(error)
@@ -255,7 +254,7 @@ export const addBook = async (
             store.dispatch(getAllBooks()) // Refresh Books
             setDwModalOpen(false)
         } else {
-            toast.error("Something went wrong...")
+            toast.error(res.data.error || "Something went wrong...")
         }
     } catch (error) {
         console.error(error)
@@ -293,8 +292,6 @@ export const updateBook = async (
     _formData.append("publisher", formData.publisher)
     _formData.append("character", formData.character)
 
-    console.log(_formData)
-
     try {
         const res = await axios.put(
             `${window.location.origin}/api/comics/add-book`,
@@ -306,7 +303,7 @@ export const updateBook = async (
             store.dispatch(getAllBooks()) // Refresh Books
             setDwModalOpen(false)
         } else {
-            toast.error("Something went wrong...")
+            toast.error(res.data.error || "Something went wrong...")
         }
     } catch (error) {
         console.error(error)

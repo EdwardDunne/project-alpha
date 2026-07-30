@@ -15,7 +15,7 @@ const AddPublisherModalContent: React.FC<Props> = ({
     setDwModalOpen,
     getAllPublishers,
 }) => {
-    const [formData, setFormData] = useState({ key: "", name: "" })
+    const [formData, setFormData] = useState({ name: "" })
 
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) =>
         setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -26,21 +26,6 @@ const AddPublisherModalContent: React.FC<Props> = ({
                 Add Publisher
             </h2>
             <div className="flex-1 py-4 space-y-3">
-                <div>
-                    <label
-                        className={labelClass}
-                        htmlFor="key"
-                    >
-                        Key
-                    </label>
-                    <input
-                        className={inputClass}
-                        type="text"
-                        name="key"
-                        placeholder="Key"
-                        onChange={onChange}
-                    />
-                </div>
                 <div>
                     <label
                         className={labelClass}

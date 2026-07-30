@@ -1,6 +1,17 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from mainsite.models import Book, Character, Publisher, UserProfile
+
+MAX_THUMBNAIL_SIZE_MB = 5
+VALID_THUMBNAIL_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+
+def validate_thumbnail(file):
+    if file.size > MAX_THUMBNAIL_SIZE_MB * 1024 * 1024:
+        raise ValidationError(f'Thumbnail must be {MAX_THUMBNAIL_SIZE_MB}MB or smaller.')
+
+    if file.content_type not in VALID_THUMBNAIL_CONTENT_TYPES:
+        raise ValidationError('Thumbnail must be a JPEG, PNG, WebP, or GIF image.')
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,6 +30,15 @@ class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = '__all__'
+        extra_kwargs = {
+            'marvel_id': {'required': False},
+            'price': {'required': False, 'min_value': 0},
+            'isbn': {'required': False},
+            'page_count': {'min_value': 1, 'max_value': 5000},
+            # A thumbnail is required to create a book, but PUT uses partial=True
+            # so an edit that isn't replacing the thumbnail can still omit it.
+            'thumbnail': {'required': True, 'validators': [validate_thumbnail]},
+        }
 
 class PublisherSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,9 +49,3 @@ class CharacterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Character
         fields = '__all__'
-
-#  ALTERNATE APPROACH FOR VALIDATION
-# class UserProfileSerializer(serializers.Serializer):
-#     email = serializers.EmailField()
-#     first_name = serializers.CharField(max_length=50)
-#     last_name = serializers.CharField(max_length=50)
