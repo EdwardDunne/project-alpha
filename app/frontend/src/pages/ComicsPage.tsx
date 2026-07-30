@@ -7,6 +7,8 @@ import PublishersSelector from "../components/PublishersSelector"
 import CharactersSelector from "../components/CharactersSelector"
 import DunneWebModal from "../modals/DunneWebModal"
 import FloatingMenuButton from "../components/FloatingMenuButton"
+import FilterAltIcon from "@mui/icons-material/FilterAlt"
+import FilterListIcon from "@mui/icons-material/FilterList"
 import SidePanel from "../components/SidePanel"
 import { Book, Character, Publisher } from "../types"
 import { RootState } from "../reducers"
@@ -39,11 +41,11 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
 
     function getDisplayedBooks(book: Book, i: number) {
         const bookPublisher = book["publisher"]
-        const bookCharacter = book["character"]
+        const bookCharacters = book["characters"] ?? []
 
         if (
             (!publisherFilter || bookPublisher === publisherFilter["id"]) &&
-            (!characterFilter || bookCharacter === characterFilter["id"])
+            (!characterFilter || bookCharacters.includes(characterFilter["id"]))
         ) {
             return (
                 <div
@@ -98,13 +100,25 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
                 id="admin-main-container"
                 className="flex w-full h-full"
             >
-                <SidePanel open={filterOpen} onClose={() => setFilterOpen(false)} closeAriaLabel="Close filters">
+                <SidePanel
+                    open={filterOpen}
+                    onClose={() => setFilterOpen(false)}
+                    closeAriaLabel="Close filters"
+                >
                     {filterPanel}
                 </SidePanel>
 
                 {/* Mobile: floating filter button — hidden on desktop */}
                 {!filterOpen && (
-                    <FloatingMenuButton onClick={() => setFilterOpen(true)} ariaLabel="Open filters" />
+                    <FloatingMenuButton
+                        onClick={() => setFilterOpen(true)}
+                        ariaLabel="Open filters"
+                        icon={
+                            <FilterListIcon
+                                sx={{ color: "white", fontSize: "2.8em" }}
+                            />
+                        }
+                    />
                 )}
 
                 {/* Main content */}

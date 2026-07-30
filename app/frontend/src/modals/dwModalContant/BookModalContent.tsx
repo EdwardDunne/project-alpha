@@ -30,10 +30,10 @@ const BookModalContent: React.FC<Props> = ({ book }) => {
                         <b>Publisher</b>: {book.publisher_name}
                     </span>
                     <span>
-                        <b>Character</b>: {book.character_name}
+                        <b>Characters</b>: {book.character_names?.join(", ")}
                     </span>
                     <span>
-                        <b>Author</b>: {book.author}
+                        <b>Authors</b>: {book.author_names?.join(", ")}
                     </span>
                     <span className="max-h-28 overflow-y-auto">
                         <b>Description</b>: {book.description}

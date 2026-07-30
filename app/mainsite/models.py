@@ -44,21 +44,25 @@ class Book(models.Model):
     description = models.TextField(null=True, blank=True)
     price = models.FloatField(null=True)
     thumbnail_url = models.URLField(max_length=256, null=True, blank=True)
-    author = models.CharField(max_length=64, null=True, blank=True)
+    authors = models.ManyToManyField("Author", blank=True)
     isbn = models.CharField(max_length=20, null=True, blank=True)
     page_count = models.IntegerField(null=True)
-    character = models.ForeignKey("Character", on_delete=models.DO_NOTHING, null=True)
+    characters = models.ManyToManyField("Character")
     team = models.CharField(max_length=256, null=True, blank=True)
     thumbnail = models.FileField(upload_to ='uploads/book-thumbnails/', null=True)
 
     @property
     def publisher_name(self):
         return self.publisher.name
-    
+
     @property
-    def character_name(self):
-        return self.character.name
-    
+    def character_names(self):
+        return [c.name for c in self.characters.all()]
+
+    @property
+    def author_names(self):
+        return [a.name for a in self.authors.all()]
+
     def __str__(self):
         return self.title
 
@@ -71,6 +75,12 @@ class Character(models.Model):
         return self.name
 
 class Publisher(models.Model):
+    name = models.CharField(max_length=256, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Author(models.Model):
     name = models.CharField(max_length=256, unique=True)
 
     def __str__(self):

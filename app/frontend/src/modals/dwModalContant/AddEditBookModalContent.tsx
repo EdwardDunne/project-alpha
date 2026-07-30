@@ -1,9 +1,10 @@
 import React, { useState } from "react"
 import { connect } from "react-redux"
 import PublishersSelector from "../../components/PublishersSelector"
-import CharactersSelector from "../../components/CharactersSelector"
+import CharactersMultiSelector from "../../components/CharactersMultiSelector"
+import AuthorsSelector from "../../components/AuthorsSelector"
 import { addBook, updateBook } from "../../actions/comics"
-import { Publisher, Character, Book } from "../../types"
+import { Publisher, Character, Author, Book } from "../../types"
 
 interface Props {
     setDwModalOpen: (open: boolean) => void
@@ -14,12 +15,12 @@ interface AddEditBookFormData {
     publisher: string
     format: string
     title: string
-    author: string
+    authors: string[]
     description: string
     thumbnail_url: string
     thumbnail: File | string
     page_count: number
-    character: string
+    characters: string[]
     team: string
 }
 
@@ -34,12 +35,12 @@ const AddEditBookModalContent: React.FC<Props> = ({ setDwModalOpen, book }) => {
         publisher: "",
         format: "",
         title: book?.title ?? "",
-        author: book?.author ?? "",
+        authors: [],
         description: book?.description ?? "",
         thumbnail_url: book?.thumbnail_url ?? "",
         thumbnail: "",
         page_count: book?.page_count ?? 0,
-        character: "",
+        characters: [],
         team: book?.team ?? "",
     })
 
@@ -49,9 +50,11 @@ const AddEditBookModalContent: React.FC<Props> = ({ setDwModalOpen, book }) => {
     const setPublisher = (publisher: Publisher | null) => {
         if (publisher) setFormData(prev => ({ ...prev, publisher: String(publisher["id"]) }))
     }
-    const setCharacter = (character: Character | null) => {
-        if (character)
-            setFormData(prev => ({ ...prev, character: String(character["id"]) }))
+    const setCharacters = (characters: Character[]) => {
+        setFormData(prev => ({ ...prev, characters: characters.map(c => String(c["id"])) }))
+    }
+    const setAuthors = (authors: Author[]) => {
+        setFormData(prev => ({ ...prev, authors: authors.map(a => String(a["id"])) }))
     }
 
     const submit = () => {
@@ -75,7 +78,6 @@ const AddEditBookModalContent: React.FC<Props> = ({ setDwModalOpen, book }) => {
             <div className="flex-1 overflow-y-auto max-h-[60vh] px-1 py-3 space-y-3">
                 {[
                     { name: "title" as const, label: "Title", type: "text" },
-                    { name: "author" as const, label: "Author", type: "text" },
                 ].map(({ name, label, type }) => (
                     <div key={name}>
                         <label
@@ -151,7 +153,8 @@ const AddEditBookModalContent: React.FC<Props> = ({ setDwModalOpen, book }) => {
                     />
                 </div>
                 <PublishersSelector setPublisher={setPublisher} initialPublisherId={book?.publisher} />
-                <CharactersSelector setCharacter={setCharacter} initialCharacterId={book?.character} />
+                <CharactersMultiSelector setCharacters={setCharacters} initialCharacterIds={book?.characters} />
+                <AuthorsSelector setAuthors={setAuthors} initialAuthorIds={book?.authors} />
             </div>
             <div className="flex justify-end pt-4 border-t border-gray-100">
                 <button

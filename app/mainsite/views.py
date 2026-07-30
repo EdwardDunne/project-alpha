@@ -13,8 +13,8 @@ from rest_framework.response import Response
 from rest_framework import permissions
 from django.contrib import auth
 from django.contrib.auth.models import User
-from mainsite.models import Book, Character, Publisher, UserProfile
-from .serializers import BookSerializer, CharacterSerializer, PublisherSerializer, UserSerializer, UserProfileSerializer
+from mainsite.models import Author, Book, Character, Publisher, UserProfile
+from .serializers import AuthorSerializer, BookSerializer, CharacterSerializer, PublisherSerializer, UserSerializer, UserProfileSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -378,3 +378,37 @@ class PublisherView(APIView):
         except Exception as e:
             logger.exception('Something went wrong when creating publisher: %s', e)
             return Response({'error': f'Something went wrong when creating publisher: {str(e)}'})
+
+class AuthorView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
+
+    def get(self, request, format=None):
+        try:
+            data = self.request.query_params
+            action = data['action']
+
+            if action == 'get_all':
+                all_authors = [
+                    AuthorSerializer(author).data for author in Author.objects.all()]
+                return Response({'success': 'true', 'authors': all_authors})
+
+            return Response({'error': 'no action'})
+        except Exception as e:
+            logger.exception('Something went wrong when retrieving authors: %s', e)
+            return Response({'error': f'Something went wrong when retrieving authors: {str(e)}'})
+
+    def post(self, request, format=None):
+        try:
+            serializer = AuthorSerializer(data=request.data)
+            if not serializer.is_valid():
+                logger.warning('Author creation failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
+
+            new_author = serializer.save()
+            return Response({'success': 'true', 'new_author': AuthorSerializer(new_author).data})
+        except Exception as e:
+            logger.exception('Something went wrong when creating author: %s', e)
+            return Response({'error': f'Something went wrong when creating author: {str(e)}'})
