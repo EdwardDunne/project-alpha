@@ -296,10 +296,20 @@ class BookView(APIView):
 
     def put(self, request, format=None):
         try:
-            data = self.request.data
+            data = self.request.data.copy()
+            # M2M fields with no selections send no entries at all in multipart
+            # form data, so the key is absent rather than an empty list. DRF's
+            # partial update then treats them as "not provided" and leaves the
+            # existing relations untouched, so an empty selection must be made
+            # explicit here to actually clear them.
+            if 'authors' not in data:
+                data.setlist('authors', [])
+            if 'characters' not in data:
+                data.setlist('characters', [])
+
             book = Book.objects.get(id=data['id'])
 
-            serializer = BookSerializer(book, data=request.data, partial=True)
+            serializer = BookSerializer(book, data=data, partial=True)
             if not serializer.is_valid():
                 logger.warning('Book update failed validation: %s', serializer.errors)
                 return Response({'error': serializer_error_message(serializer)})
@@ -345,6 +355,37 @@ class CharacterView(APIView):
             logger.exception('Something went wrong when creating character: %s', e)
             return Response({'error': f'Something went wrong when creating character: {str(e)}'})
 
+    def put(self, request, format=None):
+        try:
+            data = self.request.data
+            character = Character.objects.get(id=data['id'])
+
+            serializer = CharacterSerializer(character, data=request.data, partial=True)
+            if not serializer.is_valid():
+                logger.warning('Character update failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
+
+            updated_character = serializer.save()
+            return Response({'success': 'true', 'new_character': CharacterSerializer(updated_character).data})
+        except Exception as e:
+            logger.exception('Something went wrong when updating character: %s', e)
+            return Response({'error': f'Something went wrong when updating character: {str(e)}'})
+
+    def delete(self, request, format=None):
+        try:
+            data = self.request.data
+            character = Character.objects.get(id=data['id'])
+
+            book_count = Book.objects.filter(characters=character).count()
+            if book_count:
+                return Response({'error': f'Cannot delete: {book_count} book(s) reference this character.'})
+
+            character.delete()
+            return Response({'success': 'true'})
+        except Exception as e:
+            logger.exception('Something went wrong when deleting character: %s', e)
+            return Response({'error': f'Something went wrong when deleting character: {str(e)}'})
+
 class PublisherView(APIView):
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -379,6 +420,37 @@ class PublisherView(APIView):
             logger.exception('Something went wrong when creating publisher: %s', e)
             return Response({'error': f'Something went wrong when creating publisher: {str(e)}'})
 
+    def put(self, request, format=None):
+        try:
+            data = self.request.data
+            publisher = Publisher.objects.get(id=data['id'])
+
+            serializer = PublisherSerializer(publisher, data=request.data, partial=True)
+            if not serializer.is_valid():
+                logger.warning('Publisher update failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
+
+            updated_publisher = serializer.save()
+            return Response({'success': 'true', 'new_publisher': PublisherSerializer(updated_publisher).data})
+        except Exception as e:
+            logger.exception('Something went wrong when updating publisher: %s', e)
+            return Response({'error': f'Something went wrong when updating publisher: {str(e)}'})
+
+    def delete(self, request, format=None):
+        try:
+            data = self.request.data
+            publisher = Publisher.objects.get(id=data['id'])
+
+            book_count = Book.objects.filter(publisher=publisher).count()
+            if book_count:
+                return Response({'error': f'Cannot delete: {book_count} book(s) reference this publisher.'})
+
+            publisher.delete()
+            return Response({'success': 'true'})
+        except Exception as e:
+            logger.exception('Something went wrong when deleting publisher: %s', e)
+            return Response({'error': f'Something went wrong when deleting publisher: {str(e)}'})
+
 class AuthorView(APIView):
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -412,3 +484,34 @@ class AuthorView(APIView):
         except Exception as e:
             logger.exception('Something went wrong when creating author: %s', e)
             return Response({'error': f'Something went wrong when creating author: {str(e)}'})
+
+    def put(self, request, format=None):
+        try:
+            data = self.request.data
+            author = Author.objects.get(id=data['id'])
+
+            serializer = AuthorSerializer(author, data=request.data, partial=True)
+            if not serializer.is_valid():
+                logger.warning('Author update failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
+
+            updated_author = serializer.save()
+            return Response({'success': 'true', 'new_author': AuthorSerializer(updated_author).data})
+        except Exception as e:
+            logger.exception('Something went wrong when updating author: %s', e)
+            return Response({'error': f'Something went wrong when updating author: {str(e)}'})
+
+    def delete(self, request, format=None):
+        try:
+            data = self.request.data
+            author = Author.objects.get(id=data['id'])
+
+            book_count = Book.objects.filter(authors=author).count()
+            if book_count:
+                return Response({'error': f'Cannot delete: {book_count} book(s) reference this author.'})
+
+            author.delete()
+            return Response({'success': 'true'})
+        except Exception as e:
+            logger.exception('Something went wrong when deleting author: %s', e)
+            return Response({'error': f'Something went wrong when deleting author: {str(e)}'})

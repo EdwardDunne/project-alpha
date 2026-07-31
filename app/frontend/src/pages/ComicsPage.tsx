@@ -30,6 +30,7 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
     const [dwModalOpen, setDwModalOpen] = useState(false)
     const [selectedBook, setSelectedBook] = useState<Book>({} as Book)
     const [filterOpen, setFilterOpen] = useState(false)
+    const [titleSearch, setTitleSearch] = useState("")
 
     useEffect(() => {
         allBooks.length ? setBooks(allBooks) : getAllBooks()
@@ -45,7 +46,8 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
 
         if (
             (!publisherFilter || bookPublisher === publisherFilter["id"]) &&
-            (!characterFilter || bookCharacters.includes(characterFilter["id"]))
+            (!characterFilter || bookCharacters.includes(characterFilter["id"])) &&
+            (book.title ?? "").toLowerCase().includes(titleSearch.toLowerCase())
         ) {
             return (
                 <div
@@ -77,6 +79,13 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
                 <span className="w-full flex justify-center items-center text-center p-2.5 font-semibold text-gray-300 uppercase tracking-wider">
                     Filter Books
                 </span>
+                <input
+                    className="w-full mt-3 bg-[#3f4a58] border border-gray-500 rounded px-3 py-2 text-[1.4rem] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                    type="text"
+                    placeholder="Search title..."
+                    value={titleSearch}
+                    onChange={(e) => setTitleSearch(e.target.value)}
+                />
                 <ul className="list-none p-0">
                     <PublishersSelector setPublisher={setPublisherFilter} />
                     <CharactersSelector setCharacter={setCharacterFilter} />
