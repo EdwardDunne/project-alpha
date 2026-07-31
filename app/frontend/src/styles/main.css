@@ -10,7 +10,7 @@
    under 16px. The app's rem scale (html { font-size: 62.5% }) means
    text-[1.4rem] etc. renders at 14px, so force 16px on mobile only. */
 @media (max-width: 767px) {
-  input {
+  input, textarea {
     font-size: 1.6rem !important;
   }
 }
