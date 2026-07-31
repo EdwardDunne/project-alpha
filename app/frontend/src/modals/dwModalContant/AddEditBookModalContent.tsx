@@ -3,8 +3,9 @@ import { connect } from "react-redux"
 import PublishersSelector from "../../components/PublishersSelector"
 import CharactersMultiSelector from "../../components/CharactersMultiSelector"
 import AuthorsSelector from "../../components/AuthorsSelector"
-import { addBook, updateBook } from "../../actions/comics"
+import { addBook, updateBook, deleteBook } from "../../actions/comics"
 import { Publisher, Character, Author, Book } from "../../types"
+import ConfirmDialog from "../../components/ConfirmDialog"
 
 interface Props {
     setDwModalOpen: (open: boolean) => void
@@ -30,6 +31,8 @@ const labelClass = "block text-[1.4rem] font-medium text-gray-700 mb-1"
 
 const AddEditBookModalContent: React.FC<Props> = ({ setDwModalOpen, book }) => {
     const isEditMode = Boolean(book?.id)
+
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
     const [formData, setFormData] = useState<AddEditBookFormData>({
         publisher: "",
@@ -156,7 +159,20 @@ const AddEditBookModalContent: React.FC<Props> = ({ setDwModalOpen, book }) => {
                 <CharactersMultiSelector setCharacters={setCharacters} initialCharacterIds={book?.characters} />
                 <AuthorsSelector setAuthors={setAuthors} initialAuthorIds={book?.authors} />
             </div>
-            <div className="flex justify-end pt-4 border-t border-gray-100">
+            <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                {isEditMode ? (
+                    <button
+                        className="px-5 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors font-semibold"
+                        onClick={(e) => {
+                            e.preventDefault()
+                            setShowDeleteConfirm(true)
+                        }}
+                    >
+                        Delete Book
+                    </button>
+                ) : (
+                    <span />
+                )}
                 <button
                     className="px-5 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold"
                     onClick={(e) => {
@@ -167,6 +183,16 @@ const AddEditBookModalContent: React.FC<Props> = ({ setDwModalOpen, book }) => {
                     {isEditMode ? "Save Changes" : "Add Book"}
                 </button>
             </div>
+            {showDeleteConfirm && (
+                <ConfirmDialog
+                    message={`Delete book "${book?.title}"?`}
+                    onConfirm={() => {
+                        deleteBook(book!.id, setDwModalOpen)
+                        setShowDeleteConfirm(false)
+                    }}
+                    onCancel={() => setShowDeleteConfirm(false)}
+                />
+            )}
         </div>
     )
 }
