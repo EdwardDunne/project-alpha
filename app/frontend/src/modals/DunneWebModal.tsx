@@ -15,7 +15,7 @@ const DunneWebModal: React.FC<Props> = ({ onClose, children }) => {
                 onClick={onClose}
             />
             <div
-                className="fixed bg-white z-[1001] rounded-[0.6rem] max-h-[90dvh] overflow-y-auto w-[92vw] px-[2rem] py-[2.5rem] md:w-[50vw] md:px-[5rem] md:py-[5rem]"
+                className="fixed bg-white z-[1001] rounded-[0.6rem] max-h-[90dvh] overflow-y-auto w-[92vw] px-[2rem] py-[2.5rem] md:w-[50vw] md:px-[5rem] md:py-[5rem] flex"
                 style={{
                     top: "50%",
                     left: "50%",

@@ -1,64 +1,95 @@
-import { Autocomplete, TextField } from '@mui/material';
-import { getAllPublishers } from '../actions/comics';
-import React, { useEffect, useState } from 'react'
-import { connect } from 'react-redux';
-import { Publisher } from '../types';
-import { RootState } from '../reducers';
+import { Autocomplete, TextField } from "@mui/material"
+import { getAllPublishers } from "../actions/comics"
+import React, { useEffect, useState } from "react"
+import { connect } from "react-redux"
+import { Publisher } from "../types"
+import { RootState } from "../reducers"
 
 interface Props {
-    setPublisher: (publisher: Publisher | null) => void;
-    variant?: 'standard' | 'outlined' | 'filled';
-    allPublishers: Publisher[];
-    getAllPublishers: () => void;
-    initialPublisherId?: number;
+    setPublisher: (publisher: Publisher | null) => void
+    variant?: "standard" | "outlined" | "filled"
+    allPublishers: Publisher[]
+    getAllPublishers: () => void
+    initialPublisherId?: number
+    extraClasses?: string
 }
 
-const PublishersSelector: React.FC<Props> = ({ setPublisher, variant = 'standard', allPublishers, getAllPublishers, initialPublisherId }) => {
+const PublishersSelector: React.FC<Props> = ({
+    setPublisher,
+    variant = "standard",
+    allPublishers,
+    getAllPublishers,
+    initialPublisherId,
+    extraClasses,
+}) => {
     const [publisherOptions, setPublisherOptions] = useState<Publisher[]>([])
-    const [selectedPublisher, setSelectedPublisher] = useState<Publisher | null>(null)
+    const [selectedPublisher, setSelectedPublisher] =
+        useState<Publisher | null>(null)
 
     useEffect(() => {
-        allPublishers.length ? _setPublisherOptions(allPublishers) : getAllPublishers()
+        allPublishers.length
+            ? _setPublisherOptions(allPublishers)
+            : getAllPublishers()
     }, [])
 
     useEffect(() => {
         _setPublisherOptions(allPublishers)
-    }, [allPublishers]);
+    }, [allPublishers])
 
     useEffect(() => {
         if (initialPublisherId && !selectedPublisher) {
-            const match = publisherOptions.find(p => p.id === initialPublisherId)
+            const match = publisherOptions.find(
+                (p) => p.id === initialPublisherId,
+            )
             if (match) {
                 setSelectedPublisher(match)
                 setPublisher(match)
             }
         }
-    }, [initialPublisherId, publisherOptions]);
+    }, [initialPublisherId, publisherOptions])
 
     const _setPublisherOptions = (publishers: Publisher[]) => {
         setPublisherOptions(
-            [...publishers]
-                .sort((a, b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
+            [...publishers].sort((a, b) =>
+                a.name > b.name ? 1 : b.name > a.name ? -1 : 0,
+            ),
         )
     }
 
     return (
-        <div className='mt-3'>
+        <div className={"mt-3 " + extraClasses}>
             <Autocomplete
                 id="publisher-selector"
                 options={publisherOptions}
                 value={selectedPublisher}
-                getOptionLabel={(option) => option['name']}
-                renderInput={params =>
-                    <TextField {...params} label="Publisher" variant={variant}
-                        InputProps={{ ...params.InputProps, sx: { fontSize: '1.6rem' } }}
-                        InputLabelProps={{ ...params.InputLabelProps, sx: { fontSize: '1.6rem' } }}
-                    />}
-                onChange={(e, publisher) => { setSelectedPublisher(publisher); setPublisher(publisher) }}
-                slotProps={{ paper: { sx: { fontSize: '1.6rem' } } }}
+                getOptionLabel={(option) => option["name"]}
+                renderInput={(params) => (
+                    <TextField
+                        {...params}
+                        label="Publisher"
+                        variant={variant}
+                        InputProps={{
+                            ...params.InputProps,
+                            sx: { fontSize: "1.6rem" },
+                        }}
+                        InputLabelProps={{
+                            ...params.InputLabelProps,
+                            sx: { fontSize: "1.6rem" },
+                        }}
+                    />
+                )}
+                onChange={(e, publisher) => {
+                    setSelectedPublisher(publisher)
+                    setPublisher(publisher)
+                }}
+                slotProps={{ paper: { sx: { fontSize: "1.6rem" } } }}
                 sx={{
-                    '& .MuiAutocomplete-popupIndicator svg': { fontSize: '2rem' },
-                    '& .MuiAutocomplete-clearIndicator svg': { fontSize: '2rem' },
+                    "& .MuiAutocomplete-popupIndicator svg": {
+                        fontSize: "2rem",
+                    },
+                    "& .MuiAutocomplete-clearIndicator svg": {
+                        fontSize: "2rem",
+                    },
                 }}
             />
         </div>
@@ -66,6 +97,8 @@ const PublishersSelector: React.FC<Props> = ({ setPublisher, variant = 'standard
 }
 
 const mapStateToProps = (state: RootState) => ({
-    allPublishers: state.comics.all_publishers
+    allPublishers: state.comics.all_publishers,
 })
-export default connect(mapStateToProps, { getAllPublishers })(PublishersSelector)
+export default connect(mapStateToProps, { getAllPublishers })(
+    PublishersSelector,
+)

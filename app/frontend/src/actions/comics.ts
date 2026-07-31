@@ -204,7 +204,12 @@ export const addPublisher = async (
         )
         if (res["data"]["new_publisher"]) {
             toast.success("Publisher Added!")
-            store.dispatch(getAllPublishers()) // Refresh publishers
+            const publishers = store.getState().comics.all_publishers
+            store.dispatch({
+                type: LOAD_PUBLISHERS_SUCCESS,
+                payload: { publishers: [...publishers, res.data.new_publisher] },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' publisher_name
             setDwModalOpen(false)
         } else {
             toast.error(res.data.error || "Something went wrong...")
@@ -235,7 +240,12 @@ export const addAuthor = async (
         )
         if (res["data"]["new_author"]) {
             toast.success("Author Added!")
-            store.dispatch(getAllAuthors()) // Refresh authors
+            const authors = store.getState().comics.all_authors
+            store.dispatch({
+                type: LOAD_AUTHORS_SUCCESS,
+                payload: { authors: [...authors, res.data.new_author] },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' author_names
             setDwModalOpen(false)
         } else {
             toast.error(res.data.error || "Something went wrong...")
@@ -267,8 +277,221 @@ export const addCharacter = async (
         )
         if (res["data"]["new_character"]) {
             toast.success("Character Added!")
-            store.dispatch(getAllCharacters()) // Refresh characters
+            const characters = store.getState().comics.all_characters
+            store.dispatch({
+                type: LOAD_CHARACTERS_SUCCESS,
+                payload: { characters: [...characters, res.data.new_character] },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' character_names
             setDwModalOpen(false)
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+export const updatePublisher = async (
+    formData: { id: number; name: string },
+    onSuccess?: () => void,
+) => {
+    const config = {
+        headers: httpUtil.get_headers("PUT"),
+    }
+
+    const body = JSON.stringify({
+        id: formData.id,
+        name: formData.name,
+    })
+
+    try {
+        const res = await axios.put(
+            `${window.location.origin}/api/comics/add-publisher`,
+            body,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res["data"]["new_publisher"]) {
+            toast.success("Publisher Updated!")
+            const publishers = store.getState().comics.all_publishers
+            store.dispatch({
+                type: LOAD_PUBLISHERS_SUCCESS,
+                payload: {
+                    publishers: publishers.map(p =>
+                        p.id === res.data.new_publisher.id ? res.data.new_publisher : p,
+                    ),
+                },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' publisher_name
+            onSuccess?.()
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+export const deletePublisher = async (id: number) => {
+    const config = {
+        headers: httpUtil.get_headers("DELETE"),
+        data: { id },
+    }
+
+    try {
+        const res = await axios.delete(
+            `${window.location.origin}/api/comics/add-publisher`,
+            config as AxiosRequestConfig,
+        )
+        if (res["data"]["success"]) {
+            toast.success("Publisher Deleted!")
+            const publishers = store.getState().comics.all_publishers
+            store.dispatch({
+                type: LOAD_PUBLISHERS_SUCCESS,
+                payload: { publishers: publishers.filter(p => p.id !== id) },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' publisher_name
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+export const updateAuthor = async (
+    formData: { id: number; name: string },
+    onSuccess?: () => void,
+) => {
+    const config = {
+        headers: httpUtil.get_headers("PUT"),
+    }
+
+    const body = JSON.stringify({
+        id: formData.id,
+        name: formData.name,
+    })
+
+    try {
+        const res = await axios.put(
+            `${window.location.origin}/api/comics/add-author`,
+            body,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res["data"]["new_author"]) {
+            toast.success("Author Updated!")
+            const authors = store.getState().comics.all_authors
+            store.dispatch({
+                type: LOAD_AUTHORS_SUCCESS,
+                payload: {
+                    authors: authors.map(a =>
+                        a.id === res.data.new_author.id ? res.data.new_author : a,
+                    ),
+                },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' author_names
+            onSuccess?.()
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+export const deleteAuthor = async (id: number) => {
+    const config = {
+        headers: httpUtil.get_headers("DELETE"),
+        data: { id },
+    }
+
+    try {
+        const res = await axios.delete(
+            `${window.location.origin}/api/comics/add-author`,
+            config as AxiosRequestConfig,
+        )
+        if (res["data"]["success"]) {
+            toast.success("Author Deleted!")
+            const authors = store.getState().comics.all_authors
+            store.dispatch({
+                type: LOAD_AUTHORS_SUCCESS,
+                payload: { authors: authors.filter(a => a.id !== id) },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' author_names
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+export const updateCharacter = async (
+    formData: { id: number; name: string; publisher: string },
+    onSuccess?: () => void,
+) => {
+    const config = {
+        headers: httpUtil.get_headers("PUT"),
+    }
+
+    const body = JSON.stringify({
+        id: formData.id,
+        name: formData.name,
+        publisher: formData.publisher,
+    })
+
+    try {
+        const res = await axios.put(
+            `${window.location.origin}/api/comics/add-character`,
+            body,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res["data"]["new_character"]) {
+            toast.success("Character Updated!")
+            const characters = store.getState().comics.all_characters
+            store.dispatch({
+                type: LOAD_CHARACTERS_SUCCESS,
+                payload: {
+                    characters: characters.map(c =>
+                        c.id === res.data.new_character.id ? res.data.new_character : c,
+                    ),
+                },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' character_names
+            onSuccess?.()
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+export const deleteCharacter = async (id: number) => {
+    const config = {
+        headers: httpUtil.get_headers("DELETE"),
+        data: { id },
+    }
+
+    try {
+        const res = await axios.delete(
+            `${window.location.origin}/api/comics/add-character`,
+            config as AxiosRequestConfig,
+        )
+        if (res["data"]["success"]) {
+            toast.success("Character Deleted!")
+            const characters = store.getState().comics.all_characters
+            store.dispatch({
+                type: LOAD_CHARACTERS_SUCCESS,
+                payload: { characters: characters.filter(c => c.id !== id) },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' character_names
         } else {
             toast.error(res.data.error || "Something went wrong...")
         }

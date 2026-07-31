@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react"
-import {
-    getAllBooks,
-    scrape_dc_omnis_panel_bound,
-} from "../actions/comics"
+import { getAllBooks, scrape_dc_omnis_panel_bound } from "../actions/comics"
 import { connect } from "react-redux"
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
 import ToggleButton from "@mui/material/ToggleButton"
@@ -11,9 +8,9 @@ import DunneWebModal from "../modals/DunneWebModal"
 import FloatingMenuButton from "../components/FloatingMenuButton"
 import SidePanel from "../components/SidePanel"
 import AddEditBookModalContent from "../modals/dwModalContant/AddEditBookModalContent"
-import AddPublisherModalContent from "../modals/dwModalContant/AddPublisherModalContent"
-import AddCharacterModalContent from "../modals/dwModalContant/AddCharacterModalContent"
-import AddAuthorModalContent from "../modals/dwModalContant/AddAuthorModalContent"
+import ManagePublishersModalContent from "../modals/dwModalContant/ManagePublishersModalContent"
+import ManageCharactersModalContent from "../modals/dwModalContant/ManageCharactersModalContent"
+import ManageAuthorsModalContent from "../modals/dwModalContant/ManageAuthorsModalContent"
 import { RootState } from "../reducers"
 import { type Book } from "types"
 import { ScrapedBooksPage } from "reducers/comics"
@@ -41,6 +38,7 @@ const ComicsAdmin: React.FC<Props> = ({
 
     const [prevPageUrlDcPb, setPrevPageUrlDcPb] = useState<string>("")
     const [nextPageUrlDcPb, setNextPageUrlDcPb] = useState<string>("")
+    const [titleSearch, setTitleSearch] = useState("")
 
     useEffect(() => {
         allBooks.length ? handleChange(selectedResultSet) : getAllBooks()
@@ -117,7 +115,8 @@ const ComicsAdmin: React.FC<Props> = ({
                             <b>Publisher</b>: {book.publisher_name}
                         </span>
                         <span>
-                            <b>Characters</b>: {book.character_names?.join(", ")}
+                            <b>Characters</b>:{" "}
+                            {book.character_names?.join(", ")}
                         </span>
                         <span>
                             <b>Authors</b>: {book.author_names?.join(", ")}
@@ -133,8 +132,25 @@ const ComicsAdmin: React.FC<Props> = ({
 
     const addBtn = "mx-[0.5rem] bg-brand hover:bg-brand-dark"
 
+    const searchedBooks = displayedBooks.filter((book) =>
+        (book.title ?? "").toLowerCase().includes(titleSearch.toLowerCase()),
+    )
+
     const sidebarContent = (
         <div className="list-none text-white w-full p-[2rem] flex flex-col h-full">
+            <span
+                className="w-full flex justify-center items-center text-center p-2.5
+                    font-semibold text-gray-300 uppercase tracking-wider"
+            >
+                Search
+            </span>
+            <input
+                className="w-full mb-2 bg-[#3f4a58] border border-gray-500 rounded px-3 py-2 text-[1.4rem] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                type="text"
+                placeholder="Search title..."
+                value={titleSearch}
+                onChange={(e) => setTitleSearch(e.target.value)}
+            />
             <ul className="list-none p-0">
                 <li
                     className="w-full flex justify-center items-center text-center p-2.5
@@ -142,36 +158,13 @@ const ComicsAdmin: React.FC<Props> = ({
                 >
                     Actions
                 </li>
-                {[
-                    {
-                        label: "Scrape DC Omnis - Panel Bound",
-                        handler: scrapeDComnisPB,
-                    },
-                ].map(({ label, handler }) => (
-                    <li
-                        key={label}
-                        className="p-2.5"
-                        onClick={(e) => {
-                            handler(e as React.MouseEvent)
-                            setSidebarOpen(false)
-                        }}
-                    >
-                        <a
-                            href="#"
-                            className="text-white no-underline hover:text-gray-300
-                            transition-colors text-[1.4rem]"
-                        >
-                            {label}
-                        </a>
-                    </li>
-                ))}
             </ul>
             <div className="flex flex-col mt-2 gap-1">
                 {[
                     { label: "Add Book", type: "addBook" },
-                    { label: "Add Character", type: "addCharacter" },
-                    { label: "Add Publisher", type: "addPublisher" },
-                    { label: "Add Author", type: "addAuthor" },
+                    { label: "Manage Characters", type: "manageCharacters" },
+                    { label: "Manage Publishers", type: "managePublishers" },
+                    { label: "Manage Authors", type: "manageAuthors" },
                 ].map(({ label, type }) => (
                     <Button
                         key={type}
@@ -191,6 +184,29 @@ const ComicsAdmin: React.FC<Props> = ({
                     >
                         {label}
                     </Button>
+                ))}
+                {[
+                    {
+                        label: "Scrape DC Omnis - Panel Bound",
+                        handler: scrapeDComnisPB,
+                    },
+                ].map(({ label, handler }) => (
+                    <li
+                        key={label}
+                        className="p-2.5 flex"
+                        onClick={(e) => {
+                            handler(e as React.MouseEvent)
+                            setSidebarOpen(false)
+                        }}
+                    >
+                        <a
+                            href="#"
+                            className="text-white no-underline hover:text-gray-300
+                            transition-colors text-[1.4rem] text-center w-full"
+                        >
+                            {label}
+                        </a>
+                    </li>
                 ))}
             </div>
         </div>
@@ -251,17 +267,19 @@ const ComicsAdmin: React.FC<Props> = ({
                             setDwModalOpen={setDwModalOpen}
                         />
                     ) : dwModalType === "addBook" ? (
-                        <AddEditBookModalContent setDwModalOpen={setDwModalOpen} />
-                    ) : dwModalType === "addCharacter" ? (
-                        <AddCharacterModalContent
+                        <AddEditBookModalContent
                             setDwModalOpen={setDwModalOpen}
                         />
-                    ) : dwModalType === "addPublisher" ? (
-                        <AddPublisherModalContent
+                    ) : dwModalType === "manageCharacters" ? (
+                        <ManageCharactersModalContent
                             setDwModalOpen={setDwModalOpen}
                         />
-                    ) : dwModalType === "addAuthor" ? (
-                        <AddAuthorModalContent
+                    ) : dwModalType === "managePublishers" ? (
+                        <ManagePublishersModalContent
+                            setDwModalOpen={setDwModalOpen}
+                        />
+                    ) : dwModalType === "manageAuthors" ? (
+                        <ManageAuthorsModalContent
                             setDwModalOpen={setDwModalOpen}
                         />
                     ) : (
@@ -271,13 +289,20 @@ const ComicsAdmin: React.FC<Props> = ({
             )}
 
             <div className="flex w-full h-full">
-                <SidePanel open={sidebarOpen} onClose={() => setSidebarOpen(false)} closeAriaLabel="Close menu">
+                <SidePanel
+                    open={sidebarOpen}
+                    onClose={() => setSidebarOpen(false)}
+                    closeAriaLabel="Close menu"
+                >
                     {sidebarContent}
                 </SidePanel>
 
                 {/* Mobile: floating button */}
                 {!sidebarOpen && (
-                    <FloatingMenuButton onClick={() => setSidebarOpen(true)} ariaLabel="Open admin menu" />
+                    <FloatingMenuButton
+                        onClick={() => setSidebarOpen(true)}
+                        ariaLabel="Open admin menu"
+                    />
                 )}
 
                 {/* Main content */}
@@ -308,7 +333,7 @@ const ComicsAdmin: React.FC<Props> = ({
                     </div>
                     <div className="flex flex-col items-center overflow-y-scroll h-[calc(100vh-20rem)] px-2">
                         {pagination()}
-                        {displayedBooks.map((book, i) =>
+                        {searchedBooks.map((book, i) =>
                             displayBook(
                                 book,
                                 i,
