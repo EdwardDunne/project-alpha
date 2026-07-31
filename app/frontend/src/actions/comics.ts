@@ -596,3 +596,34 @@ export const updateBook = async (
         toast.error("Something went wrong...")
     }
 }
+
+export const deleteBook = async (
+    id: number,
+    setDwModalOpen: (open: boolean) => void,
+) => {
+    const config = {
+        headers: httpUtil.get_headers("DELETE"),
+        data: { id },
+    }
+
+    try {
+        const res = await axios.delete(
+            `${window.location.origin}/api/comics/add-book`,
+            config as AxiosRequestConfig,
+        )
+        if (res["data"]["success"]) {
+            toast.success("Book Deleted!")
+            const books = store.getState().comics.all_books
+            store.dispatch({
+                type: LOAD_BOOKS_SUCCESS,
+                payload: { books: books.filter(b => b.id !== id) },
+            })
+            setDwModalOpen(false)
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}

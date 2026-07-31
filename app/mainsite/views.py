@@ -321,6 +321,16 @@ class BookView(APIView):
             logger.exception('Something went wrong when updating the book: %s', e)
             return Response({'error': f'Something went wrong when updating the book: {str(e)}'})
 
+    def delete(self, request, format=None):
+        try:
+            data = self.request.data
+            book = Book.objects.get(id=data['id'])
+            book.delete()
+            return Response({'success': 'true'})
+        except Exception as e:
+            logger.exception('Something went wrong when deleting the book: %s', e)
+            return Response({'error': f'Something went wrong when deleting the book: {str(e)}'})
+
 class CharacterView(APIView):
     def get_permissions(self):
         if self.request.method == 'GET':
