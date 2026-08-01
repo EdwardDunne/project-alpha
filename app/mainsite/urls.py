@@ -3,7 +3,8 @@ from django.urls import path
 from project_alpha import settings
 from django.conf.urls.static import static
 
-from .views import AuthorView, BookView, CharacterView, PublisherView, UserProfileView, SignupView, GetCSRFToken, LoginView, LogoutView, CheckAuthenticatedView, DeleteAccountView, GetUsersView, PasswordResetRequestView, PasswordResetConfirmView
+from .views import UserProfileView, SignupView, GetCSRFToken, LoginView, LogoutView, CheckAuthenticatedView, DeleteAccountView, GetUsersView, PasswordResetRequestView, PasswordResetConfirmView
+from .comics_views import AuthorView, BookView, CharacterView, PublisherView
 from .data_collecting import ScrapePB
 
 urlpatterns = [

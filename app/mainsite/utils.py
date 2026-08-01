@@ -3,6 +3,12 @@ import hashlib
 
 def get_hash_for_marvel_api(ts):
     return hashlib.md5('{}{}{}'.format(
-        ts, 
-        settings.MARVEL_API_PRIVATE_KEY, 
+        ts,
+        settings.MARVEL_API_PRIVATE_KEY,
         settings.MARVEL_API_PUBLIC_KEY).encode()).hexdigest()
+
+def serializer_error_message(serializer):
+    return '; '.join(
+        f"{field}: {' '.join(str(message) for message in messages)}"
+        for field, messages in serializer.errors.items()
+    )

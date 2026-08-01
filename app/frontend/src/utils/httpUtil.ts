@@ -6,6 +6,7 @@ interface Headers {
     'Accept': string;
     'Content-Type': string;
     'X-CSRFToken'?: string;
+    [key: string]: string | undefined;
 }
 
 class HttpUtils {
