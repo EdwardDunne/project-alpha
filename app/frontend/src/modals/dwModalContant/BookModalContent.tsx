@@ -13,7 +13,7 @@ const BookModalContent: React.FC<Props> = ({ book }) => {
         : book.thumbnail_url
 
     return (
-        <div className="flex flex-col md:flex-row justify-around items-center gap-6">
+        <div className="flex flex-col md:flex-row justify-around items-center gap-6 w-full">
             <div className="flex-none">
                 <img
                     className="w-32 md:w-48 rounded-[1rem]"
@@ -25,7 +25,7 @@ const BookModalContent: React.FC<Props> = ({ book }) => {
                 <div className="text-[1.8rem] font-bold text-center mb-4">
                     {book.title}
                 </div>
-                <div className="flex flex-col gap-1.5 text-[1.4rem]">
+                <div className="flex flex-col gap-1.5 text-[1.4rem] w-full">
                     <span>
                         <b>Publisher</b>: {book.publisher_name}
                     </span>
