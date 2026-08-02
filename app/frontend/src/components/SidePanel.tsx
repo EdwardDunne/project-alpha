@@ -20,9 +20,9 @@ const SidePanel: React.FC<Props> = ({
             {/* Desktop sidebar — hidden on mobile, collapsible via the tab on its edge */}
             <div className="hidden md:flex sticky top-[6rem] h-[calc(100dvh-6rem)] shrink-0">
                 <div
-                    className={`h-full bg-[#313a46] overflow-hidden transition-all duration-300 ${collapsed ? "w-0" : "w-[30rem]"}`}
+                    className={`h-full bg-[#313a46] overflow-hidden transition-all duration-300 ${collapsed ? "w-0" : "w-[35rem]"}`}
                 >
-                    <div className="w-[30rem] h-full">{children}</div>
+                    <div className="w-[35rem] h-full">{children}</div>
                 </div>
                 <button
                     className="w-8 shrink-0 mt-4 h-14 bg-brand text-white rounded-r-md shadow-lg flex items-center justify-center text-[4.2rem] leading-none"

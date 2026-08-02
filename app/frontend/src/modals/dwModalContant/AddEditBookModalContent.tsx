@@ -3,8 +3,9 @@ import { connect } from "react-redux"
 import PublishersSelector from "../../components/PublishersSelector"
 import CharactersMultiSelector from "../../components/CharactersMultiSelector"
 import AuthorsSelector from "../../components/AuthorsSelector"
+import ArtistsSelector from "../../components/ArtistsSelector"
 import { addBook, updateBook, deleteBook } from "../../actions/comics"
-import { Publisher, Character, Author, Book } from "../../types"
+import { Publisher, Character, Author, Artist, Book } from "../../types"
 import ConfirmDialog from "../../components/ConfirmDialog"
 
 interface Props {
@@ -17,6 +18,7 @@ interface AddEditBookFormData {
     format: string
     title: string
     authors: string[]
+    artists: string[]
     description: string
     thumbnail_url: string
     thumbnail: File | string
@@ -39,6 +41,7 @@ const AddEditBookModalContent: React.FC<Props> = ({ setDwModalOpen, book }) => {
         format: "",
         title: book?.title ?? "",
         authors: [],
+        artists: [],
         description: book?.description ?? "",
         thumbnail_url: book?.thumbnail_url ?? "",
         thumbnail: "",
@@ -58,6 +61,9 @@ const AddEditBookModalContent: React.FC<Props> = ({ setDwModalOpen, book }) => {
     }
     const setAuthors = (authors: Author[]) => {
         setFormData(prev => ({ ...prev, authors: authors.map(a => String(a["id"])) }))
+    }
+    const setArtists = (artists: Artist[]) => {
+        setFormData(prev => ({ ...prev, artists: artists.map(a => String(a["id"])) }))
     }
 
     const submit = () => {
@@ -158,6 +164,7 @@ const AddEditBookModalContent: React.FC<Props> = ({ setDwModalOpen, book }) => {
                 <PublishersSelector setPublisher={setPublisher} initialPublisherId={book?.publisher} />
                 <CharactersMultiSelector setCharacters={setCharacters} initialCharacterIds={book?.characters} />
                 <AuthorsSelector setAuthors={setAuthors} initialAuthorIds={book?.authors} />
+                <ArtistsSelector setArtists={setArtists} initialArtistIds={book?.artists} />
             </div>
             <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                 {isEditMode ? (

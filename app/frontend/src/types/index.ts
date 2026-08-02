@@ -3,6 +3,8 @@ export type Book = {
     title?: string
     authors?: number[]
     author_names?: string[]
+    artists?: number[]
+    artist_names?: string[]
     description?: string
     thumbnail?: string
     page_count?: number
@@ -29,6 +31,11 @@ export type Publisher = {
 }
 
 export type Author = {
+    id: number
+    name: string
+}
+
+export type Artist = {
     id: number
     name: string
 }

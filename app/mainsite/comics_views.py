@@ -4,8 +4,8 @@ from django.core.cache import cache
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions
-from mainsite.models import Author, Book, Character, Publisher
-from .serializers import AuthorSerializer, BookSerializer, CharacterSerializer, PublisherSerializer
+from mainsite.models import Artist, Author, Book, Character, Publisher
+from .serializers import ArtistSerializer, AuthorSerializer, BookSerializer, CharacterSerializer, PublisherSerializer
 from .utils import serializer_error_message
 
 logger = logging.getLogger(__name__)
@@ -69,6 +69,8 @@ class BookView(APIView):
             # explicit here to actually clear them.
             if 'authors' not in data:
                 data.setlist('authors', [])
+            if 'artists' not in data:
+                data.setlist('artists', [])
             if 'characters' not in data:
                 data.setlist('characters', [])
 
@@ -317,3 +319,77 @@ class AuthorView(APIView):
         except Exception as e:
             logger.exception('Something went wrong when deleting author: %s', e)
             return Response({'error': f'Something went wrong when deleting author: {str(e)}'})
+
+class ArtistView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
+
+    def get(self, request, format=None):
+        try:
+            data = self.request.query_params
+            action = data['action']
+
+            if action == 'get_all':
+                if not request.user.is_staff:
+                    cached_artists = cache.get('all_artists')
+                    if cached_artists is not None:
+                        return Response({'success': 'true', 'artists': cached_artists})
+
+                all_artists = [
+                    ArtistSerializer(artist).data for artist in Artist.objects.all()]
+
+                if not request.user.is_staff:
+                    cache.set('all_artists', all_artists, CACHE_TTL)
+
+                return Response({'success': 'true', 'artists': all_artists})
+
+            return Response({'error': 'no action'})
+        except Exception as e:
+            logger.exception('Something went wrong when retrieving artists: %s', e)
+            return Response({'error': f'Something went wrong when retrieving artists: {str(e)}'})
+
+    def post(self, request, format=None):
+        try:
+            serializer = ArtistSerializer(data=request.data)
+            if not serializer.is_valid():
+                logger.warning('Artist creation failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
+
+            new_artist = serializer.save()
+            return Response({'success': 'true', 'new_artist': ArtistSerializer(new_artist).data})
+        except Exception as e:
+            logger.exception('Something went wrong when creating artist: %s', e)
+            return Response({'error': f'Something went wrong when creating artist: {str(e)}'})
+
+    def put(self, request, format=None):
+        try:
+            data = self.request.data
+            artist = Artist.objects.get(id=data['id'])
+
+            serializer = ArtistSerializer(artist, data=request.data, partial=True)
+            if not serializer.is_valid():
+                logger.warning('Artist update failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
+
+            updated_artist = serializer.save()
+            return Response({'success': 'true', 'new_artist': ArtistSerializer(updated_artist).data})
+        except Exception as e:
+            logger.exception('Something went wrong when updating artist: %s', e)
+            return Response({'error': f'Something went wrong when updating artist: {str(e)}'})
+
+    def delete(self, request, format=None):
+        try:
+            data = self.request.data
+            artist = Artist.objects.get(id=data['id'])
+
+            book_count = Book.objects.filter(artists=artist).count()
+            if book_count:
+                return Response({'error': f'Cannot delete: {book_count} book(s) reference this artist.'})
+
+            artist.delete()
+            return Response({'success': 'true'})
+        except Exception as e:
+            logger.exception('Something went wrong when deleting artist: %s', e)
+            return Response({'error': f'Something went wrong when deleting artist: {str(e)}'})
