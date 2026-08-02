@@ -13,6 +13,12 @@ import {
     LOAD_AUTHORS_SUCCESS,
     LOAD_ARTISTS_FAIL,
     LOAD_ARTISTS_SUCCESS,
+    LOAD_FORMATS_FAIL,
+    LOAD_FORMATS_SUCCESS,
+    LOAD_SUB_CATEGORIES_FAIL,
+    LOAD_SUB_CATEGORIES_SUCCESS,
+    LOAD_TEAMS_FAIL,
+    LOAD_TEAMS_SUCCESS,
     LOAD_BOOKS_FAIL,
     LOAD_BOOKS_SUCCESS,
 } from "./types"
@@ -182,6 +188,99 @@ export const getAllArtists = () => async (dispatch: Dispatch) => {
         } else {
             dispatch({
                 type: LOAD_ARTISTS_SUCCESS,
+                payload: res.data,
+            })
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+        return {}
+    }
+}
+
+// Get all formats from DB, this is cached unless you are an admin
+export const getAllFormats = () => async (dispatch: Dispatch) => {
+    const config = {
+        headers: httpUtil.get_headers("GET"),
+        params: {
+            action: "get_all",
+        },
+    }
+    try {
+        const res = await axios.get(
+            `${window.location.origin}/api/comics/get-formats`,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res.data.error) {
+            toast.error("Error getting formats...")
+            dispatch({
+                type: LOAD_FORMATS_FAIL,
+            })
+        } else {
+            dispatch({
+                type: LOAD_FORMATS_SUCCESS,
+                payload: res.data,
+            })
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+        return {}
+    }
+}
+
+// Get all sub categories from DB, this is cached unless you are an admin
+export const getAllSubCategories = () => async (dispatch: Dispatch) => {
+    const config = {
+        headers: httpUtil.get_headers("GET"),
+        params: {
+            action: "get_all",
+        },
+    }
+    try {
+        const res = await axios.get(
+            `${window.location.origin}/api/comics/get-sub-categories`,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res.data.error) {
+            toast.error("Error getting sub categories...")
+            dispatch({
+                type: LOAD_SUB_CATEGORIES_FAIL,
+            })
+        } else {
+            dispatch({
+                type: LOAD_SUB_CATEGORIES_SUCCESS,
+                payload: res.data,
+            })
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+        return {}
+    }
+}
+
+// Get all teams from DB, this is cached unless you are an admin
+export const getAllTeams = () => async (dispatch: Dispatch) => {
+    const config = {
+        headers: httpUtil.get_headers("GET"),
+        params: {
+            action: "get_all",
+        },
+    }
+    try {
+        const res = await axios.get(
+            `${window.location.origin}/api/comics/get-teams`,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res.data.error) {
+            toast.error("Error getting teams...")
+            dispatch({
+                type: LOAD_TEAMS_FAIL,
+            })
+        } else {
+            dispatch({
+                type: LOAD_TEAMS_SUCCESS,
                 payload: res.data,
             })
         }
@@ -559,6 +658,348 @@ export const deleteArtist = async (id: number) => {
     }
 }
 
+// FORMAT ACTIONS
+// Add new Format
+export const addFormat = async (
+    formData: { name: string; abbreviation: string },
+    setDwModalOpen: (open: boolean) => void,
+) => {
+    const config = {
+        headers: httpUtil.get_headers("POST"),
+    }
+
+    const body = JSON.stringify({
+        name: formData.name,
+        abbreviation: formData.abbreviation,
+    })
+
+    try {
+        const res = await axios.post(
+            `${window.location.origin}/api/comics/add-format`,
+            body,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res["data"]["new_format"]) {
+            toast.success("Format Added!")
+            const formats = store.getState().comics.all_formats
+            store.dispatch({
+                type: LOAD_FORMATS_SUCCESS,
+                payload: { formats: [...formats, res.data.new_format] },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' format_name
+            setDwModalOpen(false)
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+// Update Format
+export const updateFormat = async (
+    formData: { id: number; name: string; abbreviation: string },
+    onSuccess?: () => void,
+) => {
+    const config = {
+        headers: httpUtil.get_headers("PUT"),
+    }
+
+    const body = JSON.stringify({
+        id: formData.id,
+        name: formData.name,
+        abbreviation: formData.abbreviation,
+    })
+
+    try {
+        const res = await axios.put(
+            `${window.location.origin}/api/comics/add-format`,
+            body,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res["data"]["new_format"]) {
+            toast.success("Format Updated!")
+            const formats = store.getState().comics.all_formats
+            store.dispatch({
+                type: LOAD_FORMATS_SUCCESS,
+                payload: {
+                    formats: formats.map((f) =>
+                        f.id === res.data.new_format.id
+                            ? res.data.new_format
+                            : f,
+                    ),
+                },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' format_name
+            onSuccess?.()
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+// Delete Format
+export const deleteFormat = async (id: number) => {
+    const config = {
+        headers: httpUtil.get_headers("DELETE"),
+        data: { id },
+    }
+
+    try {
+        const res = await axios.delete(
+            `${window.location.origin}/api/comics/add-format`,
+            config as AxiosRequestConfig,
+        )
+        if (res["data"]["success"]) {
+            toast.success("Format Deleted!")
+            const formats = store.getState().comics.all_formats
+            store.dispatch({
+                type: LOAD_FORMATS_SUCCESS,
+                payload: { formats: formats.filter((f) => f.id !== id) },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' format_name
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+// SUB CATEGORY ACTIONS
+// Add new Sub Category
+export const addSubCategory = async (
+    formData: { name: string },
+    setDwModalOpen: (open: boolean) => void,
+) => {
+    const config = {
+        headers: httpUtil.get_headers("POST"),
+    }
+
+    const body = JSON.stringify({
+        name: formData.name,
+    })
+
+    try {
+        const res = await axios.post(
+            `${window.location.origin}/api/comics/add-sub-category`,
+            body,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res["data"]["new_sub_category"]) {
+            toast.success("Sub Category Added!")
+            const subCategories = store.getState().comics.all_sub_categories
+            store.dispatch({
+                type: LOAD_SUB_CATEGORIES_SUCCESS,
+                payload: {
+                    sub_categories: [
+                        ...subCategories,
+                        res.data.new_sub_category,
+                    ],
+                },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' sub_category_name
+            setDwModalOpen(false)
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+// Update Sub Category
+export const updateSubCategory = async (
+    formData: { id: number; name: string },
+    onSuccess?: () => void,
+) => {
+    const config = {
+        headers: httpUtil.get_headers("PUT"),
+    }
+
+    const body = JSON.stringify({
+        id: formData.id,
+        name: formData.name,
+    })
+
+    try {
+        const res = await axios.put(
+            `${window.location.origin}/api/comics/add-sub-category`,
+            body,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res["data"]["new_sub_category"]) {
+            toast.success("Sub Category Updated!")
+            const subCategories = store.getState().comics.all_sub_categories
+            store.dispatch({
+                type: LOAD_SUB_CATEGORIES_SUCCESS,
+                payload: {
+                    sub_categories: subCategories.map((s) =>
+                        s.id === res.data.new_sub_category.id
+                            ? res.data.new_sub_category
+                            : s,
+                    ),
+                },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' sub_category_name
+            onSuccess?.()
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+// Delete Sub Category
+export const deleteSubCategory = async (id: number) => {
+    const config = {
+        headers: httpUtil.get_headers("DELETE"),
+        data: { id },
+    }
+
+    try {
+        const res = await axios.delete(
+            `${window.location.origin}/api/comics/add-sub-category`,
+            config as AxiosRequestConfig,
+        )
+        if (res["data"]["success"]) {
+            toast.success("Sub Category Deleted!")
+            const subCategories = store.getState().comics.all_sub_categories
+            store.dispatch({
+                type: LOAD_SUB_CATEGORIES_SUCCESS,
+                payload: {
+                    sub_categories: subCategories.filter((s) => s.id !== id),
+                },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' sub_category_name
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+// TEAM ACTIONS
+// Add new Team
+export const addTeam = async (
+    formData: { name: string; characters: string[] },
+    setDwModalOpen: (open: boolean) => void,
+) => {
+    const config = {
+        headers: httpUtil.get_headers("POST"),
+    }
+
+    const body = JSON.stringify({
+        name: formData.name,
+        characters: formData.characters,
+    })
+
+    try {
+        const res = await axios.post(
+            `${window.location.origin}/api/comics/add-team`,
+            body,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res["data"]["new_team"]) {
+            toast.success("Team Added!")
+            const teams = store.getState().comics.all_teams
+            store.dispatch({
+                type: LOAD_TEAMS_SUCCESS,
+                payload: { teams: [...teams, res.data.new_team] },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' team_name
+            setDwModalOpen(false)
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+// Update Team
+export const updateTeam = async (
+    formData: { id: number; name: string; characters: string[] },
+    onSuccess?: () => void,
+) => {
+    const config = {
+        headers: httpUtil.get_headers("PUT"),
+    }
+
+    const body = JSON.stringify({
+        id: formData.id,
+        name: formData.name,
+        characters: formData.characters,
+    })
+
+    try {
+        const res = await axios.put(
+            `${window.location.origin}/api/comics/add-team`,
+            body,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res["data"]["new_team"]) {
+            toast.success("Team Updated!")
+            const teams = store.getState().comics.all_teams
+            store.dispatch({
+                type: LOAD_TEAMS_SUCCESS,
+                payload: {
+                    teams: teams.map((t) =>
+                        t.id === res.data.new_team.id ? res.data.new_team : t,
+                    ),
+                },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' team_name
+            onSuccess?.()
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+// Delete Team
+export const deleteTeam = async (id: number) => {
+    const config = {
+        headers: httpUtil.get_headers("DELETE"),
+        data: { id },
+    }
+
+    try {
+        const res = await axios.delete(
+            `${window.location.origin}/api/comics/add-team`,
+            config as AxiosRequestConfig,
+        )
+        if (res["data"]["success"]) {
+            toast.success("Team Deleted!")
+            const teams = store.getState().comics.all_teams
+            store.dispatch({
+                type: LOAD_TEAMS_SUCCESS,
+                payload: { teams: teams.filter((t) => t.id !== id) },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' team_name
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
 // CHARACTER ACTIONS
 // Add new Character
 export const addCharacter = async (
@@ -680,6 +1121,7 @@ export const addBook = async (
     formData: {
         publisher: string
         format: string
+        sub_category: string
         title: string
         authors: string[]
         artists: string[]
@@ -687,6 +1129,7 @@ export const addBook = async (
         thumbnail_url: string
         thumbnail: File | string
         page_count: number
+        volume_number: number
         characters: string[]
         team: string
     },
@@ -703,7 +1146,12 @@ export const addBook = async (
     formData.artists.forEach((id) => _formData.append("artists", id))
     _formData.append("description", formData.description)
     _formData.append("page_count", formData.page_count.toString())
+    if (formData.volume_number)
+        _formData.append("volume_number", formData.volume_number.toString())
     _formData.append("publisher", formData.publisher)
+    _formData.append("format", formData.format)
+    _formData.append("sub_category", formData.sub_category)
+    _formData.append("team", formData.team)
     formData.characters.forEach((id) => _formData.append("characters", id))
 
     try {
@@ -731,6 +1179,7 @@ export const updateBook = async (
         id: number
         publisher: string
         format: string
+        sub_category: string
         title: string
         authors: string[]
         artists: string[]
@@ -738,6 +1187,7 @@ export const updateBook = async (
         thumbnail_url: string
         thumbnail: File | string
         page_count: number
+        volume_number: number
         characters: string[]
         team: string
     },
@@ -755,7 +1205,12 @@ export const updateBook = async (
     formData.artists.forEach((id) => _formData.append("artists", id))
     _formData.append("description", formData.description)
     _formData.append("page_count", formData.page_count.toString())
+    if (formData.volume_number)
+        _formData.append("volume_number", formData.volume_number.toString())
     _formData.append("publisher", formData.publisher)
+    _formData.append("format", formData.format)
+    _formData.append("sub_category", formData.sub_category)
+    _formData.append("team", formData.team)
     formData.characters.forEach((id) => _formData.append("characters", id))
 
     try {

@@ -23,20 +23,9 @@ class UserProfile(models.Model):
         return self.email
 
 class Book(models.Model):
-    
-    OMNIBUS = 'OM'
-    HARDCOVER = 'HC'
-    TRADE_PAPERBACK = 'TPB'
-    FORMATS = [
-        (OMNIBUS, 'Omnibus'),
-        (HARDCOVER, 'Hardcover'),
-        (TRADE_PAPERBACK, 'Trade Paperback'),
-    ]
-    format = models.CharField(
-        max_length=3,
-        choices=FORMATS,
-        default=OMNIBUS,
-    )
+
+    format = models.ForeignKey("Format", on_delete=models.DO_NOTHING, null=True)
+    sub_category = models.ForeignKey("SubCategory", on_delete=models.DO_NOTHING, null=True, blank=True)
 
     publisher = models.ForeignKey("Publisher", on_delete=models.DO_NOTHING, null=True)
     marvel_id = models.IntegerField(null=True)
@@ -48,13 +37,26 @@ class Book(models.Model):
     artists = models.ManyToManyField("Artist", blank=True)
     isbn = models.CharField(max_length=20, null=True, blank=True)
     page_count = models.IntegerField(null=True)
-    characters = models.ManyToManyField("Character")
-    team = models.CharField(max_length=256, null=True, blank=True)
+    volume_number = models.IntegerField(null=True)
+    characters = models.ManyToManyField("Character", blank=True)
+    team = models.ForeignKey("Team", on_delete=models.DO_NOTHING, null=True, blank=True)
     thumbnail = models.FileField(upload_to ='uploads/book-thumbnails/', null=True)
 
     @property
     def publisher_name(self):
         return self.publisher.name
+
+    @property
+    def format_name(self):
+        return self.format.name
+
+    @property
+    def format_abbreviation(self):
+        return self.format.abbreviation
+
+    @property
+    def sub_category_name(self):
+        return self.sub_category.name if self.sub_category else None
 
     @property
     def character_names(self):
@@ -67,6 +69,10 @@ class Book(models.Model):
     @property
     def artist_names(self):
         return [a.name for a in self.artists.all()]
+
+    @property
+    def team_name(self):
+        return self.team.name if self.team else None
 
     def __str__(self):
         return self.title
@@ -93,6 +99,30 @@ class Author(models.Model):
 
 class Artist(models.Model):
     name = models.CharField(max_length=256, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Format(models.Model):
+    name = models.CharField(max_length=256, unique=True)
+    abbreviation = models.CharField(max_length=10, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class SubCategory(models.Model):
+    name = models.CharField(max_length=256, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Team(models.Model):
+    name = models.CharField(max_length=256, unique=True)
+    characters = models.ManyToManyField("Character", blank=True)
+
+    @property
+    def character_names(self):
+        return [c.name for c in self.characters.all()]
 
     def __str__(self):
         return self.name

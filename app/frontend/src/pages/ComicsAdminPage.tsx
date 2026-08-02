@@ -12,6 +12,9 @@ import ManagePublishersModalContent from "../modals/dwModalContant/ManagePublish
 import ManageCharactersModalContent from "../modals/dwModalContant/ManageCharactersModalContent"
 import ManageAuthorsModalContent from "../modals/dwModalContant/ManageAuthorsModalContent"
 import ManageArtistsModalContent from "../modals/dwModalContant/ManageArtistsModalContent"
+import ManageFormatsModalContent from "../modals/dwModalContant/ManageFormatsModalContent"
+import ManageSubCategoriesModalContent from "../modals/dwModalContant/ManageSubCategoriesModalContent"
+import ManageTeamsModalContent from "../modals/dwModalContant/ManageTeamsModalContent"
 import { RootState } from "../reducers"
 import { type Book } from "types"
 import { ScrapedBooksPage } from "reducers/comics"
@@ -126,6 +129,15 @@ const ComicsAdmin: React.FC<Props> = ({
                             <b>Artists</b>: {book.artist_names?.join(", ")}
                         </span>
                         <span>
+                            <b>Format</b>: {book.format_name}
+                        </span>
+                        <span>
+                            <b>Sub Category</b>: {book.sub_category_name}
+                        </span>
+                        <span>
+                            <b>Team</b>: {book.team_name}
+                        </span>
+                        <span>
                             <b>Page Count</b>: {book.page_count}
                         </span>
                     </div>
@@ -167,9 +179,15 @@ const ComicsAdmin: React.FC<Props> = ({
                 {[
                     { label: "Add Book", type: "addBook" },
                     { label: "Manage Characters", type: "manageCharacters" },
-                    { label: "Manage Publishers", type: "managePublishers" },
+                    { label: "Manage Teams", type: "manageTeams" },
                     { label: "Manage Authors", type: "manageAuthors" },
                     { label: "Manage Artists", type: "manageArtists" },
+                    { label: "Manage Publishers", type: "managePublishers" },
+                    { label: "Manage Formats", type: "manageFormats" },
+                    {
+                        label: "Manage Sub Categories",
+                        type: "manageSubCategories",
+                    },
                 ].map(({ label, type }) => (
                     <Button
                         key={type}
@@ -190,7 +208,8 @@ const ComicsAdmin: React.FC<Props> = ({
                         {label}
                     </Button>
                 ))}
-                {[
+                {/* Note: Temporarily removed this functionality */}
+                {/* {[
                     {
                         label: "Scrape DC Omnis - Panel Bound",
                         handler: scrapeDComnisPB,
@@ -212,7 +231,7 @@ const ComicsAdmin: React.FC<Props> = ({
                             {label}
                         </a>
                     </li>
-                ))}
+                ))} */}
             </div>
         </div>
     )
@@ -289,6 +308,18 @@ const ComicsAdmin: React.FC<Props> = ({
                         />
                     ) : dwModalType === "manageArtists" ? (
                         <ManageArtistsModalContent
+                            setDwModalOpen={setDwModalOpen}
+                        />
+                    ) : dwModalType === "manageFormats" ? (
+                        <ManageFormatsModalContent
+                            setDwModalOpen={setDwModalOpen}
+                        />
+                    ) : dwModalType === "manageSubCategories" ? (
+                        <ManageSubCategoriesModalContent
+                            setDwModalOpen={setDwModalOpen}
+                        />
+                    ) : dwModalType === "manageTeams" ? (
+                        <ManageTeamsModalContent
                             setDwModalOpen={setDwModalOpen}
                         />
                     ) : (

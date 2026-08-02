@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from mainsite.models import Artist, Author, Book, Character, Publisher, UserProfile
+from mainsite.models import Artist, Author, Book, Character, Format, Publisher, SubCategory, Team, UserProfile
 
 MAX_THUMBNAIL_SIZE_MB = 5
 VALID_THUMBNAIL_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
@@ -28,6 +28,10 @@ class BookSerializer(serializers.ModelSerializer):
     character_names = serializers.ReadOnlyField()
     author_names = serializers.ReadOnlyField()
     artist_names = serializers.ReadOnlyField()
+    format_name = serializers.ReadOnlyField()
+    format_abbreviation = serializers.ReadOnlyField()
+    sub_category_name = serializers.ReadOnlyField()
+    team_name = serializers.ReadOnlyField()
 
     class Meta:
         model = Book
@@ -37,12 +41,15 @@ class BookSerializer(serializers.ModelSerializer):
             'price': {'required': False, 'min_value': 0},
             'isbn': {'required': False},
             'page_count': {'min_value': 1, 'max_value': 5000},
+            'volume_number': {'required': False, 'min_value': 1},
             # A thumbnail is required to create a book, but PUT uses partial=True
             # so an edit that isn't replacing the thumbnail can still omit it.
             'thumbnail': {'required': True, 'validators': [validate_thumbnail]},
             'authors': {'required': False},
             'artists': {'required': False},
-            'characters': {'allow_empty': False},
+            'characters': {'required': False},
+            'sub_category': {'required': False},
+            'team': {'required': False},
         }
 
 class PublisherSerializer(serializers.ModelSerializer):
@@ -64,3 +71,23 @@ class ArtistSerializer(serializers.ModelSerializer):
     class Meta:
         model = Artist
         fields = '__all__'
+
+class FormatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Format
+        fields = '__all__'
+
+class SubCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubCategory
+        fields = '__all__'
+
+class TeamSerializer(serializers.ModelSerializer):
+    character_names = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Team
+        fields = '__all__'
+        extra_kwargs = {
+            'characters': {'required': False},
+        }

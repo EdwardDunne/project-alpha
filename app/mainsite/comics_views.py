@@ -4,8 +4,8 @@ from django.core.cache import cache
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions
-from mainsite.models import Artist, Author, Book, Character, Publisher
-from .serializers import ArtistSerializer, AuthorSerializer, BookSerializer, CharacterSerializer, PublisherSerializer
+from mainsite.models import Artist, Author, Book, Character, Format, Publisher, SubCategory, Team
+from .serializers import ArtistSerializer, AuthorSerializer, BookSerializer, CharacterSerializer, FormatSerializer, PublisherSerializer, SubCategorySerializer, TeamSerializer
 from .utils import serializer_error_message
 
 logger = logging.getLogger(__name__)
@@ -393,3 +393,225 @@ class ArtistView(APIView):
         except Exception as e:
             logger.exception('Something went wrong when deleting artist: %s', e)
             return Response({'error': f'Something went wrong when deleting artist: {str(e)}'})
+
+class FormatView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
+
+    def get(self, request, format=None):
+        try:
+            data = self.request.query_params
+            action = data['action']
+
+            if action == 'get_all':
+                if not request.user.is_staff:
+                    cached_formats = cache.get('all_formats')
+                    if cached_formats is not None:
+                        return Response({'success': 'true', 'formats': cached_formats})
+
+                all_formats = [
+                    FormatSerializer(fmt).data for fmt in Format.objects.all()]
+
+                if not request.user.is_staff:
+                    cache.set('all_formats', all_formats, CACHE_TTL)
+
+                return Response({'success': 'true', 'formats': all_formats})
+
+            return Response({'error': 'no action'})
+        except Exception as e:
+            logger.exception('Something went wrong when retrieving formats: %s', e)
+            return Response({'error': f'Something went wrong when retrieving formats: {str(e)}'})
+
+    def post(self, request, format=None):
+        try:
+            serializer = FormatSerializer(data=request.data)
+            if not serializer.is_valid():
+                logger.warning('Format creation failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
+
+            new_format = serializer.save()
+            return Response({'success': 'true', 'new_format': FormatSerializer(new_format).data})
+        except Exception as e:
+            logger.exception('Something went wrong when creating format: %s', e)
+            return Response({'error': f'Something went wrong when creating format: {str(e)}'})
+
+    def put(self, request, format=None):
+        try:
+            data = self.request.data
+            fmt = Format.objects.get(id=data['id'])
+
+            serializer = FormatSerializer(fmt, data=request.data, partial=True)
+            if not serializer.is_valid():
+                logger.warning('Format update failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
+
+            updated_format = serializer.save()
+            return Response({'success': 'true', 'new_format': FormatSerializer(updated_format).data})
+        except Exception as e:
+            logger.exception('Something went wrong when updating format: %s', e)
+            return Response({'error': f'Something went wrong when updating format: {str(e)}'})
+
+    def delete(self, request, format=None):
+        try:
+            data = self.request.data
+            fmt = Format.objects.get(id=data['id'])
+
+            book_count = Book.objects.filter(format=fmt).count()
+            if book_count:
+                return Response({'error': f'Cannot delete: {book_count} book(s) reference this format.'})
+
+            fmt.delete()
+            return Response({'success': 'true'})
+        except Exception as e:
+            logger.exception('Something went wrong when deleting format: %s', e)
+            return Response({'error': f'Something went wrong when deleting format: {str(e)}'})
+
+class SubCategoryView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
+
+    def get(self, request, format=None):
+        try:
+            data = self.request.query_params
+            action = data['action']
+
+            if action == 'get_all':
+                if not request.user.is_staff:
+                    cached_sub_categories = cache.get('all_sub_categories')
+                    if cached_sub_categories is not None:
+                        return Response({'success': 'true', 'sub_categories': cached_sub_categories})
+
+                all_sub_categories = [
+                    SubCategorySerializer(sub_category).data for sub_category in SubCategory.objects.all()]
+
+                if not request.user.is_staff:
+                    cache.set('all_sub_categories', all_sub_categories, CACHE_TTL)
+
+                return Response({'success': 'true', 'sub_categories': all_sub_categories})
+
+            return Response({'error': 'no action'})
+        except Exception as e:
+            logger.exception('Something went wrong when retrieving sub categories: %s', e)
+            return Response({'error': f'Something went wrong when retrieving sub categories: {str(e)}'})
+
+    def post(self, request, format=None):
+        try:
+            serializer = SubCategorySerializer(data=request.data)
+            if not serializer.is_valid():
+                logger.warning('Sub category creation failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
+
+            new_sub_category = serializer.save()
+            return Response({'success': 'true', 'new_sub_category': SubCategorySerializer(new_sub_category).data})
+        except Exception as e:
+            logger.exception('Something went wrong when creating sub category: %s', e)
+            return Response({'error': f'Something went wrong when creating sub category: {str(e)}'})
+
+    def put(self, request, format=None):
+        try:
+            data = self.request.data
+            sub_category = SubCategory.objects.get(id=data['id'])
+
+            serializer = SubCategorySerializer(sub_category, data=request.data, partial=True)
+            if not serializer.is_valid():
+                logger.warning('Sub category update failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
+
+            updated_sub_category = serializer.save()
+            return Response({'success': 'true', 'new_sub_category': SubCategorySerializer(updated_sub_category).data})
+        except Exception as e:
+            logger.exception('Something went wrong when updating sub category: %s', e)
+            return Response({'error': f'Something went wrong when updating sub category: {str(e)}'})
+
+    def delete(self, request, format=None):
+        try:
+            data = self.request.data
+            sub_category = SubCategory.objects.get(id=data['id'])
+
+            book_count = Book.objects.filter(sub_category=sub_category).count()
+            if book_count:
+                return Response({'error': f'Cannot delete: {book_count} book(s) reference this sub category.'})
+
+            sub_category.delete()
+            return Response({'success': 'true'})
+        except Exception as e:
+            logger.exception('Something went wrong when deleting sub category: %s', e)
+            return Response({'error': f'Something went wrong when deleting sub category: {str(e)}'})
+
+class TeamView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
+
+    def get(self, request, format=None):
+        try:
+            data = self.request.query_params
+            action = data['action']
+
+            if action == 'get_all':
+                if not request.user.is_staff:
+                    cached_teams = cache.get('all_teams')
+                    if cached_teams is not None:
+                        return Response({'success': 'true', 'teams': cached_teams})
+
+                all_teams = [
+                    TeamSerializer(team).data for team in Team.objects.all()]
+
+                if not request.user.is_staff:
+                    cache.set('all_teams', all_teams, CACHE_TTL)
+
+                return Response({'success': 'true', 'teams': all_teams})
+
+            return Response({'error': 'no action'})
+        except Exception as e:
+            logger.exception('Something went wrong when retrieving teams: %s', e)
+            return Response({'error': f'Something went wrong when retrieving teams: {str(e)}'})
+
+    def post(self, request, format=None):
+        try:
+            serializer = TeamSerializer(data=request.data)
+            if not serializer.is_valid():
+                logger.warning('Team creation failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
+
+            new_team = serializer.save()
+            return Response({'success': 'true', 'new_team': TeamSerializer(new_team).data})
+        except Exception as e:
+            logger.exception('Something went wrong when creating team: %s', e)
+            return Response({'error': f'Something went wrong when creating team: {str(e)}'})
+
+    def put(self, request, format=None):
+        try:
+            data = self.request.data
+            team = Team.objects.get(id=data['id'])
+
+            serializer = TeamSerializer(team, data=request.data, partial=True)
+            if not serializer.is_valid():
+                logger.warning('Team update failed validation: %s', serializer.errors)
+                return Response({'error': serializer_error_message(serializer)})
+
+            updated_team = serializer.save()
+            return Response({'success': 'true', 'new_team': TeamSerializer(updated_team).data})
+        except Exception as e:
+            logger.exception('Something went wrong when updating team: %s', e)
+            return Response({'error': f'Something went wrong when updating team: {str(e)}'})
+
+    def delete(self, request, format=None):
+        try:
+            data = self.request.data
+            team = Team.objects.get(id=data['id'])
+
+            book_count = Book.objects.filter(team=team).count()
+            if book_count:
+                return Response({'error': f'Cannot delete: {book_count} book(s) reference this team.'})
+
+            team.delete()
+            return Response({'success': 'true'})
+        except Exception as e:
+            logger.exception('Something went wrong when deleting team: %s', e)
+            return Response({'error': f'Something went wrong when deleting team: {str(e)}'})
