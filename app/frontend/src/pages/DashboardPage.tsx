@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { update_profile } from '../actions/profile';
 import { delete_account } from '../actions/auth';
 import { RootState } from '../reducers';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 interface Props {
     delete_account: () => void;
@@ -24,6 +25,7 @@ const DashboardPage: React.FC<Props> = ({
     email_global
 }) => {
     const [formData, setFormData] = useState({ first_name: '', last_name: '' });
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
         setFormData({
@@ -93,11 +95,21 @@ const DashboardPage: React.FC<Props> = ({
                 <p className='text-gray-600 text-[1.4rem] mb-3'>Click the button below to permanently delete your account.</p>
                 <button
                     className='px-5 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-semibold'
-                    onClick={() => delete_account()}
+                    onClick={() => setShowDeleteConfirm(true)}
                 >
                     Delete Account
                 </button>
             </div>
+            {showDeleteConfirm && (
+                <ConfirmDialog
+                    message='Are you sure you want to permanently delete your account?'
+                    onConfirm={() => {
+                        delete_account()
+                        setShowDeleteConfirm(false)
+                    }}
+                    onCancel={() => setShowDeleteConfirm(false)}
+                />
+            )}
         </div>
     );
 }
