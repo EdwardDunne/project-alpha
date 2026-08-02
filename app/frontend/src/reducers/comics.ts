@@ -10,10 +10,16 @@ import {
     LOAD_AUTHORS_FAIL,
     LOAD_ARTISTS_SUCCESS,
     LOAD_ARTISTS_FAIL,
+    LOAD_FORMATS_SUCCESS,
+    LOAD_FORMATS_FAIL,
+    LOAD_SUB_CATEGORIES_SUCCESS,
+    LOAD_SUB_CATEGORIES_FAIL,
+    LOAD_TEAMS_SUCCESS,
+    LOAD_TEAMS_FAIL,
     LOAD_BOOKS_SUCCESS,
     LOAD_BOOKS_FAIL,
 } from "../actions/types"
-import { Book, Character, Publisher, Author, Artist } from "../types"
+import { Book, Character, Publisher, Author, Artist, Format, SubCategory, Team } from "../types"
 
 export type ScrapedBooksPage = {
     nextPageUrl: string
@@ -26,6 +32,9 @@ type ComicsState = {
     all_publishers: Publisher[]
     all_authors: Author[]
     all_artists: Artist[]
+    all_formats: Format[]
+    all_sub_categories: SubCategory[]
+    all_teams: Team[]
     all_books: Book[]
 }
 
@@ -35,6 +44,9 @@ const initialState: ComicsState = {
     all_publishers: [],
     all_authors: [],
     all_artists: [],
+    all_formats: [],
+    all_sub_categories: [],
+    all_teams: [],
     all_books: [],
 }
 
@@ -97,6 +109,36 @@ export default function comicsReducer(
             return {
                 ...state,
                 all_artists: [],
+            }
+        case LOAD_FORMATS_SUCCESS:
+            return {
+                ...state,
+                all_formats: payload.formats,
+            }
+        case LOAD_FORMATS_FAIL:
+            return {
+                ...state,
+                all_formats: [],
+            }
+        case LOAD_SUB_CATEGORIES_SUCCESS:
+            return {
+                ...state,
+                all_sub_categories: payload.sub_categories,
+            }
+        case LOAD_SUB_CATEGORIES_FAIL:
+            return {
+                ...state,
+                all_sub_categories: [],
+            }
+        case LOAD_TEAMS_SUCCESS:
+            return {
+                ...state,
+                all_teams: payload.teams,
+            }
+        case LOAD_TEAMS_FAIL:
+            return {
+                ...state,
+                all_teams: [],
             }
         case LOAD_BOOKS_SUCCESS:
             return {

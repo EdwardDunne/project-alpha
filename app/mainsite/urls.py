@@ -4,7 +4,7 @@ from project_alpha import settings
 from django.conf.urls.static import static
 
 from .views import UserProfileView, SignupView, GetCSRFToken, LoginView, LogoutView, CheckAuthenticatedView, DeleteAccountView, GetUsersView, PasswordResetRequestView, PasswordResetConfirmView
-from .comics_views import ArtistView, AuthorView, BookView, CharacterView, PublisherView
+from .comics_views import ArtistView, AuthorView, BookView, CharacterView, FormatView, PublisherView, SubCategoryView, TeamView
 from .data_collecting import ScrapePB
 
 urlpatterns = [
@@ -30,6 +30,12 @@ urlpatterns = [
     path('comics/get-authors', AuthorView.as_view()),
     path('comics/add-artist', ArtistView.as_view()),
     path('comics/get-artists', ArtistView.as_view()),
+    path('comics/add-format', FormatView.as_view()),
+    path('comics/get-formats', FormatView.as_view()),
+    path('comics/add-sub-category', SubCategoryView.as_view()),
+    path('comics/get-sub-categories', SubCategoryView.as_view()),
+    path('comics/add-team', TeamView.as_view()),
+    path('comics/get-teams', TeamView.as_view()),
 ]
 
 # File Uploads
