@@ -6,13 +6,14 @@ import { darkTheme } from "../App"
 import PublishersMultiSelector from "../components/PublishersMultiSelector"
 import CharactersMultiSelector from "../components/CharactersMultiSelector"
 import ArtistsSelector from "../components/ArtistsSelector"
+import AuthorsSelector from "../components/AuthorsSelector"
 import TeamsMultiSelector from "../components/TeamsMultiSelector"
 import DunneWebModal from "../modals/DunneWebModal"
 import FloatingMenuButton from "../components/FloatingMenuButton"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import SidePanel from "../components/SidePanel"
-import { Book, Character, Publisher, Artist, Team } from "../types"
+import { Book, Character, Publisher, Artist, Author, Team } from "../types"
 import { RootState } from "../reducers"
 import BookModalContent from "modals/dwModalContant/BookModalContent"
 
@@ -26,6 +27,7 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
     const [characterFilter, setCharacterFilter] = useState<Character[]>([])
     const [publisherFilter, setPublisherFilter] = useState<Publisher[]>([])
     const [artistFilter, setArtistFilter] = useState<Artist[]>([])
+    const [authorFilter, setAuthorFilter] = useState<Author[]>([])
     const [teamFilter, setTeamFilter] = useState<Team[]>([])
     const [dwModalOpen, setDwModalOpen] = useState(false)
     const [selectedBook, setSelectedBook] = useState<Book>({} as Book)
@@ -45,6 +47,7 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
         const bookPublisher = book["publisher"]
         const bookCharacters = book["characters"] ?? []
         const bookArtists = book["artists"] ?? []
+        const bookAuthors = book["authors"] ?? []
         const bookTeam = book["team"]
 
         if (
@@ -54,8 +57,9 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
                 characterFilter.some((c) => bookCharacters.includes(c.id))) &&
             (!artistFilter.length ||
                 artistFilter.some((a) => bookArtists.includes(a.id))) &&
-            (!teamFilter.length ||
-                teamFilter.some((t) => t.id === bookTeam)) &&
+            (!authorFilter.length ||
+                authorFilter.some((a) => bookAuthors.includes(a.id))) &&
+            (!teamFilter.length || teamFilter.some((t) => t.id === bookTeam)) &&
             (book.title ?? "").toLowerCase().includes(titleSearch.toLowerCase())
         ) {
             return (
@@ -87,6 +91,7 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
         setPublisherFilter([])
         setCharacterFilter([])
         setArtistFilter([])
+        setAuthorFilter([])
         setTeamFilter([])
         setFilterResetKey((key) => key + 1)
     }
@@ -113,13 +118,17 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
                         key={`characters-${filterResetKey}`}
                         setCharacters={setCharacterFilter}
                     />
-                    <ArtistsSelector
-                        key={`artists-${filterResetKey}`}
-                        setArtists={setArtistFilter}
-                    />
                     <TeamsMultiSelector
                         key={`teams-${filterResetKey}`}
                         setTeams={setTeamFilter}
+                    />
+                    <AuthorsSelector
+                        key={`authors-${filterResetKey}`}
+                        setAuthors={setAuthorFilter}
+                    />
+                    <ArtistsSelector
+                        key={`artists-${filterResetKey}`}
+                        setArtists={setArtistFilter}
                     />
                 </ul>
                 <button
