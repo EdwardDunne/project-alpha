@@ -45,6 +45,7 @@ class Book(models.Model):
     price = models.FloatField(null=True)
     thumbnail_url = models.URLField(max_length=256, null=True, blank=True)
     authors = models.ManyToManyField("Author", blank=True)
+    artists = models.ManyToManyField("Artist", blank=True)
     isbn = models.CharField(max_length=20, null=True, blank=True)
     page_count = models.IntegerField(null=True)
     characters = models.ManyToManyField("Character")
@@ -62,6 +63,10 @@ class Book(models.Model):
     @property
     def author_names(self):
         return [a.name for a in self.authors.all()]
+
+    @property
+    def artist_names(self):
+        return [a.name for a in self.artists.all()]
 
     def __str__(self):
         return self.title
@@ -81,6 +86,12 @@ class Publisher(models.Model):
         return self.name
 
 class Author(models.Model):
+    name = models.CharField(max_length=256, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Artist(models.Model):
     name = models.CharField(max_length=256, unique=True)
 
     def __str__(self):

@@ -8,10 +8,12 @@ import {
     LOAD_PUBLISHERS_FAIL,
     LOAD_AUTHORS_SUCCESS,
     LOAD_AUTHORS_FAIL,
+    LOAD_ARTISTS_SUCCESS,
+    LOAD_ARTISTS_FAIL,
     LOAD_BOOKS_SUCCESS,
     LOAD_BOOKS_FAIL,
 } from "../actions/types"
-import { Book, Character, Publisher, Author } from "../types"
+import { Book, Character, Publisher, Author, Artist } from "../types"
 
 export type ScrapedBooksPage = {
     nextPageUrl: string
@@ -23,6 +25,7 @@ type ComicsState = {
     all_characters: Character[]
     all_publishers: Publisher[]
     all_authors: Author[]
+    all_artists: Artist[]
     all_books: Book[]
 }
 
@@ -31,6 +34,7 @@ const initialState: ComicsState = {
     all_characters: [],
     all_publishers: [],
     all_authors: [],
+    all_artists: [],
     all_books: [],
 }
 
@@ -83,6 +87,16 @@ export default function comicsReducer(
             return {
                 ...state,
                 all_authors: [],
+            }
+        case LOAD_ARTISTS_SUCCESS:
+            return {
+                ...state,
+                all_artists: payload.artists,
+            }
+        case LOAD_ARTISTS_FAIL:
+            return {
+                ...state,
+                all_artists: [],
             }
         case LOAD_BOOKS_SUCCESS:
             return {

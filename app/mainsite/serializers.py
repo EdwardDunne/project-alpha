@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from mainsite.models import Author, Book, Character, Publisher, UserProfile
+from mainsite.models import Artist, Author, Book, Character, Publisher, UserProfile
 
 MAX_THUMBNAIL_SIZE_MB = 5
 VALID_THUMBNAIL_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
@@ -27,6 +27,7 @@ class BookSerializer(serializers.ModelSerializer):
     publisher_name = serializers.ReadOnlyField()
     character_names = serializers.ReadOnlyField()
     author_names = serializers.ReadOnlyField()
+    artist_names = serializers.ReadOnlyField()
 
     class Meta:
         model = Book
@@ -40,6 +41,7 @@ class BookSerializer(serializers.ModelSerializer):
             # so an edit that isn't replacing the thumbnail can still omit it.
             'thumbnail': {'required': True, 'validators': [validate_thumbnail]},
             'authors': {'required': False},
+            'artists': {'required': False},
             'characters': {'allow_empty': False},
         }
 
@@ -56,4 +58,9 @@ class CharacterSerializer(serializers.ModelSerializer):
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
+        fields = '__all__'
+
+class ArtistSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Artist
         fields = '__all__'

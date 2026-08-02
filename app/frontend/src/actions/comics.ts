@@ -11,6 +11,8 @@ import {
     LOAD_PUBLISHERS_SUCCESS,
     LOAD_AUTHORS_FAIL,
     LOAD_AUTHORS_SUCCESS,
+    LOAD_ARTISTS_FAIL,
+    LOAD_ARTISTS_SUCCESS,
     LOAD_BOOKS_FAIL,
     LOAD_BOOKS_SUCCESS,
 } from "./types"
@@ -149,6 +151,37 @@ export const getAllAuthors = () => async (dispatch: Dispatch) => {
         } else {
             dispatch({
                 type: LOAD_AUTHORS_SUCCESS,
+                payload: res.data,
+            })
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+        return {}
+    }
+}
+
+// Get all artists from DB, this is cached unless you are an admin
+export const getAllArtists = () => async (dispatch: Dispatch) => {
+    const config = {
+        headers: httpUtil.get_headers("GET"),
+        params: {
+            action: "get_all",
+        },
+    }
+    try {
+        const res = await axios.get(
+            `${window.location.origin}/api/comics/get-artists`,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res.data.error) {
+            toast.error("Error getting artists...")
+            dispatch({
+                type: LOAD_ARTISTS_FAIL,
+            })
+        } else {
+            dispatch({
+                type: LOAD_ARTISTS_SUCCESS,
                 payload: res.data,
             })
         }
@@ -415,6 +448,117 @@ export const deleteAuthor = async (id: number) => {
     }
 }
 
+// ARTIST ACTIONS
+// Add new Artist
+export const addArtist = async (
+    formData: { name: string },
+    setDwModalOpen: (open: boolean) => void,
+) => {
+    const config = {
+        headers: httpUtil.get_headers("POST"),
+    }
+
+    const body = JSON.stringify({
+        name: formData.name,
+    })
+
+    try {
+        const res = await axios.post(
+            `${window.location.origin}/api/comics/add-artist`,
+            body,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res["data"]["new_artist"]) {
+            toast.success("Artist Added!")
+            const artists = store.getState().comics.all_artists
+            store.dispatch({
+                type: LOAD_ARTISTS_SUCCESS,
+                payload: { artists: [...artists, res.data.new_artist] },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' artist_names
+            setDwModalOpen(false)
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+// Update Artist
+export const updateArtist = async (
+    formData: { id: number; name: string },
+    onSuccess?: () => void,
+) => {
+    const config = {
+        headers: httpUtil.get_headers("PUT"),
+    }
+
+    const body = JSON.stringify({
+        id: formData.id,
+        name: formData.name,
+    })
+
+    try {
+        const res = await axios.put(
+            `${window.location.origin}/api/comics/add-artist`,
+            body,
+            config as AxiosRequestConfig<string>,
+        )
+        if (res["data"]["new_artist"]) {
+            toast.success("Artist Updated!")
+            const artists = store.getState().comics.all_artists
+            store.dispatch({
+                type: LOAD_ARTISTS_SUCCESS,
+                payload: {
+                    artists: artists.map((a) =>
+                        a.id === res.data.new_artist.id
+                            ? res.data.new_artist
+                            : a,
+                    ),
+                },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' artist_names
+            onSuccess?.()
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
+// Delete Artist
+export const deleteArtist = async (id: number) => {
+    const config = {
+        headers: httpUtil.get_headers("DELETE"),
+        data: { id },
+    }
+
+    try {
+        const res = await axios.delete(
+            `${window.location.origin}/api/comics/add-artist`,
+            config as AxiosRequestConfig,
+        )
+        if (res["data"]["success"]) {
+            toast.success("Artist Deleted!")
+            const artists = store.getState().comics.all_artists
+            store.dispatch({
+                type: LOAD_ARTISTS_SUCCESS,
+                payload: { artists: artists.filter((a) => a.id !== id) },
+            })
+            store.dispatch(getAllBooks()) // Refresh books' artist_names
+        } else {
+            toast.error(res.data.error || "Something went wrong...")
+        }
+    } catch (error) {
+        console.error(error)
+        toast.error("Something went wrong...")
+    }
+}
+
 // CHARACTER ACTIONS
 // Add new Character
 export const addCharacter = async (
@@ -538,6 +682,7 @@ export const addBook = async (
         format: string
         title: string
         authors: string[]
+        artists: string[]
         description: string
         thumbnail_url: string
         thumbnail: File | string
@@ -555,6 +700,7 @@ export const addBook = async (
     _formData.append("thumbnail", formData.thumbnail)
     _formData.append("title", formData.title)
     formData.authors.forEach((id) => _formData.append("authors", id))
+    formData.artists.forEach((id) => _formData.append("artists", id))
     _formData.append("description", formData.description)
     _formData.append("page_count", formData.page_count.toString())
     _formData.append("publisher", formData.publisher)
@@ -587,6 +733,7 @@ export const updateBook = async (
         format: string
         title: string
         authors: string[]
+        artists: string[]
         description: string
         thumbnail_url: string
         thumbnail: File | string
@@ -605,6 +752,7 @@ export const updateBook = async (
     if (formData.thumbnail) _formData.append("thumbnail", formData.thumbnail)
     _formData.append("title", formData.title)
     formData.authors.forEach((id) => _formData.append("authors", id))
+    formData.artists.forEach((id) => _formData.append("artists", id))
     _formData.append("description", formData.description)
     _formData.append("page_count", formData.page_count.toString())
     _formData.append("publisher", formData.publisher)

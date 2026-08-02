@@ -3,14 +3,15 @@ import { getAllBooks } from "../actions/comics"
 import { connect } from "react-redux"
 import { ThemeProvider } from "@mui/material"
 import { darkTheme } from "../App"
-import PublishersSelector from "../components/PublishersSelector"
-import CharactersSelector from "../components/CharactersSelector"
+import PublishersMultiSelector from "../components/PublishersMultiSelector"
+import CharactersMultiSelector from "../components/CharactersMultiSelector"
+import ArtistsSelector from "../components/ArtistsSelector"
 import DunneWebModal from "../modals/DunneWebModal"
 import FloatingMenuButton from "../components/FloatingMenuButton"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import SidePanel from "../components/SidePanel"
-import { Book, Character, Publisher } from "../types"
+import { Book, Character, Publisher, Artist } from "../types"
 import { RootState } from "../reducers"
 import BookModalContent from "modals/dwModalContant/BookModalContent"
 
@@ -21,16 +22,14 @@ interface Props {
 
 const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
     const [books, setBooks] = useState<Book[]>([])
-    const [characterFilter, setCharacterFilter] = useState<Character | null>(
-        null,
-    )
-    const [publisherFilter, setPublisherFilter] = useState<Publisher | null>(
-        null,
-    )
+    const [characterFilter, setCharacterFilter] = useState<Character[]>([])
+    const [publisherFilter, setPublisherFilter] = useState<Publisher[]>([])
+    const [artistFilter, setArtistFilter] = useState<Artist[]>([])
     const [dwModalOpen, setDwModalOpen] = useState(false)
     const [selectedBook, setSelectedBook] = useState<Book>({} as Book)
     const [filterOpen, setFilterOpen] = useState(false)
     const [titleSearch, setTitleSearch] = useState("")
+    const [filterResetKey, setFilterResetKey] = useState(0)
 
     useEffect(() => {
         allBooks.length ? setBooks(allBooks) : getAllBooks()
@@ -43,10 +42,15 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
     function getDisplayedBooks(book: Book, i: number) {
         const bookPublisher = book["publisher"]
         const bookCharacters = book["characters"] ?? []
+        const bookArtists = book["artists"] ?? []
 
         if (
-            (!publisherFilter || bookPublisher === publisherFilter["id"]) &&
-            (!characterFilter || bookCharacters.includes(characterFilter["id"])) &&
+            (!publisherFilter.length ||
+                publisherFilter.some((p) => p.id === bookPublisher)) &&
+            (!characterFilter.length ||
+                characterFilter.some((c) => bookCharacters.includes(c.id))) &&
+            (!artistFilter.length ||
+                artistFilter.some((a) => bookArtists.includes(a.id))) &&
             (book.title ?? "").toLowerCase().includes(titleSearch.toLowerCase())
         ) {
             return (
@@ -73,6 +77,14 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
         }
     }
 
+    const clearFilters = () => {
+        setTitleSearch("")
+        setPublisherFilter([])
+        setCharacterFilter([])
+        setArtistFilter([])
+        setFilterResetKey((key) => key + 1)
+    }
+
     const filterPanel = (
         <ThemeProvider theme={darkTheme}>
             <div className="w-full p-[2rem]">
@@ -87,9 +99,25 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
                     onChange={(e) => setTitleSearch(e.target.value)}
                 />
                 <ul className="list-none p-0">
-                    <PublishersSelector setPublisher={setPublisherFilter} />
-                    <CharactersSelector setCharacter={setCharacterFilter} />
+                    <PublishersMultiSelector
+                        key={`publishers-${filterResetKey}`}
+                        setPublishers={setPublisherFilter}
+                    />
+                    <CharactersMultiSelector
+                        key={`characters-${filterResetKey}`}
+                        setCharacters={setCharacterFilter}
+                    />
+                    <ArtistsSelector
+                        key={`artists-${filterResetKey}`}
+                        setArtists={setArtistFilter}
+                    />
                 </ul>
+                <button
+                    className="w-full mt-3 px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition-colors font-semibold text-[1.4rem]"
+                    onClick={clearFilters}
+                >
+                    Clear Filters
+                </button>
             </div>
         </ThemeProvider>
     )

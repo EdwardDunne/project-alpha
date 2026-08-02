@@ -11,6 +11,7 @@ import AddEditBookModalContent from "../modals/dwModalContant/AddEditBookModalCo
 import ManagePublishersModalContent from "../modals/dwModalContant/ManagePublishersModalContent"
 import ManageCharactersModalContent from "../modals/dwModalContant/ManageCharactersModalContent"
 import ManageAuthorsModalContent from "../modals/dwModalContant/ManageAuthorsModalContent"
+import ManageArtistsModalContent from "../modals/dwModalContant/ManageArtistsModalContent"
 import { RootState } from "../reducers"
 import { type Book } from "types"
 import { ScrapedBooksPage } from "reducers/comics"
@@ -122,6 +123,9 @@ const ComicsAdmin: React.FC<Props> = ({
                             <b>Authors</b>: {book.author_names?.join(", ")}
                         </span>
                         <span>
+                            <b>Artists</b>: {book.artist_names?.join(", ")}
+                        </span>
+                        <span>
                             <b>Page Count</b>: {book.page_count}
                         </span>
                     </div>
@@ -165,6 +169,7 @@ const ComicsAdmin: React.FC<Props> = ({
                     { label: "Manage Characters", type: "manageCharacters" },
                     { label: "Manage Publishers", type: "managePublishers" },
                     { label: "Manage Authors", type: "manageAuthors" },
+                    { label: "Manage Artists", type: "manageArtists" },
                 ].map(({ label, type }) => (
                     <Button
                         key={type}
@@ -280,6 +285,10 @@ const ComicsAdmin: React.FC<Props> = ({
                         />
                     ) : dwModalType === "manageAuthors" ? (
                         <ManageAuthorsModalContent
+                            setDwModalOpen={setDwModalOpen}
+                        />
+                    ) : dwModalType === "manageArtists" ? (
+                        <ManageArtistsModalContent
                             setDwModalOpen={setDwModalOpen}
                         />
                     ) : (
