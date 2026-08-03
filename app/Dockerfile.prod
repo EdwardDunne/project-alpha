@@ -64,7 +64,7 @@ RUN mkdir $APP_HOME/mediafiles
 WORKDIR $APP_HOME
 
 # install dependencies
-RUN apk update && apk add libpq
+RUN apk update && apk add libpq su-exec
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install --no-cache /wheels/*
@@ -83,8 +83,12 @@ COPY --from=frontend-builder /app/frontend/static $APP_HOME/frontend/static
 # chown all the files to the app user
 RUN chown -R app:app $APP_HOME
 
-# change to the app user
-USER app
+# NOTE: intentionally not switching to USER app here. staticfiles/ and
+# mediafiles/ are overmounted by named volumes at runtime, so their on-disk
+# ownership can drift from what's baked into the image (e.g. leftover root
+# ownership from an older deploy). The container starts as root so
+# entrypoint.prod.sh can re-chown those mount points on every boot, then
+# drops to the unprivileged app user via su-exec before running gunicorn.
 
 # run entrypoint.prod.sh
 ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]

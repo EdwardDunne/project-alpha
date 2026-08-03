@@ -11,4 +11,10 @@ then
     echo "PostgreSQL started"
 fi
 
-exec "$@"
+# staticfiles/ and mediafiles/ are mounted from named volumes, whose on-disk
+# ownership can drift from the image (e.g. leftover root ownership from an
+# older deploy). Re-assert it on every boot before dropping to the
+# unprivileged app user.
+chown -R app:app "$APP_HOME/staticfiles" "$APP_HOME/mediafiles"
+
+exec su-exec app "$@"
