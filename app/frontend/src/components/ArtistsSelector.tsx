@@ -48,6 +48,7 @@ const ArtistsSelector: React.FC<Props> = ({ setArtists, variant = 'standard', al
         <div className='mt-3'>
             <Autocomplete
                 multiple
+                disableCloseOnSelect
                 id="artist-selector"
                 options={artistOptions}
                 value={selectedArtists}

@@ -48,6 +48,7 @@ const CharactersMultiSelector: React.FC<Props> = ({ setCharacters, variant = 'st
         <div className='mt-3'>
             <Autocomplete
                 multiple
+                disableCloseOnSelect
                 id="character-multi-selector"
                 options={characterOptions}
                 value={selectedCharacters}

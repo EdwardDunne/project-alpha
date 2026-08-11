@@ -1,7 +1,5 @@
 import { AnyAction } from "redux"
 import {
-    LOAD_DC_SCRAPED_OMNIS_PB_SUCCESS,
-    LOAD_DC_SCRAPED_OMNIS_PB_FAIL,
     LOAD_CHARACTERS_SUCCESS,
     LOAD_CHARACTERS_FAIL,
     LOAD_PUBLISHERS_SUCCESS,
@@ -21,13 +19,7 @@ import {
 } from "../actions/types"
 import { Book, Character, Publisher, Author, Artist, Format, SubCategory, Team } from "../types"
 
-export type ScrapedBooksPage = {
-    nextPageUrl: string
-    books: Book[]
-}
-
 type ComicsState = {
-    pbDcScrapeResponse: ScrapedBooksPage
     all_characters: Character[]
     all_publishers: Publisher[]
     all_authors: Author[]
@@ -39,7 +31,6 @@ type ComicsState = {
 }
 
 const initialState: ComicsState = {
-    pbDcScrapeResponse: { nextPageUrl: "", books: [] },
     all_characters: [],
     all_publishers: [],
     all_authors: [],
@@ -57,19 +48,6 @@ export default function comicsReducer(
     const { type, payload } = action
 
     switch (type) {
-        case LOAD_DC_SCRAPED_OMNIS_PB_SUCCESS:
-            return {
-                ...state,
-                pbDcScrapeResponse: {
-                    nextPageUrl: payload.next_page_url,
-                    books: payload.books,
-                },
-            }
-        case LOAD_DC_SCRAPED_OMNIS_PB_FAIL:
-            return {
-                ...state,
-                pbDcScrapeResponse: initialState.pbDcScrapeResponse,
-            }
         case LOAD_CHARACTERS_SUCCESS:
             return {
                 ...state,

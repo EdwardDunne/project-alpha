@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react"
-import { getAllBooks, scrape_dc_omnis_panel_bound } from "../actions/comics"
+import { getAllBooks } from "../actions/comics"
 import { connect } from "react-redux"
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
-import ToggleButton from "@mui/material/ToggleButton"
+import { ThemeProvider } from "@mui/material"
 import Button from "@mui/material/Button"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import DunneWebModal from "../modals/DunneWebModal"
 import FloatingMenuButton from "../components/FloatingMenuButton"
 import SidePanel from "../components/SidePanel"
+import PublishersMultiSelector from "../components/PublishersMultiSelector"
+import CharactersMultiSelector from "../components/CharactersMultiSelector"
+import TeamsMultiSelector from "../components/TeamsMultiSelector"
+import AuthorsSelector from "../components/AuthorsSelector"
+import ArtistsSelector from "../components/ArtistsSelector"
 import AddEditBookModalContent from "../modals/dwModalContant/AddEditBookModalContent"
 import ManagePublishersModalContent from "../modals/dwModalContant/ManagePublishersModalContent"
 import ManageCharactersModalContent from "../modals/dwModalContant/ManageCharactersModalContent"
@@ -16,87 +21,79 @@ import ManageFormatsModalContent from "../modals/dwModalContant/ManageFormatsMod
 import ManageSubCategoriesModalContent from "../modals/dwModalContant/ManageSubCategoriesModalContent"
 import ManageTeamsModalContent from "../modals/dwModalContant/ManageTeamsModalContent"
 import { RootState } from "../reducers"
-import { type Book } from "types"
-import { ScrapedBooksPage } from "reducers/comics"
+import { darkTheme } from "../App"
+import { type Book, Character, Publisher, Artist, Author, Team } from "types"
+import { useDebounce } from "../hooks/useDebounce"
 
 type Props = {
     getAllBooks: () => void
-    scrape_dc_omnis_panel_bound: (nextPageUrlPbWalts?: string) => void
-    pbDcScrapeResponse: ScrapedBooksPage
     allBooks: Book[]
 }
 
-const ComicsAdmin: React.FC<Props> = ({
-    getAllBooks,
-    scrape_dc_omnis_panel_bound,
-    pbDcScrapeResponse,
-    allBooks,
-}) => {
-    const [displayedBooks, setDisplayedBooks] = useState<Book[]>([])
-    const [selectedResultSet, setselectedResultSet] = useState("dunneweb-db")
-
-    const [selectedBook, setSelectedBook] = useState<Book>({} as Book)
+const ComicsAdmin: React.FC<Props> = ({ getAllBooks, allBooks }) => {
+    const [selectedBook, setSelectedBook] = useState<Book | null>(null)
     const [dwModalOpen, setDwModalOpen] = useState(false)
     const [dwModalType, setDwModalType] = useState("book")
     const [sidebarOpen, setSidebarOpen] = useState(false)
-
-    const [prevPageUrlDcPb, setPrevPageUrlDcPb] = useState<string>("")
-    const [nextPageUrlDcPb, setNextPageUrlDcPb] = useState<string>("")
     const [titleSearch, setTitleSearch] = useState("")
 
+    const [filtersOpen, setFiltersOpen] = useState(false)
+    const [filterResetKey, setFilterResetKey] = useState(0)
+    const [characterFilter, setCharacterFilter] = useState<Character[]>([])
+    const [publisherFilter, setPublisherFilter] = useState<Publisher[]>([])
+    const [artistFilter, setArtistFilter] = useState<Artist[]>([])
+    const [authorFilter, setAuthorFilter] = useState<Author[]>([])
+    const [teamFilter, setTeamFilter] = useState<Team[]>([])
+
+    const debouncedTitleSearch = useDebounce(titleSearch)
+    const debouncedPublisherFilter = useDebounce(publisherFilter)
+    const debouncedCharacterFilter = useDebounce(characterFilter)
+    const debouncedArtistFilter = useDebounce(artistFilter)
+    const debouncedAuthorFilter = useDebounce(authorFilter)
+    const debouncedTeamFilter = useDebounce(teamFilter)
+
     useEffect(() => {
-        allBooks.length ? handleChange(selectedResultSet) : getAllBooks()
+        if (!allBooks.length) getAllBooks()
     }, [])
 
-    useEffect(() => {
-        setDisplayedBooks(allBooks)
-    }, [allBooks])
+    function matchesFilters(book: Book) {
+        const bookPublisher = book["publisher"]
+        const bookCharacters = book["characters"] ?? []
+        const bookArtists = book["artists"] ?? []
+        const bookAuthors = book["authors"] ?? []
+        const bookTeam = book["team"]
 
-    useEffect(() => {
-        if (selectedResultSet === "dc-pb") {
-            setDisplayedBooks(
-                [...pbDcScrapeResponse.books].sort((a, b) =>
-                    a.title.localeCompare(b.title),
-                ),
-            )
-        }
-
-        setPrevPageUrlDcPb(nextPageUrlDcPb)
-        setNextPageUrlDcPb(pbDcScrapeResponse.nextPageUrl)
-    }, [pbDcScrapeResponse])
-
-    const scrapeDComnisPB = (e: React.MouseEvent) => {
-        e.preventDefault()
-        scrape_dc_omnis_panel_bound()
+        return (
+            (!debouncedPublisherFilter.length ||
+                debouncedPublisherFilter.some((p) => p.id === bookPublisher)) &&
+            (!debouncedCharacterFilter.length ||
+                debouncedCharacterFilter.some((c) =>
+                    bookCharacters.includes(c.id),
+                )) &&
+            (!debouncedArtistFilter.length ||
+                debouncedArtistFilter.some((a) =>
+                    bookArtists.includes(a.id),
+                )) &&
+            (!debouncedAuthorFilter.length ||
+                debouncedAuthorFilter.some((a) =>
+                    bookAuthors.includes(a.id),
+                )) &&
+            (!debouncedTeamFilter.length ||
+                debouncedTeamFilter.some((t) => t.id === bookTeam)) &&
+            (book.title ?? "")
+                .toLowerCase()
+                .includes(debouncedTitleSearch.toLowerCase())
+        )
     }
 
-    const getNewPageDcPB = (nextPageUrl: string) => {
-        scrape_dc_omnis_panel_bound(nextPageUrl)
-    }
-
-    const handleChange = (event) => {
-        const tab = event?.target?.value ?? "dunneweb-db"
-        setselectedResultSet(tab)
-        setDisplayedBooks(tab === "dc-pb" ? pbDcScrapeResponse.books : allBooks)
-    }
-
-    function displayBook(book: Book, i: number, omniListType: string) {
-        console.log(book)
-        let title = ""
-        let thumbnail_url = `${window.location.origin}${book.thumbnail}`
-        switch (omniListType) {
-            case "marvelApi":
-                title = book.title
-                break
-            case "dcScraped":
-                title = book.title
-                thumbnail_url = book.thumbnail_url
-                break
-        }
+    function displayBook(book: Book) {
+        const thumbnail_url = book.thumbnail
+            ? `${window.location.origin}${book.thumbnail}`
+            : book.thumbnail_url
 
         return (
             <div
-                key={i}
+                key={book.id}
                 className="m-[0.5rem] w-full md:w-[70rem] border border-gray-200 rounded-[1rem]
                     flex justify-start cursor-pointer hover:border-gray-400 transition-colors"
                 onClick={() => {
@@ -113,7 +110,7 @@ const ComicsAdmin: React.FC<Props> = ({
                     />
                 </div>
                 <div className="flex flex-col justify-center items-start w-[70%] p-4">
-                    <h5 className="font-semibold mb-2">{title}</h5>
+                    <h5 className="font-semibold mb-2">{book.title}</h5>
                     <div className="flex flex-col gap-1 text-[1.4rem] text-gray-600">
                         <span>
                             <b>Publisher</b>: {book.publisher_name}
@@ -146,11 +143,18 @@ const ComicsAdmin: React.FC<Props> = ({
         )
     }
 
-    const addBtn = "mx-[0.5rem] bg-brand hover:bg-brand-dark"
+    const manageButtonSx = { margin: "0.2rem", fontSize: "1.4rem" }
 
-    const searchedBooks = displayedBooks.filter((book) =>
-        (book.title ?? "").toLowerCase().includes(titleSearch.toLowerCase()),
-    )
+    const filteredBooks = allBooks.filter(matchesFilters)
+
+    const clearFilters = () => {
+        setPublisherFilter([])
+        setCharacterFilter([])
+        setArtistFilter([])
+        setAuthorFilter([])
+        setTeamFilter([])
+        setFilterResetKey((key) => key + 1)
+    }
 
     const sidebarContent = (
         <div className="list-none text-white w-full p-[2rem] flex flex-col h-full">
@@ -167,6 +171,65 @@ const ComicsAdmin: React.FC<Props> = ({
                 value={titleSearch}
                 onChange={(e) => setTitleSearch(e.target.value)}
             />
+
+            <button
+                className="w-full flex justify-center items-center gap-1 text-center p-2.5
+                    font-semibold text-gray-300 uppercase tracking-wider"
+                onClick={() => setFiltersOpen((open) => !open)}
+            >
+                Filters
+                <ExpandMoreIcon
+                    sx={{
+                        fontSize: "2.2rem",
+                        transform: filtersOpen
+                            ? "rotate(180deg)"
+                            : "rotate(0deg)",
+                        transition: "transform 0.2s",
+                    }}
+                />
+            </button>
+            {filtersOpen && (
+                <ThemeProvider theme={darkTheme}>
+                    <ul className="list-none p-0">
+                        <PublishersMultiSelector
+                            key={`publishers-${filterResetKey}`}
+                            setPublishers={setPublisherFilter}
+                            initialPublisherIds={publisherFilter.map(
+                                (p) => p.id,
+                            )}
+                        />
+                        <CharactersMultiSelector
+                            key={`characters-${filterResetKey}`}
+                            setCharacters={setCharacterFilter}
+                            initialCharacterIds={characterFilter.map(
+                                (c) => c.id,
+                            )}
+                        />
+                        <TeamsMultiSelector
+                            key={`teams-${filterResetKey}`}
+                            setTeams={setTeamFilter}
+                            initialTeamIds={teamFilter.map((t) => t.id)}
+                        />
+                        <AuthorsSelector
+                            key={`authors-${filterResetKey}`}
+                            setAuthors={setAuthorFilter}
+                            initialAuthorIds={authorFilter.map((a) => a.id)}
+                        />
+                        <ArtistsSelector
+                            key={`artists-${filterResetKey}`}
+                            setArtists={setArtistFilter}
+                            initialArtistIds={artistFilter.map((a) => a.id)}
+                        />
+                    </ul>
+                    <button
+                        className="w-full mt-3 mb-2 px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition-colors font-semibold text-[1.4rem]"
+                        onClick={clearFilters}
+                    >
+                        Clear Filters
+                    </button>
+                </ThemeProvider>
+            )}
+
             <ul className="list-none p-0">
                 <li
                     className="w-full flex justify-center items-center text-center p-2.5
@@ -191,14 +254,8 @@ const ComicsAdmin: React.FC<Props> = ({
                 ].map(({ label, type }) => (
                     <Button
                         key={type}
-                        className={addBtn}
-                        sx={{
-                            backgroundColor: "#536de6",
-                            "&:hover": { backgroundColor: "#4558c2" },
-                            margin: "0.2rem",
-                            fontSize: "1.4rem",
-                        }}
                         variant="contained"
+                        sx={manageButtonSx}
                         onClick={() => {
                             setDwModalOpen(true)
                             setDwModalType(type)
@@ -208,84 +265,15 @@ const ComicsAdmin: React.FC<Props> = ({
                         {label}
                     </Button>
                 ))}
-                {/* Note: Temporarily removed this functionality */}
-                {/* {[
-                    {
-                        label: "Scrape DC Omnis - Panel Bound",
-                        handler: scrapeDComnisPB,
-                    },
-                ].map(({ label, handler }) => (
-                    <li
-                        key={label}
-                        className="p-2.5 flex"
-                        onClick={(e) => {
-                            handler(e as React.MouseEvent)
-                            setSidebarOpen(false)
-                        }}
-                    >
-                        <a
-                            href="#"
-                            className="text-white no-underline hover:text-gray-300
-                            transition-colors text-[1.4rem] text-center w-full"
-                        >
-                            {label}
-                        </a>
-                    </li>
-                ))} */}
             </div>
         </div>
     )
-
-    const pagination = () => {
-        return (
-            <div className="w-full md:w-[70rem] flex items-center justify-end">
-                {prevPageUrlDcPb && (
-                    <Button
-                        className={addBtn}
-                        sx={{
-                            backgroundColor: "#536de6",
-                            "&:hover": {
-                                backgroundColor: "#4558c2",
-                            },
-                            margin: "0.2rem",
-                            fontSize: "1.4rem",
-                        }}
-                        variant="contained"
-                        onClick={() => {
-                            getNewPageDcPB(prevPageUrlDcPb)
-                        }}
-                    >
-                        Back
-                    </Button>
-                )}
-                {nextPageUrlDcPb && (
-                    <Button
-                        className={addBtn}
-                        sx={{
-                            backgroundColor: "#536de6",
-                            "&:hover": {
-                                backgroundColor: "#4558c2",
-                            },
-                            margin: "0.2rem",
-                            fontSize: "1.4rem",
-                        }}
-                        variant="contained"
-                        onClick={() => {
-                            getNewPageDcPB(nextPageUrlDcPb)
-                        }}
-                    >
-                        Next
-                    </Button>
-                )}
-            </div>
-        )
-    }
 
     return (
         <>
             {dwModalOpen && (
                 <DunneWebModal onClose={() => setDwModalOpen(false)}>
-                    {dwModalType === "book" ? (
+                    {dwModalType === "book" && selectedBook ? (
                         <AddEditBookModalContent
                             book={selectedBook}
                             setDwModalOpen={setDwModalOpen}
@@ -352,37 +340,8 @@ const ComicsAdmin: React.FC<Props> = ({
                             Comics Admin
                         </h4>
                     </div>
-                    <div className="flex justify-center items-center mb-4 overflow-x-auto px-2">
-                        <ToggleButtonGroup
-                            color="primary"
-                            value={selectedResultSet}
-                            onChange={handleChange}
-                            sx={{
-                                "& .MuiToggleButton-root": {
-                                    fontSize: "1.4rem",
-                                },
-                            }}
-                        >
-                            <ToggleButton value="dunneweb-db">
-                                Omni Trackers
-                            </ToggleButton>
-                            <ToggleButton value="dc-pb">
-                                DC Panel Bound
-                            </ToggleButton>
-                        </ToggleButtonGroup>
-                    </div>
                     <div className="flex flex-col items-center overflow-y-scroll h-[calc(100vh-20rem)] px-2">
-                        {pagination()}
-                        {searchedBooks.map((book, i) =>
-                            displayBook(
-                                book,
-                                i,
-                                selectedResultSet === "dunneweb-db"
-                                    ? "marvelApi"
-                                    : "dcScraped",
-                            ),
-                        )}
-                        {pagination()}
+                        {filteredBooks.map(displayBook)}
                     </div>
                 </div>
             </div>
@@ -391,11 +350,9 @@ const ComicsAdmin: React.FC<Props> = ({
 }
 
 const mapStateToProps = (state: RootState) => ({
-    pbDcScrapeResponse: state.comics.pbDcScrapeResponse,
     allBooks: state.comics.all_books,
 })
 
 export default connect(mapStateToProps, {
-    scrape_dc_omnis_panel_bound,
     getAllBooks,
 })(ComicsAdmin)

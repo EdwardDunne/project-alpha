@@ -48,6 +48,7 @@ const PublishersMultiSelector: React.FC<Props> = ({ setPublishers, variant = 'st
         <div className='mt-3'>
             <Autocomplete
                 multiple
+                disableCloseOnSelect
                 id="publisher-multi-selector"
                 options={publisherOptions}
                 value={selectedPublishers}

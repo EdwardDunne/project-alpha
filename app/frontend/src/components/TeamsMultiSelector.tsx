@@ -48,6 +48,7 @@ const TeamsMultiSelector: React.FC<Props> = ({ setTeams, variant = 'standard', a
         <div className='mt-3'>
             <Autocomplete
                 multiple
+                disableCloseOnSelect
                 id="team-multi-selector"
                 options={teamOptions}
                 value={selectedTeams}

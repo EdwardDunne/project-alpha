@@ -48,6 +48,7 @@ const AuthorsSelector: React.FC<Props> = ({ setAuthors, variant = 'standard', al
         <div className='mt-3'>
             <Autocomplete
                 multiple
+                disableCloseOnSelect
                 id="author-selector"
                 options={authorOptions}
                 value={selectedAuthors}
