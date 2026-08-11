@@ -5,7 +5,6 @@ from django.conf.urls.static import static
 
 from .views import UserProfileView, SignupView, GetCSRFToken, LoginView, LogoutView, CheckAuthenticatedView, DeleteAccountView, GetUsersView, PasswordResetRequestView, PasswordResetConfirmView
 from .comics_views import ArtistView, AuthorView, BookView, CharacterView, FormatView, PublisherView, SubCategoryView, TeamView
-from .data_collecting import ScrapePB
 
 urlpatterns = [
     path('csrf-cookie', GetCSRFToken.as_view()),
@@ -19,7 +18,6 @@ urlpatterns = [
     path('get-users', GetUsersView.as_view()),
     path('profile/user', UserProfileView.as_view()),
     path('profile/user/update', UserProfileView.as_view()),
-    path('scrape-pb-dc', ScrapePB.as_view()),
     path('comics/add-book', BookView.as_view()),
     path('comics/get-omnis', BookView.as_view()),
     path('comics/add-character', CharacterView.as_view()),

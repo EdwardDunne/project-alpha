@@ -10,12 +10,12 @@ import AuthorsSelector from "../components/AuthorsSelector"
 import TeamsMultiSelector from "../components/TeamsMultiSelector"
 import DunneWebModal from "../modals/DunneWebModal"
 import FloatingMenuButton from "../components/FloatingMenuButton"
-import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import SidePanel from "../components/SidePanel"
 import { Book, Character, Publisher, Artist, Author, Team } from "../types"
 import { RootState } from "../reducers"
 import BookModalContent from "modals/dwModalContant/BookModalContent"
+import { useDebounce } from "../hooks/useDebounce"
 
 interface Props {
     getAllBooks: () => void
@@ -23,67 +23,80 @@ interface Props {
 }
 
 const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
-    const [books, setBooks] = useState<Book[]>([])
     const [characterFilter, setCharacterFilter] = useState<Character[]>([])
     const [publisherFilter, setPublisherFilter] = useState<Publisher[]>([])
     const [artistFilter, setArtistFilter] = useState<Artist[]>([])
     const [authorFilter, setAuthorFilter] = useState<Author[]>([])
     const [teamFilter, setTeamFilter] = useState<Team[]>([])
     const [dwModalOpen, setDwModalOpen] = useState(false)
-    const [selectedBook, setSelectedBook] = useState<Book>({} as Book)
+    const [selectedBook, setSelectedBook] = useState<Book | null>(null)
     const [filterOpen, setFilterOpen] = useState(false)
     const [titleSearch, setTitleSearch] = useState("")
     const [filterResetKey, setFilterResetKey] = useState(0)
 
+    const debouncedTitleSearch = useDebounce(titleSearch)
+    const debouncedPublisherFilter = useDebounce(publisherFilter)
+    const debouncedCharacterFilter = useDebounce(characterFilter)
+    const debouncedArtistFilter = useDebounce(artistFilter)
+    const debouncedAuthorFilter = useDebounce(authorFilter)
+    const debouncedTeamFilter = useDebounce(teamFilter)
+
     useEffect(() => {
-        allBooks.length ? setBooks(allBooks) : getAllBooks()
+        if (!allBooks.length) getAllBooks()
     }, [])
 
-    useEffect(() => {
-        setBooks(allBooks)
-    }, [allBooks])
-
-    function getDisplayedBooks(book: Book, i: number) {
+    function matchesFilters(book: Book) {
         const bookPublisher = book["publisher"]
         const bookCharacters = book["characters"] ?? []
         const bookArtists = book["artists"] ?? []
         const bookAuthors = book["authors"] ?? []
         const bookTeam = book["team"]
 
-        if (
-            (!publisherFilter.length ||
-                publisherFilter.some((p) => p.id === bookPublisher)) &&
-            (!characterFilter.length ||
-                characterFilter.some((c) => bookCharacters.includes(c.id))) &&
-            (!artistFilter.length ||
-                artistFilter.some((a) => bookArtists.includes(a.id))) &&
-            (!authorFilter.length ||
-                authorFilter.some((a) => bookAuthors.includes(a.id))) &&
-            (!teamFilter.length || teamFilter.some((t) => t.id === bookTeam)) &&
-            (book.title ?? "").toLowerCase().includes(titleSearch.toLowerCase())
-        ) {
-            return (
-                <div
-                    key={i}
-                    className="m-[0.5rem] w-[calc(50%-1rem)] sm:w-[calc(33.33%-1rem)] md:w-[20rem] cursor-pointer"
-                    onClick={() => {
-                        setSelectedBook(book)
-                        setDwModalOpen(true)
-                    }}
-                >
-                    <div className="flex-none">
-                        <img
-                            className="rounded-[1rem] w-full md:w-48"
-                            src={`${window.location.origin}${book.thumbnail}`}
-                            alt={book.title}
-                        />
-                    </div>
-                    <div className="h-12 overflow-hidden text-ellipsis text-center text-[1.4rem] mt-1">
-                        {book.title}
-                    </div>
+        return (
+            (!debouncedPublisherFilter.length ||
+                debouncedPublisherFilter.some((p) => p.id === bookPublisher)) &&
+            (!debouncedCharacterFilter.length ||
+                debouncedCharacterFilter.some((c) =>
+                    bookCharacters.includes(c.id),
+                )) &&
+            (!debouncedArtistFilter.length ||
+                debouncedArtistFilter.some((a) =>
+                    bookArtists.includes(a.id),
+                )) &&
+            (!debouncedAuthorFilter.length ||
+                debouncedAuthorFilter.some((a) =>
+                    bookAuthors.includes(a.id),
+                )) &&
+            (!debouncedTeamFilter.length ||
+                debouncedTeamFilter.some((t) => t.id === bookTeam)) &&
+            (book.title ?? "")
+                .toLowerCase()
+                .includes(debouncedTitleSearch.toLowerCase())
+        )
+    }
+
+    function renderBook(book: Book) {
+        return (
+            <div
+                key={book.id}
+                className="m-[0.5rem] w-[calc(50%-1rem)] sm:w-[calc(33.33%-1rem)] md:w-[20rem] cursor-pointer"
+                onClick={() => {
+                    setSelectedBook(book)
+                    setDwModalOpen(true)
+                }}
+            >
+                <div className="flex-none">
+                    <img
+                        className="rounded-[1rem] w-full md:w-48"
+                        src={`${window.location.origin}${book.thumbnail}`}
+                        alt={book.title}
+                    />
                 </div>
-            )
-        }
+                <div className="h-12 overflow-hidden text-ellipsis text-center text-[1.4rem] mt-1">
+                    {book.title}
+                </div>
+            </div>
+        )
     }
 
     const clearFilters = () => {
@@ -143,7 +156,7 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
 
     return (
         <>
-            {dwModalOpen && (
+            {dwModalOpen && selectedBook && (
                 <DunneWebModal onClose={() => setDwModalOpen(false)}>
                     <BookModalContent
                         book={selectedBook}
@@ -184,7 +197,7 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
                     </h4>
                     <div className="w-full px-4 overflow-y-scroll h-full">
                         <div className="flex justify-center items-center flex-row flex-wrap">
-                            {books.map((book, i) => getDisplayedBooks(book, i))}
+                            {allBooks.filter(matchesFilters).map(renderBook)}
                         </div>
                     </div>
                 </div>

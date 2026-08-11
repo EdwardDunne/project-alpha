@@ -1,10 +1,8 @@
-import axios, { AxiosRequestConfig, AxiosRequestHeaders } from "axios"
+import axios, { AxiosRequestConfig } from "axios"
 import { Dispatch } from "redux"
 import httpUtil from "../utils/httpUtil"
 import { toast } from "react-toastify"
 import {
-    LOAD_DC_SCRAPED_OMNIS_PB_SUCCESS,
-    LOAD_DC_SCRAPED_OMNIS_PB_FAIL,
     LOAD_CHARACTERS_FAIL,
     LOAD_CHARACTERS_SUCCESS,
     LOAD_PUBLISHERS_FAIL,
@@ -23,55 +21,6 @@ import {
     LOAD_BOOKS_SUCCESS,
 } from "./types"
 import store from "../store"
-
-// Panal Bound scrape function NOTE: I am not using scraping to populate
-// the database like I originally planned, however I am leaving this here
-// as an example incase I want to go this route again in the future
-export const scrape_dc_omnis_panel_bound =
-    (nextPageUrl?: string) => async (dispatch: Dispatch) => {
-        const defaultPBDCUrl =
-            "/collections/dc-comics?filter.p.product_type=Omnibus&page=1&sort_by=title-ascending"
-
-        const config = {
-            headers: httpUtil.get_headers("GET") as AxiosRequestHeaders,
-        }
-
-        const toastId = toast.loading("Scraping DC Omnis (Panel Bound)...")
-        try {
-            const res = await axios.get(
-                `${window.location.origin}/api/scrape-pb-dc`,
-                {
-                    ...config,
-                    params: {
-                        nextPageUrl: nextPageUrl ?? defaultPBDCUrl,
-                        publisher: "dc",
-                    },
-                } as AxiosRequestConfig,
-            )
-
-            if (res.data.error) {
-                toast.dismiss(toastId)
-                toast.error("Something went wrong...")
-                dispatch({
-                    type: LOAD_DC_SCRAPED_OMNIS_PB_FAIL,
-                })
-            } else {
-                toast.dismiss(toastId)
-                toast.success("DC Omnis Scraped!")
-                dispatch({
-                    type: LOAD_DC_SCRAPED_OMNIS_PB_SUCCESS,
-                    payload: res.data,
-                })
-            }
-        } catch (error) {
-            console.error(error)
-            toast.dismiss(toastId)
-            toast.error("Something went wrong...")
-            dispatch({
-                type: LOAD_DC_SCRAPED_OMNIS_PB_FAIL,
-            })
-        }
-    }
 
 // Get all characters from DB, this is cached unless you are an admin
 export const getAllCharacters = () => async (dispatch: Dispatch) => {

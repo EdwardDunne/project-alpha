@@ -7,11 +7,26 @@ import { Provider } from 'react-redux';
 import store from './store';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { createTheme } from "@mui/material";
+import { createTheme, ThemeProvider } from "@mui/material";
+
+// Matches the `brand`/`brand-dark` colors in tailwind.config.js, so MUI
+// components (Autocomplete, Button, ToggleButton, etc.) match the rest of
+// the app's branding instead of MUI's default blue.
+const brandPrimary = {
+    main: '#536de6',
+    dark: '#4558c2',
+};
+
+export const theme = createTheme({
+    palette: {
+        primary: brandPrimary,
+    },
+});
 
 export const darkTheme = createTheme({
     palette: {
         mode: 'dark',
+        primary: brandPrimary,
     },
 });
 
@@ -19,25 +34,27 @@ const App: React.FC = () => {
 
     return (
         <Provider store={store}>
-            <div className='flex flex-col w-full min-h-[100dvh]'>
-                <NavBar />
-                <main className='flex-1 flex flex-col'>
-                    <HomePageRouter />
-                </main>
-                <Footer />
-                <ToastContainer
-                    position="top-right"
-                    autoClose={5000}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="colored"
-                />
-            </div>
+            <ThemeProvider theme={theme}>
+                <div className='flex flex-col w-full min-h-[100dvh]'>
+                    <NavBar />
+                    <main className='flex-1 flex flex-col'>
+                        <HomePageRouter />
+                    </main>
+                    <Footer />
+                    <ToastContainer
+                        position="top-right"
+                        autoClose={5000}
+                        hideProgressBar={false}
+                        newestOnTop={false}
+                        closeOnClick
+                        rtl={false}
+                        pauseOnFocusLoss
+                        draggable
+                        pauseOnHover
+                        theme="colored"
+                    />
+                </div>
+            </ThemeProvider>
         </Provider>
     )
 }
