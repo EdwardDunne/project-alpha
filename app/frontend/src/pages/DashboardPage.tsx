@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { update_profile } from '../actions/profile';
-import { delete_account } from '../actions/auth';
+import { deleteAccount } from '../actions/auth';
 import { RootState } from '../reducers';
 import ConfirmDialog from '../components/ConfirmDialog';
 
 interface Props {
-    delete_account: () => void;
+    deleteAccount: () => void;
     update_profile: (first_name: string, last_name: string) => void;
     first_name_global: string;
     last_name_global: string;
@@ -18,7 +18,7 @@ const disabledInputClass = 'w-full border border-gray-300 rounded px-3 py-2 text
 const labelClass = 'block text-[1.4rem] font-medium text-gray-700 mb-1'
 
 const DashboardPage: React.FC<Props> = ({
-    delete_account,
+    deleteAccount,
     update_profile,
     first_name_global,
     last_name_global,
@@ -104,7 +104,7 @@ const DashboardPage: React.FC<Props> = ({
                 <ConfirmDialog
                     message='Are you sure you want to permanently delete your account?'
                     onConfirm={() => {
-                        delete_account()
+                        deleteAccount()
                         setShowDeleteConfirm(false)
                     }}
                     onCancel={() => setShowDeleteConfirm(false)}
@@ -121,6 +121,6 @@ const mapStateToProps = (state: RootState) => ({
 })
 
 export default connect(mapStateToProps, {
-    delete_account,
+    deleteAccount,
     update_profile
 })(DashboardPage)

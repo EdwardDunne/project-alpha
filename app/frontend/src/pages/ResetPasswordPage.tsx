@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { reset_password } from '../actions/auth';
+import { resetPassword } from '../actions/auth';
 import CSRFToken from '../components/CSRFToken';
 
 const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-[1.4rem] focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
@@ -30,7 +30,7 @@ const ResetPasswordPage: React.FC = () => {
             return;
         }
 
-        const success = await reset_password(uidb64, token, password, re_password);
+        const success = await resetPassword(uidb64, token, password, re_password);
         if (success) navigate('/login');
     }
 

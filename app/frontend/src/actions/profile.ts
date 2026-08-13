@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Dispatch } from 'redux';
 import httpUtil from '../utils/httpUtil';
+import { getErrorMessage } from '../utils/apiError';
 import { toast } from 'react-toastify';
 import {
     LOAD_USER_PROFILE_SUCCESS,
@@ -17,16 +18,10 @@ export const load_user = () => async (dispatch: Dispatch) => {
     try {
         const res = await axios.get(`${window.location.origin}/api/profile/user`, config);
 
-        if (res.data.error) {
-            dispatch({
-                type: LOAD_USER_PROFILE_FAIL
-            });
-        } else {
-            dispatch({
-                type: LOAD_USER_PROFILE_SUCCESS,
-                payload: res.data
-            });
-        }
+        dispatch({
+            type: LOAD_USER_PROFILE_SUCCESS,
+            payload: res.data
+        });
     } catch (error) {
         dispatch({
             type: LOAD_USER_PROFILE_FAIL
@@ -48,21 +43,14 @@ export const update_profile = (first_name: string, last_name: string) => async (
     try {
         const res = await axios.put(`${window.location.origin}/api/profile/user/update`, body, config);
 
-        if (res.data.profile) {
-            toast.success('Profile Updated!');
-            dispatch({
-                type: UPDATE_USER_PROFILE_SUCCESS,
-                payload: res.data
-            });
-        } else {
-            toast.error('Something went wrong...');
-            dispatch({
-                type: UPDATE_USER_PROFILE_FAIL
-            });
-        }
+        toast.success('Profile Updated!');
+        dispatch({
+            type: UPDATE_USER_PROFILE_SUCCESS,
+            payload: res.data
+        });
     } catch (error) {
         console.error(error);
-        toast.error('Something went wrong...');
+        toast.error(getErrorMessage(error, 'Something went wrong...'));
         dispatch({
             type: UPDATE_USER_PROFILE_FAIL
         });
