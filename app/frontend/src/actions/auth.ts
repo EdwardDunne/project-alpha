@@ -3,6 +3,7 @@ import { Dispatch } from "redux"
 import { toast } from "react-toastify"
 import { load_user } from "./profile"
 import httpUtil from "../utils/httpUtil"
+import { getErrorMessage } from "../utils/apiError"
 import { AppDispatch } from "../store"
 import {
     REGISTER_SUCCESS,
@@ -30,15 +31,7 @@ export const checkAuthenticated = () => async (dispatch: Dispatch) => {
             config,
         )
 
-        if (res.data.error || res.data.isAuthenticated === "error") {
-            if (res.data.error) {
-                console.error(res.data.error)
-            }
-            dispatch({
-                type: AUTHENTICATED_FAIL,
-                payload: false,
-            })
-        } else if (res.data.isAuthenticated === "success") {
+        if (res.data.isAuthenticated === "success") {
             dispatch({
                 type: AUTHENTICATED_SUCCESS,
                 payload: true,
@@ -72,26 +65,24 @@ export const login =
         const body = JSON.stringify({ email, password })
 
         try {
-            const res = await axios.post(
+            await axios.post(
                 `${window.location.origin}/api/login`,
                 body,
                 config,
             )
 
-            if (res.data.success) {
-                dispatch({
-                    type: LOGIN_SUCCESS,
-                })
+            dispatch({
+                type: LOGIN_SUCCESS,
+            })
 
-                dispatch(load_user())
-            } else {
-                toast.error(res.data.error || "Invalid email or password.")
-                dispatch({
-                    type: LOGIN_FAIL,
-                })
-            }
+            dispatch(load_user())
         } catch (error) {
-            toast.error("Something went wrong logging in. Please try again.")
+            toast.error(
+                getErrorMessage(
+                    error,
+                    "Something went wrong logging in. Please try again.",
+                ),
+            )
             console.error(error)
             dispatch({
                 type: LOGIN_FAIL,
@@ -105,26 +96,16 @@ export const logout = () => async (dispatch: Dispatch) => {
         headers: httpUtil.get_headers("POST"),
     }
 
-    const body = JSON.stringify({
-        withCredentials: true,
-    })
-
     try {
-        const res = await axios.post(
+        await axios.post(
             `${window.location.origin}/api/logout`,
-            body,
+            null,
             config,
         )
 
-        if (res.data.success) {
-            dispatch({
-                type: LOGOUT_SUCCESS,
-            })
-        } else {
-            dispatch({
-                type: LOGOUT_FAIL,
-            })
-        }
+        dispatch({
+            type: LOGOUT_SUCCESS,
+        })
     } catch (error) {
         console.error(error)
         dispatch({
@@ -144,24 +125,22 @@ export const register =
         const body = JSON.stringify({ email, password, re_password })
 
         try {
-            const res = await axios.post(
+            await axios.post(
                 `${window.location.origin}/api/register`,
                 body,
                 config,
             )
 
-            if (res.data.error) {
-                toast.error(res.data.error)
-                dispatch({
-                    type: REGISTER_FAIL,
-                })
-            } else {
-                dispatch({
-                    type: REGISTER_SUCCESS,
-                })
-            }
+            dispatch({
+                type: REGISTER_SUCCESS,
+            })
         } catch (error) {
-            toast.error("Something went wrong registering. Please try again.")
+            toast.error(
+                getErrorMessage(
+                    error,
+                    "Something went wrong registering. Please try again.",
+                ),
+            )
             console.error(error)
             dispatch({
                 type: REGISTER_FAIL,
@@ -170,7 +149,7 @@ export const register =
     }
 
 // Request Password Reset
-export const request_password_reset = async (
+export const requestPasswordReset = async (
     email: string,
 ): Promise<boolean> => {
     const config = {
@@ -186,24 +165,17 @@ export const request_password_reset = async (
             config,
         )
 
-        if (res.data.success) {
-            toast.success(res.data.success)
-            return true
-        } else {
-            toast.error(
-                res.data.error || "Something went wrong. Please try again.",
-            )
-            return false
-        }
+        toast.success(res.data.success)
+        return true
     } catch (error) {
-        toast.error("Something went wrong. Please try again.")
+        toast.error(getErrorMessage(error, "Something went wrong. Please try again."))
         console.error(error)
         return false
     }
 }
 
 // Confirm password reset
-export const reset_password = async (
+export const resetPassword = async (
     uidb64: string,
     token: string,
     password: string,
@@ -222,48 +194,31 @@ export const reset_password = async (
             config,
         )
 
-        if (res.data.success) {
-            toast.success(res.data.success)
-            return true
-        } else {
-            toast.error(
-                res.data.error || "Something went wrong. Please try again.",
-            )
-            return false
-        }
+        toast.success(res.data.success)
+        return true
     } catch (error) {
-        toast.error("Something went wrong. Please try again.")
+        toast.error(getErrorMessage(error, "Something went wrong. Please try again."))
         console.error(error)
         return false
     }
 }
 
 // Delete user account
-export const delete_account = () => async (dispatch: Dispatch) => {
+export const deleteAccount = () => async (dispatch: Dispatch) => {
     const config = {
         headers: httpUtil.get_headers("POST"),
     }
 
-    const body = JSON.stringify({
-        withCredentials: true,
-    })
-
     try {
-        const res = await axios.post(
+        await axios.post(
             `${window.location.origin}/api/delete-account`,
-            body,
+            null,
             config,
         )
 
-        if (res.data.success) {
-            dispatch({
-                type: DELETE_USER_SUCCESS,
-            })
-        } else {
-            dispatch({
-                type: DELETE_USER_FAIL,
-            })
-        }
+        dispatch({
+            type: DELETE_USER_SUCCESS,
+        })
     } catch (error) {
         console.error(error)
         dispatch({

@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { Link } from "react-router-dom"
-import { request_password_reset } from "../actions/auth"
+import { requestPasswordReset } from "../actions/auth"
 import CSRFToken from "../components/CSRFToken"
 
 const inputClass =
@@ -13,7 +13,7 @@ const ForgotPasswordPage: React.FC = () => {
 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        const success = await request_password_reset(email)
+        const success = await requestPasswordReset(email)
         if (success) setSubmitted(true)
     }
 
