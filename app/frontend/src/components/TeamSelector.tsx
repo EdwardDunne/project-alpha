@@ -44,11 +44,8 @@ const TeamSelector: React.FC<Props> = ({
     }, [initialTeamId, teamOptions])
 
     const _setTeamOptions = (teams: Team[]) => {
-        setTeamOptions(
-            [...teams].sort((a, b) =>
-                a.name > b.name ? 1 : b.name > a.name ? -1 : 0,
-            ),
-        )
+        // Already sorted server-side
+        setTeamOptions(teams)
     }
 
     return (

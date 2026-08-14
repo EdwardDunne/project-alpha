@@ -15,7 +15,7 @@ interface Props {
     allAuthors: Author[]
     // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
     // since renaming/adding/deleting an author changes books' derived
-    // author_names and that feed isn't driven by Redux.
+    // authors_data and that feed isn't driven by Redux.
     onDataChanged?: () => void
 }
 
@@ -60,16 +60,10 @@ const ManageAuthorsModalContent: React.FC<Props> = ({
     }
 
     const saveEditing = (id: number) =>
-        updateAuthor(
-            { id, name: editingName },
-            cancelEditing,
-            onDataChanged,
-        )
+        updateAuthor({ id, name: editingName }, cancelEditing, onDataChanged)
 
-    const sortedAuthors = [...allAuthors].sort((a, b) =>
-        a.name.localeCompare(b.name),
-    )
-    const filteredAuthors = sortedAuthors.filter((author) =>
+    // allAuthors already arrives sorted server-side
+    const filteredAuthors = allAuthors.filter((author) =>
         author.name.toLowerCase().includes(search.toLowerCase()),
     )
 

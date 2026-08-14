@@ -156,8 +156,8 @@ function createComicData<
     return async (
         body: TBody,
         setDwModalOpen: (open: boolean) => void,
-        // Renaming/adding/deleting an entity changes books' derived names
-        // (e.g. publisher_name), but any paginated book feed (like
+        // Renaming/adding/deleting an entity changes books' nested detail
+        // objects (e.g. publisher_data), but any paginated book feed (like
         // ComicsAdminPage's) fetches from the server and isn't driven by
         // Redux, so it needs its own explicit nudge to refetch.
         onDataChanged?: () => void,

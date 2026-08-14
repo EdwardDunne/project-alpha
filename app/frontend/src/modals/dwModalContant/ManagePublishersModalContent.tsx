@@ -15,7 +15,7 @@ interface Props {
     allPublishers: Publisher[]
     // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
     // since renaming/adding/deleting a publisher changes books' derived
-    // publisher_name and that feed isn't driven by Redux.
+    // publisher_data and that feed isn't driven by Redux.
     onDataChanged?: () => void
 }
 
@@ -45,7 +45,7 @@ const ManagePublishersModalContent: React.FC<Props> = ({
     }, [])
 
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
+        setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
 
     const resetForm = () => setFormData({ name: "" })
 
@@ -60,16 +60,10 @@ const ManagePublishersModalContent: React.FC<Props> = ({
     }
 
     const saveEditing = (id: number) =>
-        updatePublisher(
-            { id, name: editingName },
-            cancelEditing,
-            onDataChanged,
-        )
+        updatePublisher({ id, name: editingName }, cancelEditing, onDataChanged)
 
-    const sortedPublishers = [...allPublishers].sort((a, b) =>
-        a.name.localeCompare(b.name),
-    )
-    const filteredPublishers = sortedPublishers.filter(publisher =>
+    // allPublishers already arrives sorted server-side
+    const filteredPublishers = allPublishers.filter((publisher) =>
         publisher.name.toLowerCase().includes(search.toLowerCase()),
     )
 
@@ -84,11 +78,11 @@ const ManagePublishersModalContent: React.FC<Props> = ({
                     type="text"
                     placeholder="Search publishers..."
                     value={search}
-                    onChange={e => setSearch(e.target.value)}
+                    onChange={(e) => setSearch(e.target.value)}
                 />
             </div>
             <div className="flex-1 py-4 space-y-2 max-h-[30rem] overflow-y-auto">
-                {filteredPublishers.map(publisher => (
+                {filteredPublishers.map((publisher) => (
                     <div
                         key={publisher.id}
                         className="flex items-center gap-2 border-b border-gray-100 pb-2"
@@ -99,19 +93,32 @@ const ManagePublishersModalContent: React.FC<Props> = ({
                                     className={inputClass}
                                     type="text"
                                     value={editingName}
-                                    onChange={e => setEditingName(e.target.value)}
+                                    onChange={(e) =>
+                                        setEditingName(e.target.value)
+                                    }
                                 />
-                                <button className={saveBtnClass} onClick={() => saveEditing(publisher.id)}>
+                                <button
+                                    className={saveBtnClass}
+                                    onClick={() => saveEditing(publisher.id)}
+                                >
                                     Save
                                 </button>
-                                <button className={editBtnClass} onClick={cancelEditing}>
+                                <button
+                                    className={editBtnClass}
+                                    onClick={cancelEditing}
+                                >
                                     Cancel
                                 </button>
                             </>
                         ) : (
                             <>
-                                <span className="flex-1 text-[1.4rem]">{publisher.name}</span>
-                                <button className={editBtnClass} onClick={() => startEditing(publisher)}>
+                                <span className="flex-1 text-[1.4rem]">
+                                    {publisher.name}
+                                </span>
+                                <button
+                                    className={editBtnClass}
+                                    onClick={() => startEditing(publisher)}
+                                >
                                     Edit
                                 </button>
                                 <button
@@ -127,7 +134,10 @@ const ManagePublishersModalContent: React.FC<Props> = ({
             </div>
             <div className="pt-4 border-t border-gray-100 space-y-3">
                 <div>
-                    <label className={labelClass} htmlFor="name">
+                    <label
+                        className={labelClass}
+                        htmlFor="name"
+                    >
                         Name
                     </label>
                     <input

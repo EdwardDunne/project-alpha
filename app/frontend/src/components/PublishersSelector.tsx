@@ -49,11 +49,8 @@ const PublishersSelector: React.FC<Props> = ({
     }, [initialPublisherId, publisherOptions])
 
     const _setPublisherOptions = (publishers: Publisher[]) => {
-        setPublisherOptions(
-            [...publishers].sort((a, b) =>
-                a.name > b.name ? 1 : b.name > a.name ? -1 : 0,
-            ),
-        )
+        // Already sorted server-side
+        setPublisherOptions(publishers)
     }
 
     return (

@@ -19,39 +19,13 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'email', 'is_staff',)
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    email = serializers.ReadOnlyField(source='user.email')
+
     class Meta:
         model = UserProfile
         fields = '__all__'
 
-class BookSerializer(serializers.ModelSerializer):
-    publisher_name = serializers.ReadOnlyField()
-    character_names = serializers.ReadOnlyField()
-    author_names = serializers.ReadOnlyField()
-    artist_names = serializers.ReadOnlyField()
-    format_name = serializers.ReadOnlyField()
-    format_abbreviation = serializers.ReadOnlyField()
-    sub_category_name = serializers.ReadOnlyField()
-    team_name = serializers.ReadOnlyField()
-
-    class Meta:
-        model = Book
-        fields = '__all__'
-        extra_kwargs = {
-            'marvel_id': {'required': False},
-            'price': {'required': False, 'min_value': 0},
-            'isbn': {'required': False},
-            'page_count': {'min_value': 1, 'max_value': 5000},
-            'volume_number': {'required': False, 'min_value': 1},
-            # A thumbnail is required to create a book, but PUT uses partial=True
-            # so an edit that isn't replacing the thumbnail can still omit it.
-            'thumbnail': {'required': True, 'validators': [validate_thumbnail]},
-            'authors': {'required': False},
-            'artists': {'required': False},
-            'characters': {'required': False},
-            'sub_category': {'required': False},
-            'team': {'required': False},
-        }
-
+# Declared ahead of BookSerializer since BookSerializer nests all of these
 class PublisherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Publisher
@@ -90,4 +64,30 @@ class TeamSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {
             'characters': {'required': False},
+        }
+
+class BookSerializer(serializers.ModelSerializer):
+    publisher_data = PublisherSerializer(source='publisher', read_only=True)
+    format_data = FormatSerializer(source='format', read_only=True)
+    sub_category_data = SubCategorySerializer(source='sub_category', read_only=True)
+    team_data = TeamSerializer(source='team', read_only=True)
+    characters_data = CharacterSerializer(source='characters', many=True, read_only=True)
+    authors_data = AuthorSerializer(source='authors', many=True, read_only=True)
+    artists_data = ArtistSerializer(source='artists', many=True, read_only=True)
+
+    class Meta:
+        model = Book
+        fields = '__all__'
+        extra_kwargs = {
+            'marvel_id': {'required': False},
+            'price': {'required': False, 'min_value': 0, 'coerce_to_string': False},
+            'isbn': {'required': False},
+            'page_count': {'min_value': 1, 'max_value': 5000},
+            'volume_number': {'required': False, 'min_value': 1},
+            'thumbnail': {'required': True, 'validators': [validate_thumbnail]},
+            'authors': {'required': False},
+            'artists': {'required': False},
+            'characters': {'required': False},
+            'sub_category': {'required': False},
+            'team': {'required': False},
         }

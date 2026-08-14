@@ -37,8 +37,6 @@ class CheckAuthenticatedView(APIView):
                 user = User.objects.get(id=user.id)
                 return Response({'isAuthenticated': 'success', 'is_staff': user.is_staff})
             else:
-                # Not being logged in isn't a request failure, it's a valid
-                # answer to "am I authenticated?" - stays 200.
                 return Response({'isAuthenticated': 'error'})
         except Exception as e:
             logger.exception('Something went wrong with checking authentication: %s', e)
@@ -67,8 +65,6 @@ class PasswordResetRequestView(APIView):
                     recipient_list=[user.email],
                 )
 
-            # Always report success, whether or not the email is registered,
-            # so this endpoint can't be used to enumerate accounts.
             return Response({'success': 'If an account exists for that email, a reset link has been sent'})
         except KeyError:
             return Response({'error': 'Missing required field: email.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -182,7 +178,7 @@ class SignupView(APIView):
 
             user = User.objects.create_user(username=email, email=email, password=password)
             user = User.objects.get(id=user.id)
-            UserProfile.objects.create(user=user, first_name='', last_name='', email=email)
+            UserProfile.objects.create(user=user, first_name='', last_name='')
 
             return Response({'success': 'User created successfully'}, status=status.HTTP_201_CREATED)
         except Exception as e:

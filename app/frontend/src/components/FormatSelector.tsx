@@ -44,11 +44,8 @@ const FormatSelector: React.FC<Props> = ({
     }, [initialFormatId, formatOptions])
 
     const _setFormatOptions = (formats: Format[]) => {
-        setFormatOptions(
-            [...formats].sort((a, b) =>
-                a.name > b.name ? 1 : b.name > a.name ? -1 : 0,
-            ),
-        )
+        // Already sorted server-side
+        setFormatOptions(formats)
     }
 
     return (

@@ -2,6 +2,7 @@ import logging
 
 from django.core.cache import cache
 from django.core.paginator import Paginator
+from django.db.models.deletion import ProtectedError
 from django.db.models.functions import Lower
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -25,18 +26,14 @@ class BookView(APIView):
 
     def get(self, request, format=None):
         try:
-            # No `page` param: full, unfiltered, unpaginated list - this is
-            # the original/admin behavior (ComicsAdminPage loads everything
-            # once and filters client-side), left untouched and still cached.
+            # Original behavior - get all books cached
             if 'page' not in request.query_params:
                 if not request.user.is_staff:
                     cached = cache.get('all_books')
                     if cached is not None:
                         return Response({'success': 'true', 'books': cached})
 
-                books = Book.objects.select_related(
-                    'publisher', 'format', 'sub_category', 'team'
-                ).prefetch_related('characters', 'authors', 'artists')
+                books = Book.objects.with_related()
                 all_books = BookSerializer(books, many=True).data
 
                 if not request.user.is_staff:
@@ -44,9 +41,7 @@ class BookView(APIView):
 
                 return Response({'success': 'true', 'books': all_books})
 
-            # `page` present: server-side filtered + paginated feed, used by
-            # the public comics page's infinite scroll. Not cached - too many
-            # filter combinations to make a flat cache key worthwhile.
+            # Get filtered books by page
             try:
                 page = int(request.query_params['page'])
                 page_size = int(request.query_params.get('page_size', DEFAULT_PAGE_SIZE))
@@ -55,9 +50,7 @@ class BookView(APIView):
 
             page_size = max(1, min(page_size, MAX_PAGE_SIZE))
 
-            queryset = Book.objects.select_related(
-                'publisher', 'format', 'sub_category', 'team'
-            ).prefetch_related('characters', 'authors', 'artists')
+            queryset = Book.objects.with_related()
 
             title = request.query_params.get('title')
             if title:
@@ -83,8 +76,7 @@ class BookView(APIView):
             if author_ids:
                 queryset = queryset.filter(authors__id__in=author_ids)
 
-            # Filtering across a M2M relation can join in duplicate rows
-            # (one per match), so de-dupe whenever one of those was used.
+            # De-dupe duplicate rows
             if character_ids or artist_ids or author_ids:
                 queryset = queryset.distinct()
 
@@ -257,7 +249,12 @@ class CharacterView(APIView):
             if book_count:
                 return Response({'error': f'Cannot delete: {book_count} book(s) reference this character.'}, status=status.HTTP_409_CONFLICT)
 
-            character.delete()
+            try:
+                character.delete()
+            except ProtectedError as e:
+                blocking_count = len(e.protected_objects)
+                return Response({'error': f'Cannot delete: {blocking_count} record(s) reference this character.'}, status=status.HTTP_409_CONFLICT)
+
             cache.delete('all_characters')
             return Response({'success': 'true'})
         except Exception as e:
@@ -340,11 +337,12 @@ class PublisherView(APIView):
             except Publisher.DoesNotExist:
                 return Response({'error': 'Publisher not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-            book_count = Book.objects.filter(publisher=publisher).count()
-            if book_count:
-                return Response({'error': f'Cannot delete: {book_count} book(s) reference this publisher.'}, status=status.HTTP_409_CONFLICT)
+            try:
+                publisher.delete()
+            except ProtectedError as e:
+                blocking_count = len(e.protected_objects)
+                return Response({'error': f'Cannot delete: {blocking_count} record(s) reference this publisher.'}, status=status.HTTP_409_CONFLICT)
 
-            publisher.delete()
             cache.delete('all_publishers')
             return Response({'success': 'true'})
         except Exception as e:
@@ -431,7 +429,12 @@ class AuthorView(APIView):
             if book_count:
                 return Response({'error': f'Cannot delete: {book_count} book(s) reference this author.'}, status=status.HTTP_409_CONFLICT)
 
-            author.delete()
+            try:
+                author.delete()
+            except ProtectedError as e:
+                blocking_count = len(e.protected_objects)
+                return Response({'error': f'Cannot delete: {blocking_count} record(s) reference this author.'}, status=status.HTTP_409_CONFLICT)
+
             cache.delete('all_authors')
             return Response({'success': 'true'})
         except Exception as e:
@@ -518,7 +521,12 @@ class ArtistView(APIView):
             if book_count:
                 return Response({'error': f'Cannot delete: {book_count} book(s) reference this artist.'}, status=status.HTTP_409_CONFLICT)
 
-            artist.delete()
+            try:
+                artist.delete()
+            except ProtectedError as e:
+                blocking_count = len(e.protected_objects)
+                return Response({'error': f'Cannot delete: {blocking_count} record(s) reference this artist.'}, status=status.HTTP_409_CONFLICT)
+
             cache.delete('all_artists')
             return Response({'success': 'true'})
         except Exception as e:
@@ -601,11 +609,12 @@ class FormatView(APIView):
             except Format.DoesNotExist:
                 return Response({'error': 'Format not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-            book_count = Book.objects.filter(format=fmt).count()
-            if book_count:
-                return Response({'error': f'Cannot delete: {book_count} book(s) reference this format.'}, status=status.HTTP_409_CONFLICT)
+            try:
+                fmt.delete()
+            except ProtectedError as e:
+                blocking_count = len(e.protected_objects)
+                return Response({'error': f'Cannot delete: {blocking_count} record(s) reference this format.'}, status=status.HTTP_409_CONFLICT)
 
-            fmt.delete()
             cache.delete('all_formats')
             return Response({'success': 'true'})
         except Exception as e:
@@ -688,11 +697,12 @@ class SubCategoryView(APIView):
             except SubCategory.DoesNotExist:
                 return Response({'error': 'Sub category not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-            book_count = Book.objects.filter(sub_category=sub_category).count()
-            if book_count:
-                return Response({'error': f'Cannot delete: {book_count} book(s) reference this sub category.'}, status=status.HTTP_409_CONFLICT)
+            try:
+                sub_category.delete()
+            except ProtectedError as e:
+                blocking_count = len(e.protected_objects)
+                return Response({'error': f'Cannot delete: {blocking_count} record(s) reference this sub category.'}, status=status.HTTP_409_CONFLICT)
 
-            sub_category.delete()
             cache.delete('all_sub_categories')
             return Response({'success': 'true'})
         except Exception as e:
@@ -775,11 +785,12 @@ class TeamView(APIView):
             except Team.DoesNotExist:
                 return Response({'error': 'Team not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-            book_count = Book.objects.filter(team=team).count()
-            if book_count:
-                return Response({'error': f'Cannot delete: {book_count} book(s) reference this team.'}, status=status.HTTP_409_CONFLICT)
+            try:
+                team.delete()
+            except ProtectedError as e:
+                blocking_count = len(e.protected_objects)
+                return Response({'error': f'Cannot delete: {blocking_count} record(s) reference this team.'}, status=status.HTTP_409_CONFLICT)
 
-            team.delete()
             cache.delete('all_teams')
             return Response({'success': 'true'})
         except Exception as e:
