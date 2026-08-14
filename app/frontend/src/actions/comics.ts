@@ -23,6 +23,7 @@ import {
 } from "./types"
 import store from "../store"
 import {
+    Book,
     Publisher,
     Character,
     Author,
@@ -53,6 +54,58 @@ export const getAllBooks = () => async (dispatch: Dispatch) => {
         dispatch({
             type: LOAD_BOOKS_FAIL,
         })
+    }
+}
+
+// PAGINATED / FILTERED BOOK FEED
+// Backs the public comics page's infinite scroll. Unlike getAllBooks above,
+// this is a plain function (not a thunk) that returns its result directly -
+// the feed is presentation state local to one page, not shared app state,
+// so it doesn't belong in Redux the way `all_books` does.
+export const BOOKS_PAGE_SIZE = 24
+
+export type BooksPageFilters = {
+    title?: string
+    publisherIds?: number[]
+    characterIds?: number[]
+    artistIds?: number[]
+    authorIds?: number[]
+    teamIds?: number[]
+}
+
+export type BooksPageResult = {
+    books: Book[]
+    hasMore: boolean
+    count: number
+}
+
+export async function fetchBooksPage(
+    page: number,
+    filters: BooksPageFilters,
+): Promise<BooksPageResult> {
+    const params = new URLSearchParams()
+    params.set("page", String(page))
+    params.set("page_size", String(BOOKS_PAGE_SIZE))
+    if (filters.title) params.set("title", filters.title)
+    filters.publisherIds?.forEach((id) => params.append("publisher", String(id)))
+    filters.characterIds?.forEach((id) => params.append("characters", String(id)))
+    filters.artistIds?.forEach((id) => params.append("artists", String(id)))
+    filters.authorIds?.forEach((id) => params.append("authors", String(id)))
+    filters.teamIds?.forEach((id) => params.append("team", String(id)))
+
+    const config = {
+        headers: httpUtil.get_headers("GET"),
+    }
+
+    const res = await axios.get(
+        `${window.location.origin}/api/comics/books?${params.toString()}`,
+        config,
+    )
+
+    return {
+        books: res.data.books,
+        hasMore: res.data.has_more,
+        count: res.data.count,
     }
 }
 
@@ -369,6 +422,7 @@ export const addBook = async (
         team: string
     },
     setDwModalOpen: (open: boolean) => void,
+    onSuccess?: () => void,
 ) => {
     const config = {
         headers: httpUtil.get_headers("POSTFILE"),
@@ -396,8 +450,9 @@ export const addBook = async (
             config,
         )
         toast.success("Book Added!")
-        store.dispatch(getAllBooks()) // Refresh Books
+        store.dispatch(getAllBooks()) // Refresh Books (kept for future use of the full-list view)
         setDwModalOpen(false)
+        onSuccess?.()
     } catch (error) {
         console.error(error)
         toast.error(getErrorMessage(error, "Something went wrong..."))
@@ -423,6 +478,7 @@ export const updateBook = async (
         team: string
     },
     setDwModalOpen: (open: boolean) => void,
+    onSuccess?: () => void,
 ) => {
     const config = {
         headers: httpUtil.get_headers("POSTFILE"),
@@ -451,8 +507,9 @@ export const updateBook = async (
             config,
         )
         toast.success("Book Updated!")
-        store.dispatch(getAllBooks()) // Refresh Books
+        store.dispatch(getAllBooks()) // Refresh Books (kept for future use of the full-list view)
         setDwModalOpen(false)
+        onSuccess?.()
     } catch (error) {
         console.error(error)
         toast.error(getErrorMessage(error, "Something went wrong..."))
@@ -463,6 +520,7 @@ export const updateBook = async (
 export const deleteBook = async (
     id: number,
     setDwModalOpen: (open: boolean) => void,
+    onSuccess?: () => void,
 ) => {
     const config = {
         headers: httpUtil.get_headers("DELETE"),
@@ -475,12 +533,14 @@ export const deleteBook = async (
             config,
         )
         toast.success("Book Deleted!")
+        // Kept for future use of the full-list view.
         const books = store.getState().comics.all_books
         store.dispatch({
             type: LOAD_BOOKS_SUCCESS,
             payload: { books: books.filter((b) => b.id !== id) },
         })
         setDwModalOpen(false)
+        onSuccess?.()
     } catch (error) {
         console.error(error)
         toast.error(getErrorMessage(error, "Something went wrong..."))

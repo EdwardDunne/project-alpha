@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from "react"
-import { getAllBooks } from "../actions/comics"
-import { connect } from "react-redux"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { ThemeProvider } from "@mui/material"
 import Button from "@mui/material/Button"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
@@ -20,17 +18,13 @@ import ManageArtistsModalContent from "../modals/dwModalContant/ManageArtistsMod
 import ManageFormatsModalContent from "../modals/dwModalContant/ManageFormatsModalContent"
 import ManageSubCategoriesModalContent from "../modals/dwModalContant/ManageSubCategoriesModalContent"
 import ManageTeamsModalContent from "../modals/dwModalContant/ManageTeamsModalContent"
-import { RootState } from "../reducers"
 import { darkTheme } from "../App"
 import { type Book, Character, Publisher, Artist, Author, Team } from "types"
 import { useDebounce } from "../hooks/useDebounce"
+import { usePaginatedBooks } from "../hooks/usePaginatedBooks"
+import { BooksPageFilters } from "../actions/comics"
 
-type Props = {
-    getAllBooks: () => void
-    allBooks: Book[]
-}
-
-const ComicsAdmin: React.FC<Props> = ({ getAllBooks, allBooks }) => {
+const ComicsAdmin: React.FC = () => {
     const [selectedBook, setSelectedBook] = useState<Book | null>(null)
     const [dwModalOpen, setDwModalOpen] = useState(false)
     const [dwModalType, setDwModalType] = useState("book")
@@ -52,39 +46,36 @@ const ComicsAdmin: React.FC<Props> = ({ getAllBooks, allBooks }) => {
     const debouncedAuthorFilter = useDebounce(authorFilter)
     const debouncedTeamFilter = useDebounce(teamFilter)
 
+    const scrollContainerRef = useRef<HTMLDivElement | null>(null)
+
+    const filters: BooksPageFilters = useMemo(
+        () => ({
+            title: debouncedTitleSearch || undefined,
+            publisherIds: debouncedPublisherFilter.map((p) => p.id),
+            characterIds: debouncedCharacterFilter.map((c) => c.id),
+            artistIds: debouncedArtistFilter.map((a) => a.id),
+            authorIds: debouncedAuthorFilter.map((a) => a.id),
+            teamIds: debouncedTeamFilter.map((t) => t.id),
+        }),
+        [
+            debouncedTitleSearch,
+            debouncedPublisherFilter,
+            debouncedCharacterFilter,
+            debouncedArtistFilter,
+            debouncedAuthorFilter,
+            debouncedTeamFilter,
+        ],
+    )
+
+    const { books, loading, sentinelRef, reload } = usePaginatedBooks(
+        filters,
+        scrollContainerRef,
+    )
+
+    // Jump back to the top of the list whenever the filters produce a new feed.
     useEffect(() => {
-        if (!allBooks.length) getAllBooks()
-    }, [])
-
-    function matchesFilters(book: Book) {
-        const bookPublisher = book["publisher"]
-        const bookCharacters = book["characters"] ?? []
-        const bookArtists = book["artists"] ?? []
-        const bookAuthors = book["authors"] ?? []
-        const bookTeam = book["team"]
-
-        return (
-            (!debouncedPublisherFilter.length ||
-                debouncedPublisherFilter.some((p) => p.id === bookPublisher)) &&
-            (!debouncedCharacterFilter.length ||
-                debouncedCharacterFilter.some((c) =>
-                    bookCharacters.includes(c.id),
-                )) &&
-            (!debouncedArtistFilter.length ||
-                debouncedArtistFilter.some((a) =>
-                    bookArtists.includes(a.id),
-                )) &&
-            (!debouncedAuthorFilter.length ||
-                debouncedAuthorFilter.some((a) =>
-                    bookAuthors.includes(a.id),
-                )) &&
-            (!debouncedTeamFilter.length ||
-                debouncedTeamFilter.some((t) => t.id === bookTeam)) &&
-            (book.title ?? "")
-                .toLowerCase()
-                .includes(debouncedTitleSearch.toLowerCase())
-        )
-    }
+        scrollContainerRef.current?.scrollTo({ top: 0 })
+    }, [filters])
 
     function displayBook(book: Book) {
         const thumbnail_url = book.thumbnail
@@ -144,8 +135,6 @@ const ComicsAdmin: React.FC<Props> = ({ getAllBooks, allBooks }) => {
     }
 
     const manageButtonSx = { margin: "0.2rem", fontSize: "1.4rem" }
-
-    const filteredBooks = allBooks.filter(matchesFilters)
 
     const clearFilters = () => {
         setPublisherFilter([])
@@ -277,10 +266,12 @@ const ComicsAdmin: React.FC<Props> = ({ getAllBooks, allBooks }) => {
                         <AddEditBookModalContent
                             book={selectedBook}
                             setDwModalOpen={setDwModalOpen}
+                            onBookChanged={reload}
                         />
                     ) : dwModalType === "addBook" ? (
                         <AddEditBookModalContent
                             setDwModalOpen={setDwModalOpen}
+                            onBookChanged={reload}
                         />
                     ) : dwModalType === "manageCharacters" ? (
                         <ManageCharactersModalContent
@@ -340,8 +331,22 @@ const ComicsAdmin: React.FC<Props> = ({ getAllBooks, allBooks }) => {
                             Comics Admin
                         </h4>
                     </div>
-                    <div className="flex flex-col items-center overflow-y-scroll h-[calc(100vh-20rem)] px-2">
-                        {filteredBooks.map(displayBook)}
+                    <div
+                        ref={scrollContainerRef}
+                        className="flex flex-col items-center overflow-y-scroll h-[calc(100vh-20rem)] px-2"
+                    >
+                        {books.map(displayBook)}
+                        {!loading && books.length === 0 && (
+                            <div className="text-center text-[1.4rem] text-gray-400 py-8">
+                                No books found.
+                            </div>
+                        )}
+                        <div ref={sentinelRef} className="h-1 w-full" />
+                        {loading && (
+                            <div className="text-center text-[1.4rem] text-gray-400 py-4">
+                                Loading...
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -349,10 +354,4 @@ const ComicsAdmin: React.FC<Props> = ({ getAllBooks, allBooks }) => {
     )
 }
 
-const mapStateToProps = (state: RootState) => ({
-    allBooks: state.comics.all_books,
-})
-
-export default connect(mapStateToProps, {
-    getAllBooks,
-})(ComicsAdmin)
+export default ComicsAdmin
