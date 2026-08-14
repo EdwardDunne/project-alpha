@@ -11,9 +11,12 @@ import { RootState } from "../../reducers"
 import ConfirmDialog from "../../components/ConfirmDialog"
 
 interface Props {
-    setDwModalOpen: (open: boolean) => void
     getAllAuthors: () => void
     allAuthors: Author[]
+    // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
+    // since renaming/adding/deleting an author changes books' derived
+    // author_names and that feed isn't driven by Redux.
+    onDataChanged?: () => void
 }
 
 const inputClass =
@@ -27,9 +30,9 @@ const saveBtnClass =
     "px-3 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold text-[1.4rem] whitespace-nowrap"
 
 const ManageAuthorsModalContent: React.FC<Props> = ({
-    setDwModalOpen,
     getAllAuthors,
     allAuthors,
+    onDataChanged,
 }) => {
     const [formData, setFormData] = useState({ name: "" })
     const [editingId, setEditingId] = useState<number | null>(null)
@@ -57,7 +60,11 @@ const ManageAuthorsModalContent: React.FC<Props> = ({
     }
 
     const saveEditing = (id: number) =>
-        updateAuthor({ id, name: editingName }, cancelEditing)
+        updateAuthor(
+            { id, name: editingName },
+            cancelEditing,
+            onDataChanged,
+        )
 
     const sortedAuthors = [...allAuthors].sort((a, b) =>
         a.name.localeCompare(b.name),
@@ -151,7 +158,9 @@ const ManageAuthorsModalContent: React.FC<Props> = ({
                 <div className="flex justify-end">
                     <button
                         className="px-5 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold"
-                        onClick={() => addAuthor(formData, resetForm)}
+                        onClick={() =>
+                            addAuthor(formData, resetForm, onDataChanged)
+                        }
                     >
                         Add Author
                     </button>
@@ -161,7 +170,7 @@ const ManageAuthorsModalContent: React.FC<Props> = ({
                 <ConfirmDialog
                     message={`Delete author "${deleteTarget.name}"?`}
                     onConfirm={() => {
-                        deleteAuthor(deleteTarget.id)
+                        deleteAuthor(deleteTarget.id, onDataChanged)
                         setDeleteTarget(null)
                     }}
                     onCancel={() => setDeleteTarget(null)}

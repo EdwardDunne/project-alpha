@@ -11,9 +11,12 @@ import { RootState } from "../../reducers"
 import ConfirmDialog from "../../components/ConfirmDialog"
 
 interface Props {
-    setDwModalOpen: (open: boolean) => void
     getAllSubCategories: () => void
     allSubCategories: SubCategory[]
+    // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
+    // since renaming/adding/deleting a sub category changes books' derived
+    // sub_category_name and that feed isn't driven by Redux.
+    onDataChanged?: () => void
 }
 
 const inputClass =
@@ -27,9 +30,9 @@ const saveBtnClass =
     "px-3 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold text-[1.4rem] whitespace-nowrap"
 
 const ManageSubCategoriesModalContent: React.FC<Props> = ({
-    setDwModalOpen,
     getAllSubCategories,
     allSubCategories,
+    onDataChanged,
 }) => {
     const [formData, setFormData] = useState({ name: "" })
     const [editingId, setEditingId] = useState<number | null>(null)
@@ -57,7 +60,11 @@ const ManageSubCategoriesModalContent: React.FC<Props> = ({
     }
 
     const saveEditing = (id: number) =>
-        updateSubCategory({ id, name: editingName }, cancelEditing)
+        updateSubCategory(
+            { id, name: editingName },
+            cancelEditing,
+            onDataChanged,
+        )
 
     const sortedSubCategories = [...allSubCategories].sort((a, b) =>
         a.name.localeCompare(b.name),
@@ -151,7 +158,9 @@ const ManageSubCategoriesModalContent: React.FC<Props> = ({
                 <div className="flex justify-end">
                     <button
                         className="px-5 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold"
-                        onClick={() => addSubCategory(formData, resetForm)}
+                        onClick={() =>
+                            addSubCategory(formData, resetForm, onDataChanged)
+                        }
                     >
                         Add Sub Category
                     </button>
@@ -161,7 +170,7 @@ const ManageSubCategoriesModalContent: React.FC<Props> = ({
                 <ConfirmDialog
                     message={`Delete sub category "${deleteTarget.name}"?`}
                     onConfirm={() => {
-                        deleteSubCategory(deleteTarget.id)
+                        deleteSubCategory(deleteTarget.id, onDataChanged)
                         setDeleteTarget(null)
                     }}
                     onCancel={() => setDeleteTarget(null)}
