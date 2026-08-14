@@ -1,6 +1,8 @@
 import logging
 
 from django.core.cache import cache
+from django.core.paginator import Paginator
+from django.db.models.functions import Lower
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
@@ -11,6 +13,8 @@ from .utils import serializer_error_message
 logger = logging.getLogger(__name__)
 
 CACHE_TTL = 60 * 60 * 24  # 24 hours
+DEFAULT_PAGE_SIZE = 24
+MAX_PAGE_SIZE = 100
 
 
 class BookView(APIView):
@@ -21,21 +25,80 @@ class BookView(APIView):
 
     def get(self, request, format=None):
         try:
-            if not request.user.is_staff:
-                cached = cache.get('all_books')
-                if cached is not None:
-                    return Response({'success': 'true', 'books': cached})
+            # No `page` param: full, unfiltered, unpaginated list - this is
+            # the original/admin behavior (ComicsAdminPage loads everything
+            # once and filters client-side), left untouched and still cached.
+            if 'page' not in request.query_params:
+                if not request.user.is_staff:
+                    cached = cache.get('all_books')
+                    if cached is not None:
+                        return Response({'success': 'true', 'books': cached})
 
-            # select_related/prefetch_related all foriegn keys
-            books = Book.objects.select_related(
+                books = Book.objects.select_related(
+                    'publisher', 'format', 'sub_category', 'team'
+                ).prefetch_related('characters', 'authors', 'artists')
+                all_books = BookSerializer(books, many=True).data
+
+                if not request.user.is_staff:
+                    cache.set('all_books', all_books, CACHE_TTL)
+
+                return Response({'success': 'true', 'books': all_books})
+
+            # `page` present: server-side filtered + paginated feed, used by
+            # the public comics page's infinite scroll. Not cached - too many
+            # filter combinations to make a flat cache key worthwhile.
+            try:
+                page = int(request.query_params['page'])
+                page_size = int(request.query_params.get('page_size', DEFAULT_PAGE_SIZE))
+            except ValueError:
+                return Response({'error': 'page and page_size must be integers.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            page_size = max(1, min(page_size, MAX_PAGE_SIZE))
+
+            queryset = Book.objects.select_related(
                 'publisher', 'format', 'sub_category', 'team'
             ).prefetch_related('characters', 'authors', 'artists')
-            all_books = BookSerializer(books, many=True).data
 
-            if not request.user.is_staff:
-                cache.set('all_books', all_books, CACHE_TTL)
+            title = request.query_params.get('title')
+            if title:
+                queryset = queryset.filter(title__icontains=title)
 
-            return Response({'success': 'true', 'books': all_books})
+            publisher_ids = request.query_params.getlist('publisher')
+            if publisher_ids:
+                queryset = queryset.filter(publisher__id__in=publisher_ids)
+
+            team_ids = request.query_params.getlist('team')
+            if team_ids:
+                queryset = queryset.filter(team__id__in=team_ids)
+
+            character_ids = request.query_params.getlist('characters')
+            if character_ids:
+                queryset = queryset.filter(characters__id__in=character_ids)
+
+            artist_ids = request.query_params.getlist('artists')
+            if artist_ids:
+                queryset = queryset.filter(artists__id__in=artist_ids)
+
+            author_ids = request.query_params.getlist('authors')
+            if author_ids:
+                queryset = queryset.filter(authors__id__in=author_ids)
+
+            # Filtering across a M2M relation can join in duplicate rows
+            # (one per match), so de-dupe whenever one of those was used.
+            if character_ids or artist_ids or author_ids:
+                queryset = queryset.distinct()
+
+            queryset = queryset.order_by(Lower('title'))
+
+            paginator = Paginator(queryset, page_size)
+            page_obj = paginator.get_page(page)
+
+            return Response({
+                'success': 'true',
+                'books': BookSerializer(page_obj.object_list, many=True).data,
+                'has_more': page_obj.has_next(),
+                'count': paginator.count,
+            })
         except Exception as e:
             logger.exception('Something went wrong when retrieving books: %s', e)
             return Response({'error': 'Something went wrong when retrieving books.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

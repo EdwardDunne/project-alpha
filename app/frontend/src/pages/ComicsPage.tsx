@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react"
-import { getAllBooks } from "../actions/comics"
-import { connect } from "react-redux"
+import React, { useEffect, useMemo, useRef, useState } from "react"
+import { BooksPageFilters } from "../actions/comics"
+import { usePaginatedBooks } from "../hooks/usePaginatedBooks"
 import { ThemeProvider } from "@mui/material"
 import { darkTheme } from "../App"
 import PublishersMultiSelector from "../components/PublishersMultiSelector"
@@ -13,16 +13,10 @@ import FloatingMenuButton from "../components/FloatingMenuButton"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import SidePanel from "../components/SidePanel"
 import { Book, Character, Publisher, Artist, Author, Team } from "../types"
-import { RootState } from "../reducers"
 import BookModalContent from "modals/dwModalContant/BookModalContent"
 import { useDebounce } from "../hooks/useDebounce"
 
-interface Props {
-    getAllBooks: () => void
-    allBooks: Book[]
-}
-
-const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
+const ComicsPage: React.FC = () => {
     const [characterFilter, setCharacterFilter] = useState<Character[]>([])
     const [publisherFilter, setPublisherFilter] = useState<Publisher[]>([])
     const [artistFilter, setArtistFilter] = useState<Artist[]>([])
@@ -41,39 +35,36 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
     const debouncedAuthorFilter = useDebounce(authorFilter)
     const debouncedTeamFilter = useDebounce(teamFilter)
 
+    const scrollContainerRef = useRef<HTMLDivElement | null>(null)
+
+    const filters: BooksPageFilters = useMemo(
+        () => ({
+            title: debouncedTitleSearch || undefined,
+            publisherIds: debouncedPublisherFilter.map((p) => p.id),
+            characterIds: debouncedCharacterFilter.map((c) => c.id),
+            artistIds: debouncedArtistFilter.map((a) => a.id),
+            authorIds: debouncedAuthorFilter.map((a) => a.id),
+            teamIds: debouncedTeamFilter.map((t) => t.id),
+        }),
+        [
+            debouncedTitleSearch,
+            debouncedPublisherFilter,
+            debouncedCharacterFilter,
+            debouncedArtistFilter,
+            debouncedAuthorFilter,
+            debouncedTeamFilter,
+        ],
+    )
+
+    const { books, loading, sentinelRef } = usePaginatedBooks(
+        filters,
+        scrollContainerRef,
+    )
+
+    // Jump back to the top of the grid whenever the filters produce a new feed.
     useEffect(() => {
-        if (!allBooks.length) getAllBooks()
-    }, [])
-
-    function matchesFilters(book: Book) {
-        const bookPublisher = book["publisher"]
-        const bookCharacters = book["characters"] ?? []
-        const bookArtists = book["artists"] ?? []
-        const bookAuthors = book["authors"] ?? []
-        const bookTeam = book["team"]
-
-        return (
-            (!debouncedPublisherFilter.length ||
-                debouncedPublisherFilter.some((p) => p.id === bookPublisher)) &&
-            (!debouncedCharacterFilter.length ||
-                debouncedCharacterFilter.some((c) =>
-                    bookCharacters.includes(c.id),
-                )) &&
-            (!debouncedArtistFilter.length ||
-                debouncedArtistFilter.some((a) =>
-                    bookArtists.includes(a.id),
-                )) &&
-            (!debouncedAuthorFilter.length ||
-                debouncedAuthorFilter.some((a) =>
-                    bookAuthors.includes(a.id),
-                )) &&
-            (!debouncedTeamFilter.length ||
-                debouncedTeamFilter.some((t) => t.id === bookTeam)) &&
-            (book.title ?? "")
-                .toLowerCase()
-                .includes(debouncedTitleSearch.toLowerCase())
-        )
-    }
+        scrollContainerRef.current?.scrollTo({ top: 0 })
+    }, [filters])
 
     function renderBook(book: Book) {
         return (
@@ -195,10 +186,24 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
                     <h4 className="text-center mb-4 font-semibold text-[3rem]">
                         Comics
                     </h4>
-                    <div className="w-full px-4 overflow-y-scroll h-full">
+                    <div
+                        ref={scrollContainerRef}
+                        className="w-full px-4 overflow-y-scroll h-full"
+                    >
                         <div className="flex justify-center items-center flex-row flex-wrap">
-                            {allBooks.filter(matchesFilters).map(renderBook)}
+                            {books.map(renderBook)}
                         </div>
+                        {!loading && books.length === 0 && (
+                            <div className="text-center text-[1.4rem] text-gray-400 py-8">
+                                No books found.
+                            </div>
+                        )}
+                        <div ref={sentinelRef} className="h-1" />
+                        {loading && (
+                            <div className="text-center text-[1.4rem] text-gray-400 py-4">
+                                Loading...
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -206,8 +211,4 @@ const ComicsPage: React.FC<Props> = ({ getAllBooks, allBooks }) => {
     )
 }
 
-const mapStateToProps = (state: RootState) => ({
-    allBooks: state.comics.all_books,
-})
-
-export default connect(mapStateToProps, { getAllBooks })(ComicsPage)
+export default ComicsPage

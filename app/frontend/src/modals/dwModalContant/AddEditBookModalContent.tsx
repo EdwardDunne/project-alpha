@@ -33,6 +33,10 @@ interface Props {
     book?: Book
     allFormats: Format[]
     getAllFormats: () => void
+    // Called after a successful add/update/delete, in addition to closing
+    // the modal - lets a paginated feed (e.g. ComicsAdminPage) refresh
+    // itself, since it's no longer driven by the Redux `all_books` list.
+    onBookChanged?: () => void
 }
 
 interface AddEditBookFormData {
@@ -60,6 +64,7 @@ const AddEditBookModalContent: React.FC<Props> = ({
     book,
     allFormats,
     getAllFormats,
+    onBookChanged,
 }) => {
     const isEditMode = Boolean(book?.id)
 
@@ -138,9 +143,13 @@ const AddEditBookModalContent: React.FC<Props> = ({
 
     const submit = () => {
         if (isEditMode) {
-            updateBook({ ...formData, id: book!.id }, setDwModalOpen)
+            updateBook(
+                { ...formData, id: book!.id },
+                setDwModalOpen,
+                onBookChanged,
+            )
         } else {
-            addBook(formData, setDwModalOpen)
+            addBook(formData, setDwModalOpen, onBookChanged)
         }
     }
 
@@ -301,7 +310,7 @@ const AddEditBookModalContent: React.FC<Props> = ({
                 <ConfirmDialog
                     message={`Delete book "${book?.title}"?`}
                     onConfirm={() => {
-                        deleteBook(book!.id, setDwModalOpen)
+                        deleteBook(book!.id, setDwModalOpen, onBookChanged)
                         setShowDeleteConfirm(false)
                     }}
                     onCancel={() => setShowDeleteConfirm(false)}
