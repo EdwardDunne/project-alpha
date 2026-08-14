@@ -16,7 +16,7 @@ interface Props {
     allCharacters: Character[]
     // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
     // since renaming/adding/deleting a character changes books' derived
-    // character_names and that feed isn't driven by Redux.
+    // characters_data and that feed isn't driven by Redux.
     onDataChanged?: () => void
 }
 
@@ -80,10 +80,8 @@ const ManageCharactersModalContent: React.FC<Props> = ({
             onDataChanged,
         )
 
-    const sortedCharacters = [...allCharacters].sort((a, b) =>
-        a.name.localeCompare(b.name),
-    )
-    const filteredCharacters = sortedCharacters.filter((character) =>
+    // allCharacters already arrives sorted server-side
+    const filteredCharacters = allCharacters.filter((character) =>
         character.name.toLowerCase().includes(search.toLowerCase()),
     )
 

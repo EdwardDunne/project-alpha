@@ -22,9 +22,9 @@ const SubCategorySelector: React.FC<Props> = ({
     initialSubCategoryId,
     extraClasses,
 }) => {
-    const [subCategoryOptions, setSubCategoryOptions] = useState<
-        SubCategory[]
-    >([])
+    const [subCategoryOptions, setSubCategoryOptions] = useState<SubCategory[]>(
+        [],
+    )
     const [selectedSubCategory, setSelectedSubCategory] =
         useState<SubCategory | null>(null)
 
@@ -51,11 +51,8 @@ const SubCategorySelector: React.FC<Props> = ({
     }, [initialSubCategoryId, subCategoryOptions])
 
     const _setSubCategoryOptions = (subCategories: SubCategory[]) => {
-        setSubCategoryOptions(
-            [...subCategories].sort((a, b) =>
-                a.name > b.name ? 1 : b.name > a.name ? -1 : 0,
-            ),
-        )
+        // Already sorted server-side
+        setSubCategoryOptions(subCategories)
     }
 
     return (

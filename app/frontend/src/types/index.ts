@@ -2,28 +2,27 @@ export type Book = {
     id: number
     title?: string
     authors?: number[]
-    author_names?: string[]
+    authors_data?: Author[]
     artists?: number[]
-    artist_names?: string[]
+    artists_data?: Artist[]
     description?: string
     thumbnail?: string
     page_count?: number
     volume_number?: number
     publisher?: number
-    publisher_name?: string
+    publisher_data?: Publisher
     characters?: number[]
-    character_names?: string[]
+    characters_data?: Character[]
     team?: number
-    team_name?: string
+    team_data?: Team
     thumbnail_url?: string
     marvel_id?: number
     price?: number
     isbn?: string
     format?: number
-    format_name?: string
-    format_abbreviation?: string
+    format_data?: Format
     sub_category?: number
-    sub_category_name?: string
+    sub_category_data?: SubCategory
 }
 
 export type Character = {

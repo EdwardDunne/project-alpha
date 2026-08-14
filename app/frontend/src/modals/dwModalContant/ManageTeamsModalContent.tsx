@@ -16,7 +16,7 @@ interface Props {
     allTeams: Team[]
     // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
     // since renaming/adding/deleting a team changes books' derived
-    // team_name and that feed isn't driven by Redux.
+    // team_data and that feed isn't driven by Redux.
     onDataChanged?: () => void
 }
 
@@ -80,10 +80,8 @@ const ManageTeamsModalContent: React.FC<Props> = ({
             onDataChanged,
         )
 
-    const sortedTeams = [...allTeams].sort((a, b) =>
-        a.name.localeCompare(b.name),
-    )
-    const filteredTeams = sortedTeams.filter((team) =>
+    // allTeams already arrives sorted server-side
+    const filteredTeams = allTeams.filter((team) =>
         team.name.toLowerCase().includes(search.toLowerCase()),
     )
 

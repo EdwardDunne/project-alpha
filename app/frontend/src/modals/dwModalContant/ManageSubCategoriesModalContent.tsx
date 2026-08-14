@@ -15,7 +15,7 @@ interface Props {
     allSubCategories: SubCategory[]
     // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
     // since renaming/adding/deleting a sub category changes books' derived
-    // sub_category_name and that feed isn't driven by Redux.
+    // sub_category_data and that feed isn't driven by Redux.
     onDataChanged?: () => void
 }
 
@@ -66,10 +66,8 @@ const ManageSubCategoriesModalContent: React.FC<Props> = ({
             onDataChanged,
         )
 
-    const sortedSubCategories = [...allSubCategories].sort((a, b) =>
-        a.name.localeCompare(b.name),
-    )
-    const filteredSubCategories = sortedSubCategories.filter((subCategory) =>
+    // allSubCategories already arrives sorted server-side
+    const filteredSubCategories = allSubCategories.filter((subCategory) =>
         subCategory.name.toLowerCase().includes(search.toLowerCase()),
     )
 

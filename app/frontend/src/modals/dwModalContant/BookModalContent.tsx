@@ -27,23 +27,28 @@ const BookModalContent: React.FC<Props> = ({ book }) => {
                 </div>
                 <div className="flex flex-col gap-1.5 text-[1.4rem] w-full">
                     <span>
-                        <b>Publisher</b>: {book.publisher_name}
+                        <b>Publisher</b>: {book.publisher_data?.name}
                     </span>
                     <span>
-                        <b>Characters</b>: {book.character_names?.join(", ")}
+                        <b>Characters</b>:{" "}
+                        {book.characters_data
+                            ?.map((c) => c.name)
+                            .join(", ")}
                     </span>
                     <span>
-                        <b>Authors</b>: {book.author_names?.join(", ")}
+                        <b>Authors</b>:{" "}
+                        {book.authors_data?.map((a) => a.name).join(", ")}
                     </span>
                     <span>
-                        <b>Artists</b>: {book.artist_names?.join(", ")}
+                        <b>Artists</b>:{" "}
+                        {book.artists_data?.map((a) => a.name).join(", ")}
                     </span>
                     <span>
-                        <b>Format</b>: {book.format_name}
+                        <b>Format</b>: {book.format_data?.name}
                     </span>
-                    {book.team_name && (
+                    {book.team_data && (
                         <span>
-                            <b>Team</b>: {book.team_name}
+                            <b>Team</b>: {book.team_data.name}
                         </span>
                     )}
                     <span className="max-h-28 overflow-y-auto">

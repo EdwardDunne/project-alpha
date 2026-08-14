@@ -104,26 +104,35 @@ const ComicsAdmin: React.FC = () => {
                     <h5 className="font-semibold mb-2">{book.title}</h5>
                     <div className="flex flex-col gap-1 text-[1.4rem] text-gray-600">
                         <span>
-                            <b>Publisher</b>: {book.publisher_name}
+                            <b>Publisher</b>: {book.publisher_data?.name}
                         </span>
                         <span>
                             <b>Characters</b>:{" "}
-                            {book.character_names?.join(", ")}
+                            {book.characters_data
+                                ?.map((c) => c.name)
+                                .join(", ")}
                         </span>
                         <span>
-                            <b>Authors</b>: {book.author_names?.join(", ")}
+                            <b>Authors</b>:{" "}
+                            {book.authors_data
+                                ?.map((a) => a.name)
+                                .join(", ")}
                         </span>
                         <span>
-                            <b>Artists</b>: {book.artist_names?.join(", ")}
+                            <b>Artists</b>:{" "}
+                            {book.artists_data
+                                ?.map((a) => a.name)
+                                .join(", ")}
                         </span>
                         <span>
-                            <b>Format</b>: {book.format_name}
+                            <b>Format</b>: {book.format_data?.name}
                         </span>
                         <span>
-                            <b>Sub Category</b>: {book.sub_category_name}
+                            <b>Sub Category</b>:{" "}
+                            {book.sub_category_data?.name}
                         </span>
                         <span>
-                            <b>Team</b>: {book.team_name}
+                            <b>Team</b>: {book.team_data?.name}
                         </span>
                         <span>
                             <b>Page Count</b>: {book.page_count}

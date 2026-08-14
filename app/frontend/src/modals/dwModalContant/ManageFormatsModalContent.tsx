@@ -15,7 +15,7 @@ interface Props {
     allFormats: Format[]
     // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
     // since renaming/adding/deleting a format changes books' derived
-    // format_name/format_abbreviation and that feed isn't driven by Redux.
+    // format_data and that feed isn't driven by Redux.
     onDataChanged?: () => void
 }
 
@@ -69,10 +69,8 @@ const ManageFormatsModalContent: React.FC<Props> = ({
             onDataChanged,
         )
 
-    const sortedFormats = [...allFormats].sort((a, b) =>
-        a.name.localeCompare(b.name),
-    )
-    const filteredFormats = sortedFormats.filter(
+    // allFormats already arrives sorted server-side
+    const filteredFormats = allFormats.filter(
         (format) =>
             format.name.toLowerCase().includes(search.toLowerCase()) ||
             format.abbreviation.toLowerCase().includes(search.toLowerCase()),
