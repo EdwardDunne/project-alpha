@@ -12,9 +12,12 @@ import { RootState } from "../../reducers"
 import ConfirmDialog from "../../components/ConfirmDialog"
 
 interface Props {
-    setDwModalOpen: (open: boolean) => void
     getAllTeams: () => void
     allTeams: Team[]
+    // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
+    // since renaming/adding/deleting a team changes books' derived
+    // team_name and that feed isn't driven by Redux.
+    onDataChanged?: () => void
 }
 
 const inputClass =
@@ -28,9 +31,9 @@ const saveBtnClass =
     "px-3 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold text-[1.4rem] whitespace-nowrap"
 
 const ManageTeamsModalContent: React.FC<Props> = ({
-    setDwModalOpen,
     getAllTeams,
     allTeams,
+    onDataChanged,
 }) => {
     const [formData, setFormData] = useState<{
         name: string
@@ -74,6 +77,7 @@ const ManageTeamsModalContent: React.FC<Props> = ({
         updateTeam(
             { id, name: editingName, characters: editingCharacters },
             cancelEditing,
+            onDataChanged,
         )
 
     const sortedTeams = [...allTeams].sort((a, b) =>
@@ -188,7 +192,9 @@ const ManageTeamsModalContent: React.FC<Props> = ({
                 <div className="flex justify-end">
                     <button
                         className="px-5 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold"
-                        onClick={() => addTeam(formData, resetForm)}
+                        onClick={() =>
+                            addTeam(formData, resetForm, onDataChanged)
+                        }
                     >
                         Add Team
                     </button>
@@ -198,7 +204,7 @@ const ManageTeamsModalContent: React.FC<Props> = ({
                 <ConfirmDialog
                     message={`Delete team "${deleteTarget.name}"?`}
                     onConfirm={() => {
-                        deleteTeam(deleteTarget.id)
+                        deleteTeam(deleteTarget.id, onDataChanged)
                         setDeleteTarget(null)
                     }}
                     onCancel={() => setDeleteTarget(null)}

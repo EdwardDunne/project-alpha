@@ -153,7 +153,15 @@ function createComicData<
     TBody extends Record<string, unknown>,
     TItem extends { id: number },
 >(cfg: ComicEntityConfig<TItem>) {
-    return async (body: TBody, setDwModalOpen: (open: boolean) => void) => {
+    return async (
+        body: TBody,
+        setDwModalOpen: (open: boolean) => void,
+        // Renaming/adding/deleting an entity changes books' derived names
+        // (e.g. publisher_name), but any paginated book feed (like
+        // ComicsAdminPage's) fetches from the server and isn't driven by
+        // Redux, so it needs its own explicit nudge to refetch.
+        onDataChanged?: () => void,
+    ) => {
         const config = {
             headers: httpUtil.get_headers("POST"),
         }
@@ -172,6 +180,7 @@ function createComicData<
             })
             store.dispatch(getAllBooks()) // Refresh books' derived names
             setDwModalOpen(false)
+            onDataChanged?.()
         } catch (error) {
             console.error(error)
             toast.error(getErrorMessage(error, "Something went wrong..."))
@@ -183,7 +192,11 @@ function updateComicData<
     TBody extends { id: number },
     TItem extends { id: number },
 >(cfg: ComicEntityConfig<TItem>) {
-    return async (body: TBody, onSuccess?: () => void) => {
+    return async (
+        body: TBody,
+        onSuccess?: () => void,
+        onDataChanged?: () => void,
+    ) => {
         const config = {
             headers: httpUtil.get_headers("PUT"),
         }
@@ -207,6 +220,7 @@ function updateComicData<
             })
             store.dispatch(getAllBooks()) // Refresh books' derived names
             onSuccess?.()
+            onDataChanged?.()
         } catch (error) {
             console.error(error)
             toast.error(getErrorMessage(error, "Something went wrong..."))
@@ -217,7 +231,7 @@ function updateComicData<
 function deleteComicData<TItem extends { id: number }>(
     cfg: ComicEntityConfig<TItem>,
 ) {
-    return async (id: number) => {
+    return async (id: number, onDataChanged?: () => void) => {
         const config = {
             headers: httpUtil.get_headers("DELETE"),
             data: { id },
@@ -237,6 +251,7 @@ function deleteComicData<TItem extends { id: number }>(
                 payload: cfg.buildPayload(remainingList),
             })
             store.dispatch(getAllBooks()) // Refresh books' derived names
+            onDataChanged?.()
         } catch (error) {
             console.error(error)
             toast.error(getErrorMessage(error, "Something went wrong..."))

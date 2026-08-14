@@ -11,9 +11,12 @@ import { RootState } from "../../reducers"
 import ConfirmDialog from "../../components/ConfirmDialog"
 
 interface Props {
-    setDwModalOpen: (open: boolean) => void
     getAllPublishers: () => void
     allPublishers: Publisher[]
+    // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
+    // since renaming/adding/deleting a publisher changes books' derived
+    // publisher_name and that feed isn't driven by Redux.
+    onDataChanged?: () => void
 }
 
 const inputClass =
@@ -27,9 +30,9 @@ const saveBtnClass =
     "px-3 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold text-[1.4rem] whitespace-nowrap"
 
 const ManagePublishersModalContent: React.FC<Props> = ({
-    setDwModalOpen,
     getAllPublishers,
     allPublishers,
+    onDataChanged,
 }) => {
     const [formData, setFormData] = useState({ name: "" })
     const [editingId, setEditingId] = useState<number | null>(null)
@@ -57,7 +60,11 @@ const ManagePublishersModalContent: React.FC<Props> = ({
     }
 
     const saveEditing = (id: number) =>
-        updatePublisher({ id, name: editingName }, cancelEditing)
+        updatePublisher(
+            { id, name: editingName },
+            cancelEditing,
+            onDataChanged,
+        )
 
     const sortedPublishers = [...allPublishers].sort((a, b) =>
         a.name.localeCompare(b.name),
@@ -135,7 +142,9 @@ const ManagePublishersModalContent: React.FC<Props> = ({
                 <div className="flex justify-end">
                     <button
                         className="px-5 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold"
-                        onClick={() => addPublisher(formData, resetForm)}
+                        onClick={() =>
+                            addPublisher(formData, resetForm, onDataChanged)
+                        }
                     >
                         Add Publisher
                     </button>
@@ -145,7 +154,7 @@ const ManagePublishersModalContent: React.FC<Props> = ({
                 <ConfirmDialog
                     message={`Delete publisher "${deleteTarget.name}"?`}
                     onConfirm={() => {
-                        deletePublisher(deleteTarget.id)
+                        deletePublisher(deleteTarget.id, onDataChanged)
                         setDeleteTarget(null)
                     }}
                     onCancel={() => setDeleteTarget(null)}

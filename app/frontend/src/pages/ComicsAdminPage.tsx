@@ -275,32 +275,24 @@ const ComicsAdmin: React.FC = () => {
                         />
                     ) : dwModalType === "manageCharacters" ? (
                         <ManageCharactersModalContent
-                            setDwModalOpen={setDwModalOpen}
+                            onDataChanged={reload}
                         />
                     ) : dwModalType === "managePublishers" ? (
                         <ManagePublishersModalContent
-                            setDwModalOpen={setDwModalOpen}
+                            onDataChanged={reload}
                         />
                     ) : dwModalType === "manageAuthors" ? (
-                        <ManageAuthorsModalContent
-                            setDwModalOpen={setDwModalOpen}
-                        />
+                        <ManageAuthorsModalContent onDataChanged={reload} />
                     ) : dwModalType === "manageArtists" ? (
-                        <ManageArtistsModalContent
-                            setDwModalOpen={setDwModalOpen}
-                        />
+                        <ManageArtistsModalContent onDataChanged={reload} />
                     ) : dwModalType === "manageFormats" ? (
-                        <ManageFormatsModalContent
-                            setDwModalOpen={setDwModalOpen}
-                        />
+                        <ManageFormatsModalContent onDataChanged={reload} />
                     ) : dwModalType === "manageSubCategories" ? (
                         <ManageSubCategoriesModalContent
-                            setDwModalOpen={setDwModalOpen}
+                            onDataChanged={reload}
                         />
                     ) : dwModalType === "manageTeams" ? (
-                        <ManageTeamsModalContent
-                            setDwModalOpen={setDwModalOpen}
-                        />
+                        <ManageTeamsModalContent onDataChanged={reload} />
                     ) : (
                         ""
                     )}

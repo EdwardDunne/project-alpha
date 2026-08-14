@@ -12,9 +12,12 @@ import { RootState } from "../../reducers"
 import ConfirmDialog from "../../components/ConfirmDialog"
 
 interface Props {
-    setDwModalOpen: (open: boolean) => void
     getAllCharacters: () => void
     allCharacters: Character[]
+    // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
+    // since renaming/adding/deleting a character changes books' derived
+    // character_names and that feed isn't driven by Redux.
+    onDataChanged?: () => void
 }
 
 const inputClass =
@@ -28,9 +31,9 @@ const saveBtnClass =
     "px-3 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold text-[1.4rem] whitespace-nowrap"
 
 const ManageCharactersModalContent: React.FC<Props> = ({
-    setDwModalOpen,
     getAllCharacters,
     allCharacters,
+    onDataChanged,
 }) => {
     const [formData, setFormData] = useState({ name: "", publisher: "" })
     const [editingId, setEditingId] = useState<number | null>(null)
@@ -74,6 +77,7 @@ const ManageCharactersModalContent: React.FC<Props> = ({
         updateCharacter(
             { id, name: editingName, publisher: editingPublisher },
             cancelEditing,
+            onDataChanged,
         )
 
     const sortedCharacters = [...allCharacters].sort((a, b) =>
@@ -182,7 +186,9 @@ const ManageCharactersModalContent: React.FC<Props> = ({
                 <div className="flex justify-end">
                     <button
                         className="px-5 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold"
-                        onClick={() => addCharacter(formData, resetForm)}
+                        onClick={() =>
+                            addCharacter(formData, resetForm, onDataChanged)
+                        }
                     >
                         Add Character
                     </button>
@@ -192,7 +198,7 @@ const ManageCharactersModalContent: React.FC<Props> = ({
                 <ConfirmDialog
                     message={`Delete character "${deleteTarget.name}"?`}
                     onConfirm={() => {
-                        deleteCharacter(deleteTarget.id)
+                        deleteCharacter(deleteTarget.id, onDataChanged)
                         setDeleteTarget(null)
                     }}
                     onCancel={() => setDeleteTarget(null)}
