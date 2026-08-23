@@ -38,9 +38,18 @@ export function usePaginatedBooks(
     const [reloadToken, setReloadToken] = useState(0)
 
     const sentinelRef = useRef<HTMLDivElement | null>(null)
-    // Guards against a stale request overwriting the results of a
-    // newer one
-    const requestIdRef = useRef(0)
+    // A "generation" of the feed - only a real reset (filter change, reload)
+    // starts a new one. loadNextPage never bumps this; it only ever reads
+    // the generation it started under and checks that against the current
+    // one when its fetch resolves. That way a reset always wins by
+    // definition, rather than "whichever request's completion happened to
+    // see the higher shared counter" - the previous shared-counter version
+    // of this guard let a stale loadNextPage call (e.g. one fired from a
+    // closure that hadn't yet seen loading flip true, more likely on a slow
+    // mobile CPU) bump the counter *past* a legitimate page-1 reset's own
+    // id, causing the reset's correct results to be discarded as "stale"
+    // and only the stray next-page fetch's results to end up on screen.
+    const generationRef = useRef(0)
     // Skip fetch on initial render not on filter changes.
     const skipNextFetchRef = useRef(Boolean(freshCache))
 
@@ -52,13 +61,13 @@ export function usePaginatedBooks(
             return
         }
 
-        const requestId = ++requestIdRef.current
+        const generation = ++generationRef.current
         setLoading(true)
         setHasMore(true)
 
         fetchBooksPage(1, filters)
             .then((result) => {
-                if (requestId !== requestIdRef.current) return
+                if (generation !== generationRef.current) return
                 setBooks(result.books)
                 setPage(1)
                 setHasMore(result.hasMore)
@@ -74,7 +83,7 @@ export function usePaginatedBooks(
                 toast.error(getErrorMessage(error, "Error getting books..."))
             })
             .finally(() => {
-                if (requestId === requestIdRef.current) setLoading(false)
+                if (generation === generationRef.current) setLoading(false)
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [signature, reloadToken])
@@ -83,12 +92,12 @@ export function usePaginatedBooks(
         if (loading || !hasMore) return
 
         const nextPage = page + 1
-        const requestId = ++requestIdRef.current
+        const generation = generationRef.current
         setLoading(true)
 
         fetchBooksPage(nextPage, filters)
             .then((result) => {
-                if (requestId !== requestIdRef.current) return
+                if (generation !== generationRef.current) return
                 setBooks((prev) => {
                     const combined = [...prev, ...result.books]
                     feedCache.set(cacheKey, {
@@ -107,7 +116,7 @@ export function usePaginatedBooks(
                 toast.error(getErrorMessage(error, "Error getting books..."))
             })
             .finally(() => {
-                if (requestId === requestIdRef.current) setLoading(false)
+                if (generation === generationRef.current) setLoading(false)
             })
     }, [loading, hasMore, page, filters, cacheKey, signature])
 
