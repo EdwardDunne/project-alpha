@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { BooksPageFilters } from "../actions/comics"
 import { usePaginatedBooks } from "../hooks/usePaginatedBooks"
+import { usePersistedState } from "../hooks/usePersistedState"
 import { ThemeProvider } from "@mui/material"
 import { darkTheme } from "../App"
 import PublishersMultiSelector from "../components/PublishersMultiSelector"
@@ -17,15 +18,31 @@ import BookModalContent from "modals/dwModalContant/BookModalContent"
 import { useDebounce } from "../hooks/useDebounce"
 
 const ComicsPage: React.FC = () => {
-    const [characterFilter, setCharacterFilter] = useState<Character[]>([])
-    const [publisherFilter, setPublisherFilter] = useState<Publisher[]>([])
-    const [artistFilter, setArtistFilter] = useState<Artist[]>([])
-    const [authorFilter, setAuthorFilter] = useState<Author[]>([])
-    const [teamFilter, setTeamFilter] = useState<Team[]>([])
+    const [characterFilter, setCharacterFilter] = usePersistedState<
+        Character[]
+    >("comics-public:characterFilter", [])
+    const [publisherFilter, setPublisherFilter] = usePersistedState<
+        Publisher[]
+    >("comics-public:publisherFilter", [])
+    const [artistFilter, setArtistFilter] = usePersistedState<Artist[]>(
+        "comics-public:artistFilter",
+        [],
+    )
+    const [authorFilter, setAuthorFilter] = usePersistedState<Author[]>(
+        "comics-public:authorFilter",
+        [],
+    )
+    const [teamFilter, setTeamFilter] = usePersistedState<Team[]>(
+        "comics-public:teamFilter",
+        [],
+    )
+    const [titleSearch, setTitleSearch] = usePersistedState(
+        "comics-public:titleSearch",
+        "",
+    )
     const [dwModalOpen, setDwModalOpen] = useState(false)
     const [selectedBook, setSelectedBook] = useState<Book | null>(null)
     const [filterOpen, setFilterOpen] = useState(false)
-    const [titleSearch, setTitleSearch] = useState("")
     const [filterResetKey, setFilterResetKey] = useState(0)
 
     const debouncedTitleSearch = useDebounce(titleSearch)
@@ -57,6 +74,7 @@ const ComicsPage: React.FC = () => {
     )
 
     const { books, loading, sentinelRef } = usePaginatedBooks(
+        "comics-public",
         filters,
         scrollContainerRef,
     )
@@ -117,22 +135,27 @@ const ComicsPage: React.FC = () => {
                     <PublishersMultiSelector
                         key={`publishers-${filterResetKey}`}
                         setPublishers={setPublisherFilter}
+                        initialPublisherIds={publisherFilter.map((p) => p.id)}
                     />
                     <CharactersMultiSelector
                         key={`characters-${filterResetKey}`}
                         setCharacters={setCharacterFilter}
+                        initialCharacterIds={characterFilter.map((c) => c.id)}
                     />
                     <TeamsMultiSelector
                         key={`teams-${filterResetKey}`}
                         setTeams={setTeamFilter}
+                        initialTeamIds={teamFilter.map((t) => t.id)}
                     />
                     <AuthorsSelector
                         key={`authors-${filterResetKey}`}
                         setAuthors={setAuthorFilter}
+                        initialAuthorIds={authorFilter.map((a) => a.id)}
                     />
                     <ArtistsSelector
                         key={`artists-${filterResetKey}`}
                         setArtists={setArtistFilter}
+                        initialArtistIds={artistFilter.map((a) => a.id)}
                     />
                 </ul>
                 <button
@@ -198,7 +221,10 @@ const ComicsPage: React.FC = () => {
                                 No books found.
                             </div>
                         )}
-                        <div ref={sentinelRef} className="h-1" />
+                        <div
+                            ref={sentinelRef}
+                            className="h-1"
+                        />
                         {loading && (
                             <div className="text-center text-[1.4rem] text-gray-400 py-4">
                                 Loading...

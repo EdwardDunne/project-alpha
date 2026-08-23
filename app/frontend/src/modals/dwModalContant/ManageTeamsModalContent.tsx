@@ -14,9 +14,7 @@ import ConfirmDialog from "../../components/ConfirmDialog"
 interface Props {
     getAllTeams: () => void
     allTeams: Team[]
-    // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
-    // since renaming/adding/deleting a team changes books' derived
-    // team_data and that feed isn't driven by Redux.
+    // Refresh books feed on change
     onDataChanged?: () => void
 }
 
@@ -146,7 +144,7 @@ const ManageTeamsModalContent: React.FC<Props> = ({
                             <div className="flex items-center gap-2">
                                 <span className="flex-1 text-[1.4rem]">
                                     {team.name}
-                                    {/* For now I don't what the characters shown
+                                    {/* For now I don't want the characters shown
                                         next to the team name in this modal */}
                                     {/* {team.character_names?.length
                                         ? ` (${team.character_names.join(", ")})`

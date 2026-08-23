@@ -33,9 +33,7 @@ interface Props {
     book?: Book
     allFormats: Format[]
     getAllFormats: () => void
-    // Called after a successful add/update/delete, in addition to closing
-    // the modal - lets a paginated feed (e.g. ComicsAdminPage) refresh
-    // itself, since it's no longer driven by the Redux `all_books` list.
+    // Called after a successful add/update/delete to refresh books.
     onBookChanged?: () => void
 }
 

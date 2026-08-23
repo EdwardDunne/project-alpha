@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { update_profile } from '../actions/profile';
+import { updateProfile } from '../actions/profile';
 import { deleteAccount } from '../actions/auth';
 import { RootState } from '../reducers';
 import ConfirmDialog from '../components/ConfirmDialog';
 
 interface Props {
     deleteAccount: () => void;
-    update_profile: (first_name: string, last_name: string) => void;
+    updateProfile: (first_name: string, last_name: string) => void;
     first_name_global: string;
     last_name_global: string;
     email_global: string;
@@ -19,7 +19,7 @@ const labelClass = 'block text-[1.4rem] font-medium text-gray-700 mb-1'
 
 const DashboardPage: React.FC<Props> = ({
     deleteAccount,
-    update_profile,
+    updateProfile,
     first_name_global,
     last_name_global,
     email_global
@@ -39,7 +39,7 @@ const DashboardPage: React.FC<Props> = ({
 
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        update_profile(formData.first_name, formData.last_name);
+        updateProfile(formData.first_name, formData.last_name);
     }
 
     return (
@@ -122,5 +122,5 @@ const mapStateToProps = (state: RootState) => ({
 
 export default connect(mapStateToProps, {
     deleteAccount,
-    update_profile
+    updateProfile
 })(DashboardPage)

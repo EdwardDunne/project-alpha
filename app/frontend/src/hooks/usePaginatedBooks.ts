@@ -5,30 +5,53 @@ import { toast } from "react-toastify"
 import { Book } from "../types"
 
 // Drives a server-paginated, filtered book feed with infinite scroll.
-// Shared by ComicsPage (public grid) and ComicsAdminPage (admin list) -
-// both need the exact same fetch/paginate/de-dupe-stale-requests state
-// machine, they only differ in how they render each book and lay out the
-// filter panel.
+
+type CachedFeed = {
+    books: Book[]
+    page: number
+    hasMore: boolean
+    filtersSignature: string
+}
+
+// Stateful map outside of react for persisting comics and comicsAdmin page states
+const feedCache = new Map<string, CachedFeed>()
+
+function signatureFor(filters: BooksPageFilters): string {
+    return JSON.stringify(filters)
+}
+
 export function usePaginatedBooks(
+    cacheKey: string,
     filters: BooksPageFilters,
     scrollContainerRef: React.RefObject<HTMLDivElement | null>,
 ) {
-    const [books, setBooks] = useState<Book[]>([])
-    const [page, setPage] = useState(1)
-    const [hasMore, setHasMore] = useState(true)
+    const signature = signatureFor(filters)
+    const cached = feedCache.get(cacheKey)
+    // Only fetch new data if the filters have actually changed.
+    const freshCache =
+        cached?.filtersSignature === signature ? cached : undefined
+
+    const [books, setBooks] = useState<Book[]>(freshCache?.books ?? [])
+    const [page, setPage] = useState(freshCache?.page ?? 1)
+    const [hasMore, setHasMore] = useState(freshCache?.hasMore ?? true)
     const [loading, setLoading] = useState(false)
     const [reloadToken, setReloadToken] = useState(0)
 
     const sentinelRef = useRef<HTMLDivElement | null>(null)
-    // Guards against a slow, now-stale request overwriting the results of a
-    // newer one (e.g. the user changes filters again before the previous
-    // fetch has come back).
+    // Guards against a stale request overwriting the results of a
+    // newer one
     const requestIdRef = useRef(0)
+    // Skip fetch on initial render not on filter changes.
+    const skipNextFetchRef = useRef(Boolean(freshCache))
 
-    // Reset to page 1 whenever the (debounced) filters change, or a caller
-    // explicitly asks for a reload (e.g. after adding/editing/deleting a
-    // book).
+    // Reset to page 1 whenever the filters change, or after adding/editing/deleting
+    // a book
     useEffect(() => {
+        if (skipNextFetchRef.current) {
+            skipNextFetchRef.current = false
+            return
+        }
+
         const requestId = ++requestIdRef.current
         setLoading(true)
         setHasMore(true)
@@ -39,6 +62,12 @@ export function usePaginatedBooks(
                 setBooks(result.books)
                 setPage(1)
                 setHasMore(result.hasMore)
+                feedCache.set(cacheKey, {
+                    books: result.books,
+                    page: 1,
+                    hasMore: result.hasMore,
+                    filtersSignature: signature,
+                })
             })
             .catch((error) => {
                 console.error(error)
@@ -48,7 +77,7 @@ export function usePaginatedBooks(
                 if (requestId === requestIdRef.current) setLoading(false)
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filters, reloadToken])
+    }, [signature, reloadToken])
 
     const loadNextPage = useCallback(() => {
         if (loading || !hasMore) return
@@ -60,7 +89,16 @@ export function usePaginatedBooks(
         fetchBooksPage(nextPage, filters)
             .then((result) => {
                 if (requestId !== requestIdRef.current) return
-                setBooks((prev) => [...prev, ...result.books])
+                setBooks((prev) => {
+                    const combined = [...prev, ...result.books]
+                    feedCache.set(cacheKey, {
+                        books: combined,
+                        page: nextPage,
+                        hasMore: result.hasMore,
+                        filtersSignature: signature,
+                    })
+                    return combined
+                })
                 setPage(nextPage)
                 setHasMore(result.hasMore)
             })
@@ -71,7 +109,7 @@ export function usePaginatedBooks(
             .finally(() => {
                 if (requestId === requestIdRef.current) setLoading(false)
             })
-    }, [loading, hasMore, page, filters])
+    }, [loading, hasMore, page, filters, cacheKey, signature])
 
     // Load the next page once the sentinel scrolls into view.
     useEffect(() => {
@@ -89,7 +127,11 @@ export function usePaginatedBooks(
         return () => observer.disconnect()
     }, [loadNextPage, scrollContainerRef])
 
-    const reload = useCallback(() => setReloadToken((t) => t + 1), [])
+    const reload = useCallback(() => {
+        // Invalidate cache of both pages when a change is made from comics admin.
+        feedCache.clear()
+        setReloadToken((t) => t + 1)
+    }, [])
 
     return { books, loading, hasMore, sentinelRef, reload }
 }

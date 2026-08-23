@@ -22,6 +22,7 @@ import { darkTheme } from "../App"
 import { type Book, Character, Publisher, Artist, Author, Team } from "types"
 import { useDebounce } from "../hooks/useDebounce"
 import { usePaginatedBooks } from "../hooks/usePaginatedBooks"
+import { usePersistedState } from "../hooks/usePersistedState"
 import { BooksPageFilters } from "../actions/comics"
 
 const ComicsAdmin: React.FC = () => {
@@ -29,15 +30,32 @@ const ComicsAdmin: React.FC = () => {
     const [dwModalOpen, setDwModalOpen] = useState(false)
     const [dwModalType, setDwModalType] = useState("book")
     const [sidebarOpen, setSidebarOpen] = useState(false)
-    const [titleSearch, setTitleSearch] = useState("")
 
     const [filtersOpen, setFiltersOpen] = useState(false)
     const [filterResetKey, setFilterResetKey] = useState(0)
-    const [characterFilter, setCharacterFilter] = useState<Character[]>([])
-    const [publisherFilter, setPublisherFilter] = useState<Publisher[]>([])
-    const [artistFilter, setArtistFilter] = useState<Artist[]>([])
-    const [authorFilter, setAuthorFilter] = useState<Author[]>([])
-    const [teamFilter, setTeamFilter] = useState<Team[]>([])
+
+    const [titleSearch, setTitleSearch] = usePersistedState(
+        "comics-admin:titleSearch",
+        "",
+    )
+    const [characterFilter, setCharacterFilter] = usePersistedState<
+        Character[]
+    >("comics-admin:characterFilter", [])
+    const [publisherFilter, setPublisherFilter] = usePersistedState<
+        Publisher[]
+    >("comics-admin:publisherFilter", [])
+    const [artistFilter, setArtistFilter] = usePersistedState<Artist[]>(
+        "comics-admin:artistFilter",
+        [],
+    )
+    const [authorFilter, setAuthorFilter] = usePersistedState<Author[]>(
+        "comics-admin:authorFilter",
+        [],
+    )
+    const [teamFilter, setTeamFilter] = usePersistedState<Team[]>(
+        "comics-admin:teamFilter",
+        [],
+    )
 
     const debouncedTitleSearch = useDebounce(titleSearch)
     const debouncedPublisherFilter = useDebounce(publisherFilter)
@@ -68,6 +86,7 @@ const ComicsAdmin: React.FC = () => {
     )
 
     const { books, loading, sentinelRef, reload } = usePaginatedBooks(
+        "comics-admin",
         filters,
         scrollContainerRef,
     )
@@ -114,22 +133,17 @@ const ComicsAdmin: React.FC = () => {
                         </span>
                         <span>
                             <b>Authors</b>:{" "}
-                            {book.authors_data
-                                ?.map((a) => a.name)
-                                .join(", ")}
+                            {book.authors_data?.map((a) => a.name).join(", ")}
                         </span>
                         <span>
                             <b>Artists</b>:{" "}
-                            {book.artists_data
-                                ?.map((a) => a.name)
-                                .join(", ")}
+                            {book.artists_data?.map((a) => a.name).join(", ")}
                         </span>
                         <span>
                             <b>Format</b>: {book.format_data?.name}
                         </span>
                         <span>
-                            <b>Sub Category</b>:{" "}
-                            {book.sub_category_data?.name}
+                            <b>Sub Category</b>: {book.sub_category_data?.name}
                         </span>
                         <span>
                             <b>Team</b>: {book.team_data?.name}
@@ -283,13 +297,9 @@ const ComicsAdmin: React.FC = () => {
                             onBookChanged={reload}
                         />
                     ) : dwModalType === "manageCharacters" ? (
-                        <ManageCharactersModalContent
-                            onDataChanged={reload}
-                        />
+                        <ManageCharactersModalContent onDataChanged={reload} />
                     ) : dwModalType === "managePublishers" ? (
-                        <ManagePublishersModalContent
-                            onDataChanged={reload}
-                        />
+                        <ManagePublishersModalContent onDataChanged={reload} />
                     ) : dwModalType === "manageAuthors" ? (
                         <ManageAuthorsModalContent onDataChanged={reload} />
                     ) : dwModalType === "manageArtists" ? (
@@ -342,7 +352,10 @@ const ComicsAdmin: React.FC = () => {
                                 No books found.
                             </div>
                         )}
-                        <div ref={sentinelRef} className="h-1 w-full" />
+                        <div
+                            ref={sentinelRef}
+                            className="h-1 w-full"
+                        />
                         {loading && (
                             <div className="text-center text-[1.4rem] text-gray-400 py-4">
                                 Loading...

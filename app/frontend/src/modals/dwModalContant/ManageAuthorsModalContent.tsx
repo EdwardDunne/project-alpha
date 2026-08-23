@@ -13,9 +13,7 @@ import ConfirmDialog from "../../components/ConfirmDialog"
 interface Props {
     getAllAuthors: () => void
     allAuthors: Author[]
-    // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
-    // since renaming/adding/deleting an author changes books' derived
-    // authors_data and that feed isn't driven by Redux.
+    // Refresh books feed on change
     onDataChanged?: () => void
 }
 

@@ -10,20 +10,20 @@ import ComicsPage from "../pages/ComicsPage";
 import ChangelogPage from "../pages/ChangelogPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import { checkAuthenticated } from "../actions/auth";
-import { load_user } from "../actions/profile";
+import { loadUser } from "../actions/profile";
 import { connect } from 'react-redux';
 import { Routes, Route } from "react-router-dom";
 import PrivateRoute from "../hoc/PrivateRoute";
 
 interface Props {
     checkAuthenticated: () => void;
-    load_user: () => void;
+    loadUser: () => void;
 }
 
-const HomePageRouter: React.FC<Props> = ({ checkAuthenticated, load_user }) => {
+const HomePageRouter: React.FC<Props> = ({ checkAuthenticated, loadUser }) => {
     useEffect(() => {
         checkAuthenticated();
-        load_user();
+        loadUser();
     }, []);
 
     return (
@@ -49,4 +49,4 @@ const HomePageRouter: React.FC<Props> = ({ checkAuthenticated, load_user }) => {
     )
 }
 
-export default connect(null, { checkAuthenticated, load_user })(HomePageRouter);
+export default connect(null, { checkAuthenticated, loadUser })(HomePageRouter);

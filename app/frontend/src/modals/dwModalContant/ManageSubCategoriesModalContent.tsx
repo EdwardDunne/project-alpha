@@ -13,9 +13,7 @@ import ConfirmDialog from "../../components/ConfirmDialog"
 interface Props {
     getAllSubCategories: () => void
     allSubCategories: SubCategory[]
-    // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
-    // since renaming/adding/deleting a sub category changes books' derived
-    // sub_category_data and that feed isn't driven by Redux.
+    // Refresh books feed on change
     onDataChanged?: () => void
 }
 
