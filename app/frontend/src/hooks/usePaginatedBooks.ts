@@ -111,6 +111,20 @@ export function usePaginatedBooks(
             })
     }, [loading, hasMore, page, filters, cacheKey, signature])
 
+    // loadNextPage gets a new identity on every loading/hasMore/page change -
+    // several times per fetch cycle. The observer below must stay mounted
+    // across all of that and just call whichever version is current,
+    // otherwise tearing it down and recreating it mid-fetch (a fresh
+    // IntersectionObserver fires immediately with the sentinel's current
+    // state) can cascade into loading every remaining page in one burst -
+    // most visibly right after clearing a filter, when a short filtered
+    // grid suddenly becomes a long one and the sentinel is still in range
+    // for each recreation in the sequence.
+    const loadNextPageRef = useRef(loadNextPage)
+    useEffect(() => {
+        loadNextPageRef.current = loadNextPage
+    }, [loadNextPage])
+
     // Load the next page once the sentinel scrolls into view.
     useEffect(() => {
         const sentinel = sentinelRef.current
@@ -119,13 +133,13 @@ export function usePaginatedBooks(
 
         const observer = new IntersectionObserver(
             (entries) => {
-                if (entries[0].isIntersecting) loadNextPage()
+                if (entries[0].isIntersecting) loadNextPageRef.current()
             },
             { root, rootMargin: "600px" },
         )
         observer.observe(sentinel)
         return () => observer.disconnect()
-    }, [loadNextPage, scrollContainerRef])
+    }, [scrollContainerRef])
 
     const reload = useCallback(() => {
         // Invalidate cache of both pages when a change is made from comics admin.
