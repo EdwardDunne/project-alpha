@@ -13,9 +13,7 @@ import ConfirmDialog from "../../components/ConfirmDialog"
 interface Props {
     getAllFormats: () => void
     allFormats: Format[]
-    // Lets a paginated book feed (e.g. ComicsAdminPage) refresh itself,
-    // since renaming/adding/deleting a format changes books' derived
-    // format_data and that feed isn't driven by Redux.
+    // Refresh books feed on change
     onDataChanged?: () => void
 }
 

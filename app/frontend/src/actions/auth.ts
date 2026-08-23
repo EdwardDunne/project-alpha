@@ -1,7 +1,7 @@
 import axios from "axios"
 import { Dispatch } from "redux"
 import { toast } from "react-toastify"
-import { load_user } from "./profile"
+import { loadUser } from "./profile"
 import httpUtil from "../utils/httpUtil"
 import { getErrorMessage } from "../utils/apiError"
 import { AppDispatch } from "../store"
@@ -22,7 +22,7 @@ import {
 // Standard Authenication Check
 export const checkAuthenticated = () => async (dispatch: Dispatch) => {
     const config = {
-        headers: httpUtil.get_headers("GET"),
+        headers: httpUtil.getHeaders("GET"),
     }
 
     try {
@@ -59,7 +59,7 @@ export const checkAuthenticated = () => async (dispatch: Dispatch) => {
 export const login =
     (email: string, password: string) => async (dispatch: AppDispatch) => {
         const config = {
-            headers: httpUtil.get_headers("POST"),
+            headers: httpUtil.getHeaders("POST"),
         }
 
         const body = JSON.stringify({ email, password })
@@ -75,7 +75,7 @@ export const login =
                 type: LOGIN_SUCCESS,
             })
 
-            dispatch(load_user())
+            dispatch(loadUser())
         } catch (error) {
             toast.error(
                 getErrorMessage(
@@ -93,7 +93,7 @@ export const login =
 // User Logout
 export const logout = () => async (dispatch: Dispatch) => {
     const config = {
-        headers: httpUtil.get_headers("POST"),
+        headers: httpUtil.getHeaders("POST"),
     }
 
     try {
@@ -119,7 +119,7 @@ export const register =
     (email: string, password: string, re_password: string) =>
     async (dispatch: Dispatch) => {
         const config = {
-            headers: httpUtil.get_headers("POST"),
+            headers: httpUtil.getHeaders("POST"),
         }
 
         const body = JSON.stringify({ email, password, re_password })
@@ -153,7 +153,7 @@ export const requestPasswordReset = async (
     email: string,
 ): Promise<boolean> => {
     const config = {
-        headers: httpUtil.get_headers("POST"),
+        headers: httpUtil.getHeaders("POST"),
     }
 
     const body = JSON.stringify({ email })
@@ -182,7 +182,7 @@ export const resetPassword = async (
     re_password: string,
 ): Promise<boolean> => {
     const config = {
-        headers: httpUtil.get_headers("POST"),
+        headers: httpUtil.getHeaders("POST"),
     }
 
     const body = JSON.stringify({ uidb64, token, password, re_password })
@@ -206,7 +206,7 @@ export const resetPassword = async (
 // Delete user account
 export const deleteAccount = () => async (dispatch: Dispatch) => {
     const config = {
-        headers: httpUtil.get_headers("POST"),
+        headers: httpUtil.getHeaders("POST"),
     }
 
     try {

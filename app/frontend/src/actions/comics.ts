@@ -36,7 +36,7 @@ import {
 // Get all books from DB, this is cached unless you are an admin
 export const getAllBooks = () => async (dispatch: Dispatch) => {
     const config = {
-        headers: httpUtil.get_headers("GET"),
+        headers: httpUtil.getHeaders("GET"),
     }
 
     try {
@@ -58,10 +58,6 @@ export const getAllBooks = () => async (dispatch: Dispatch) => {
 }
 
 // PAGINATED / FILTERED BOOK FEED
-// Backs the public comics page's infinite scroll. Unlike getAllBooks above,
-// this is a plain function (not a thunk) that returns its result directly -
-// the feed is presentation state local to one page, not shared app state,
-// so it doesn't belong in Redux the way `all_books` does.
 export const BOOKS_PAGE_SIZE = 24
 
 export type BooksPageFilters = {
@@ -87,14 +83,18 @@ export async function fetchBooksPage(
     params.set("page", String(page))
     params.set("page_size", String(BOOKS_PAGE_SIZE))
     if (filters.title) params.set("title", filters.title)
-    filters.publisherIds?.forEach((id) => params.append("publisher", String(id)))
-    filters.characterIds?.forEach((id) => params.append("characters", String(id)))
+    filters.publisherIds?.forEach((id) =>
+        params.append("publisher", String(id)),
+    )
+    filters.characterIds?.forEach((id) =>
+        params.append("characters", String(id)),
+    )
     filters.artistIds?.forEach((id) => params.append("artists", String(id)))
     filters.authorIds?.forEach((id) => params.append("authors", String(id)))
     filters.teamIds?.forEach((id) => params.append("team", String(id)))
 
     const config = {
-        headers: httpUtil.get_headers("GET"),
+        headers: httpUtil.getHeaders("GET"),
     }
 
     const res = await axios.get(
@@ -110,12 +110,6 @@ export async function fetchBooksPage(
 }
 
 // GENERIC COMIC ENTITY ACTIONS
-// Publisher/Character/Author/Artist/Format/SubCategory/Team all follow the
-// exact same get-all/create/update/delete shape (simple name-based entities
-// managed through the "Manage X" modals), so instead of hand-writing four
-// near-identical functions per entity, each entity provides one config
-// object describing what's different (endpoint, labels, response/state
-// keys) and gets its four action functions from these generics.
 type ComicEntityConfig<TItem extends { id: number }> = {
     url: string // e.g. "publishers" -> /api/comics/publishers (GET/POST/PUT/DELETE)
     label: string // e.g. "Publisher" -> "Publisher Added!"
@@ -132,7 +126,7 @@ function getComicData<TItem extends { id: number }>(
 ) {
     return () => async (dispatch: Dispatch) => {
         const config = {
-            headers: httpUtil.get_headers("GET"),
+            headers: httpUtil.getHeaders("GET"),
         }
 
         try {
@@ -143,7 +137,9 @@ function getComicData<TItem extends { id: number }>(
             dispatch({ type: cfg.successType, payload: res.data })
         } catch (error) {
             console.error(error)
-            toast.error(getErrorMessage(error, `Error getting ${cfg.pluralLabel}...`))
+            toast.error(
+                getErrorMessage(error, `Error getting ${cfg.pluralLabel}...`),
+            )
             dispatch({ type: cfg.failType })
         }
     }
@@ -156,14 +152,11 @@ function createComicData<
     return async (
         body: TBody,
         setDwModalOpen: (open: boolean) => void,
-        // Renaming/adding/deleting an entity changes books' nested detail
-        // objects (e.g. publisher_data), but any paginated book feed (like
-        // ComicsAdminPage's) fetches from the server and isn't driven by
-        // Redux, so it needs its own explicit nudge to refetch.
+        // Explicit action to refetch paginated book data.
         onDataChanged?: () => void,
     ) => {
         const config = {
-            headers: httpUtil.get_headers("POST"),
+            headers: httpUtil.getHeaders("POST"),
         }
 
         try {
@@ -198,7 +191,7 @@ function updateComicData<
         onDataChanged?: () => void,
     ) => {
         const config = {
-            headers: httpUtil.get_headers("PUT"),
+            headers: httpUtil.getHeaders("PUT"),
         }
 
         try {
@@ -233,7 +226,7 @@ function deleteComicData<TItem extends { id: number }>(
 ) {
     return async (id: number, onDataChanged?: () => void) => {
         const config = {
-            headers: httpUtil.get_headers("DELETE"),
+            headers: httpUtil.getHeaders("DELETE"),
             data: { id },
         }
 
@@ -294,9 +287,7 @@ const authorConfig: ComicEntityConfig<Author> = {
 }
 
 export const getAllAuthors = getComicData(authorConfig)
-export const addAuthor = createComicData<{ name: string }, Author>(
-    authorConfig,
-)
+export const addAuthor = createComicData<{ name: string }, Author>(authorConfig)
 export const updateAuthor = updateComicData<
     { id: number; name: string },
     Author
@@ -316,9 +307,7 @@ const artistConfig: ComicEntityConfig<Artist> = {
 }
 
 export const getAllArtists = getComicData(artistConfig)
-export const addArtist = createComicData<{ name: string }, Artist>(
-    artistConfig,
-)
+export const addArtist = createComicData<{ name: string }, Artist>(artistConfig)
 export const updateArtist = updateComicData<
     { id: number; name: string },
     Artist
@@ -417,9 +406,6 @@ export const updateCharacter = updateComicData<
 export const deleteCharacter = deleteComicData(characterConfig)
 
 // BOOK ACTIONS
-// Books don't fit the generic shape above: add/update send multipart
-// form-data (thumbnail upload) instead of JSON, and the list is always
-// fully refetched rather than optimistically patched.
 export const addBook = async (
     formData: {
         publisher: string
@@ -440,7 +426,7 @@ export const addBook = async (
     onSuccess?: () => void,
 ) => {
     const config = {
-        headers: httpUtil.get_headers("POSTFILE"),
+        headers: httpUtil.getHeaders("POSTFILE"),
     }
 
     const _formData = new FormData()
@@ -496,7 +482,7 @@ export const updateBook = async (
     onSuccess?: () => void,
 ) => {
     const config = {
-        headers: httpUtil.get_headers("POSTFILE"),
+        headers: httpUtil.getHeaders("POSTFILE"),
     }
 
     const _formData = new FormData()
@@ -538,15 +524,12 @@ export const deleteBook = async (
     onSuccess?: () => void,
 ) => {
     const config = {
-        headers: httpUtil.get_headers("DELETE"),
+        headers: httpUtil.getHeaders("DELETE"),
         data: { id },
     }
 
     try {
-        await axios.delete(
-            `${window.location.origin}/api/comics/books`,
-            config,
-        )
+        await axios.delete(`${window.location.origin}/api/comics/books`, config)
         toast.success("Book Deleted!")
         // Kept for future use of the full-list view.
         const books = store.getState().comics.all_books

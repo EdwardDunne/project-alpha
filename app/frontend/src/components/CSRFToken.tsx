@@ -1,39 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios'
+import React, { useEffect } from "react"
+import axios from "axios"
 
+// Seeds the csrftoken cookie so httpUtil's X-CSRFToken header has
+// something to read on a first POST.
 const CSRFToken: React.FC = () => {
-    const [csrftoken, setcsrftoken] = useState('');
-
-    const getCookie = (name: string): string | null => {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            let cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                let cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                await axios.get(`${window.location.origin}/api/csrf-cookie`);
-            } catch (error) {
+        axios
+            .get(`${window.location.origin}/api/csrf-cookie`)
+            .catch((error) => console.error(error))
+    }, [])
 
-            }
-        };
-        fetchData();
-        setcsrftoken(getCookie('csrftoken') || '');
-    }, []);
-
-    return (
-        <input type='hidden' name='csrfmiddlewaretoken' value={csrftoken} />
-    );
+    return null
 }
 
-export default CSRFToken;
+export default CSRFToken
