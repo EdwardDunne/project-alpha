@@ -38,23 +38,17 @@ export function usePaginatedBooks(
     const [reloadToken, setReloadToken] = useState(0)
 
     const sentinelRef = useRef<HTMLDivElement | null>(null)
-    // A "generation" of the feed - only a real reset (filter change, reload)
-    // starts a new one. loadNextPage never bumps this; it only ever reads
-    // the generation it started under and checks that against the current
-    // one when its fetch resolves. That way a reset always wins by
-    // definition, rather than "whichever request's completion happened to
-    // see the higher shared counter" - the previous shared-counter version
-    // of this guard let a stale loadNextPage call (e.g. one fired from a
-    // closure that hadn't yet seen loading flip true, more likely on a slow
-    // mobile CPU) bump the counter *past* a legitimate page-1 reset's own
-    // id, causing the reset's correct results to be discarded as "stale"
-    // and only the stray next-page fetch's results to end up on screen.
+    // GenerationRef is incremented each time the filters signature changes
+    // or if the reloadToken triggers the page to reload (due to changes made
+    // on the Admin page). A ref is used so that asynchronous invocations of
+    // the below useEffect can track if the current invocation is the latest
+    // invocation, and if it is not, don't carry out the state changes
     const generationRef = useRef(0)
     // Skip fetch on initial render not on filter changes.
     const skipNextFetchRef = useRef(Boolean(freshCache))
 
-    // Reset to page 1 whenever the filters change, or after adding/editing/deleting
-    // a book
+    // Reset to page 1 whenever the filters change, or after
+    // adding/editing/deleting a book
     useEffect(() => {
         if (skipNextFetchRef.current) {
             skipNextFetchRef.current = false
@@ -88,6 +82,7 @@ export function usePaginatedBooks(
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [signature, reloadToken])
 
+    // useCallback used here mostly so that this function doesn't reevaluate on every render
     const loadNextPage = useCallback(() => {
         if (loading || !hasMore) return
 
@@ -120,15 +115,11 @@ export function usePaginatedBooks(
             })
     }, [loading, hasMore, page, filters, cacheKey, signature])
 
-    // loadNextPage gets a new identity on every loading/hasMore/page change -
-    // several times per fetch cycle. The observer below must stay mounted
-    // across all of that and just call whichever version is current,
-    // otherwise tearing it down and recreating it mid-fetch (a fresh
-    // IntersectionObserver fires immediately with the sentinel's current
-    // state) can cascade into loading every remaining page in one burst -
-    // most visibly right after clearing a filter, when a short filtered
-    // grid suddenly becomes a long one and the sentinel is still in range
-    // for each recreation in the sequence.
+    // The below useEffect only renders once, this way we don't
+    // create a new instance of IntersectionObserver on every rerender.
+    // Since we are utilizing a useEffect to create the observer we need
+    // to put loadNextPage in a ref so that the observer has the most
+    // up to date version of the loadNextPage function to call
     const loadNextPageRef = useRef(loadNextPage)
     useEffect(() => {
         loadNextPageRef.current = loadNextPage
