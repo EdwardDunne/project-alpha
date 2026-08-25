@@ -74,6 +74,16 @@ npm run dev   # watches and rebuilds on change
 
 The app is served by Django at [http://localhost:8000](http://localhost:8000).
 
+## Deploying
+
+The app is deployed on an EC2 instance via `docker-compose.prod.yml`. Instead of running `docker-compose -f docker-compose.prod.yml up -d --build` directly, use:
+
+```
+./deploy.sh
+```
+
+This prunes unused Docker images, stopped containers, and build cache *before* building, so disk usage doesn't creep up across repeated deploys, then builds and starts the containers. It never touches named volumes, so the Postgres data and uploaded media are never at risk.
+
 ## Project Structure
 
 - `app/mainsite/` — Django REST Framework API (auth, comics, data collection/scraping)

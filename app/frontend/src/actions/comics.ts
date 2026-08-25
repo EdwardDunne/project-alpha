@@ -63,6 +63,7 @@ export const BOOKS_PAGE_SIZE = 24
 export type BooksPageFilters = {
     title?: string
     publisherIds?: number[]
+    formatIds?: number[]
     characterIds?: number[]
     artistIds?: number[]
     authorIds?: number[]
@@ -87,6 +88,11 @@ export async function fetchBooksPage(
     if (filters.title) params.set("title", filters.title)
     filters.publisherIds?.forEach((id) =>
         params.append("publisher", String(id)),
+    )
+    // Named "book_format", not "format" - DRF reserves the "format" query
+    // param for response content-negotiation (e.g. ?format=json).
+    filters.formatIds?.forEach((id) =>
+        params.append("book_format", String(id)),
     )
     filters.characterIds?.forEach((id) =>
         params.append("characters", String(id)),

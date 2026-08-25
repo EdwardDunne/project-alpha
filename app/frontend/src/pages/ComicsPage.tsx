@@ -5,6 +5,7 @@ import {
     BooksPageFilters,
     toggleWishlist,
     toggleOwned,
+    getAllFormats,
 } from "../actions/comics"
 import { usePaginatedBooks } from "../hooks/usePaginatedBooks"
 import { usePersistedState } from "../hooks/usePersistedState"
@@ -15,20 +16,35 @@ import CharactersMultiSelector from "../components/CharactersMultiSelector"
 import ArtistsSelector from "../components/ArtistsSelector"
 import AuthorsSelector from "../components/AuthorsSelector"
 import TeamsMultiSelector from "../components/TeamsMultiSelector"
+import FormatsMultiSelector from "../components/FormatsMultiSelector"
 import DunneWebModal from "../modals/DunneWebModal"
 import FloatingMenuButton from "../components/FloatingMenuButton"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import SidePanel from "../components/SidePanel"
-import { Book, Character, Publisher, Artist, Author, Team } from "../types"
+import {
+    Book,
+    Character,
+    Publisher,
+    Artist,
+    Author,
+    Team,
+    Format,
+} from "../types"
 import BookModalContent from "modals/dwModalContant/BookModalContent"
 import { useDebounce } from "../hooks/useDebounce"
 import { RootState } from "../reducers"
 
 interface Props {
     isAuthenticated: boolean | null
+    allFormats: Format[]
+    getAllFormats: () => void
 }
 
-const ComicsPage: React.FC<Props> = ({ isAuthenticated }) => {
+const ComicsPage: React.FC<Props> = ({
+    isAuthenticated,
+    allFormats,
+    getAllFormats,
+}) => {
     const [characterFilter, setCharacterFilter] = usePersistedState<
         Character[]
     >("comics-public:characterFilter", [])
@@ -59,6 +75,13 @@ const ComicsPage: React.FC<Props> = ({ isAuthenticated }) => {
         "comics-public:ownedOnlyFilter",
         false,
     )
+    // undefined = not yet resolved (still waiting on allFormats to load so
+    // we can default to ["Omnibus"]); [] = user explicitly wants no format
+    // filter. Once resolved (to either a non-empty array or []), it persists
+    // like every other filter and this distinction stops mattering.
+    const [formatFilter, setFormatFilter] = usePersistedState<
+        Format[] | undefined
+    >("comics-public:formatFilter", undefined)
     const [dwModalOpen, setDwModalOpen] = useState(false)
     const [selectedBook, setSelectedBook] = useState<Book | null>(null)
     const [filterOpen, setFilterOpen] = useState(false)
@@ -66,6 +89,7 @@ const ComicsPage: React.FC<Props> = ({ isAuthenticated }) => {
 
     const debouncedTitleSearch = useDebounce(titleSearch)
     const debouncedPublisherFilter = useDebounce(publisherFilter)
+    const debouncedFormatFilter = useDebounce(formatFilter ?? [])
     const debouncedCharacterFilter = useDebounce(characterFilter)
     const debouncedArtistFilter = useDebounce(artistFilter)
     const debouncedAuthorFilter = useDebounce(authorFilter)
@@ -73,10 +97,26 @@ const ComicsPage: React.FC<Props> = ({ isAuthenticated }) => {
 
     const scrollContainerRef = useRef<HTMLDivElement | null>(null)
 
+    // Bootstrap the format list (FormatsMultiSelector also does this itself,
+    // but we need it here too to resolve the "Omnibus" default below).
+    useEffect(() => {
+        if (allFormats.length === 0) getAllFormats()
+    }, [])
+
+    // Default to ["Omnibus"] the first time this page is ever visited in
+    // this session, but only once - never override an explicit later choice
+    // (including explicitly clearing the filter, which sets it to []).
+    useEffect(() => {
+        if (formatFilter !== undefined || allFormats.length === 0) return
+        const omnibus = allFormats.find((f) => f.name === "Omnibus")
+        setFormatFilter(omnibus ? [omnibus] : [])
+    }, [allFormats, formatFilter])
+
     const filters: BooksPageFilters = useMemo(
         () => ({
             title: debouncedTitleSearch || undefined,
             publisherIds: debouncedPublisherFilter.map((p) => p.id),
+            formatIds: debouncedFormatFilter.map((f) => f.id),
             characterIds: debouncedCharacterFilter.map((c) => c.id),
             artistIds: debouncedArtistFilter.map((a) => a.id),
             authorIds: debouncedAuthorFilter.map((a) => a.id),
@@ -87,6 +127,7 @@ const ComicsPage: React.FC<Props> = ({ isAuthenticated }) => {
         [
             debouncedTitleSearch,
             debouncedPublisherFilter,
+            debouncedFormatFilter,
             debouncedCharacterFilter,
             debouncedArtistFilter,
             debouncedAuthorFilter,
@@ -203,6 +244,7 @@ const ComicsPage: React.FC<Props> = ({ isAuthenticated }) => {
     const clearFilters = () => {
         setTitleSearch("")
         setPublisherFilter([])
+        setFormatFilter([])
         setCharacterFilter([])
         setArtistFilter([])
         setAuthorFilter([])
@@ -264,6 +306,11 @@ const ComicsPage: React.FC<Props> = ({ isAuthenticated }) => {
                     </div>
                 )}
                 <ul className="list-none p-0">
+                    <FormatsMultiSelector
+                        key={`format-${filterResetKey}`}
+                        setFormats={setFormatFilter}
+                        initialFormatIds={(formatFilter ?? []).map((f) => f.id)}
+                    />
                     <PublishersMultiSelector
                         key={`publishers-${filterResetKey}`}
                         setPublishers={setPublisherFilter}
@@ -343,7 +390,7 @@ const ComicsPage: React.FC<Props> = ({ isAuthenticated }) => {
                     </h4>
                     <div
                         ref={scrollContainerRef}
-                        className="w-full px-4 overflow-y-scroll h-full"
+                        className="w-full px-4 overflow-y-scroll h-full visible-scrollbar md:mr-[3rem]"
                     >
                         <div className="flex justify-center items-center flex-row flex-wrap">
                             {books.map(renderBook)}
@@ -371,6 +418,7 @@ const ComicsPage: React.FC<Props> = ({ isAuthenticated }) => {
 
 const mapStateToProps = (state: RootState) => ({
     isAuthenticated: state.auth.isAuthenticated,
+    allFormats: state.comics.all_formats,
 })
 
-export default connect(mapStateToProps)(ComicsPage)
+export default connect(mapStateToProps, { getAllFormats })(ComicsPage)
