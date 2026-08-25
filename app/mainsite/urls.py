@@ -4,7 +4,7 @@ from project_alpha import settings
 from django.conf.urls.static import static
 
 from .views import UserProfileView, SignupView, GetCSRFToken, LoginView, LogoutView, CheckAuthenticatedView, DeleteAccountView, GetUsersView, PasswordResetRequestView, PasswordResetConfirmView
-from .comics_views import ArtistView, AuthorView, BookView, CharacterView, FormatView, PublisherView, SubCategoryView, TeamView
+from .comics_views import ArtistView, AuthorView, BookOwnedView, BookView, BookWishlistView, CharacterView, FormatView, PublisherView, SubCategoryView, TeamView
 
 urlpatterns = [
     path('csrf-cookie', GetCSRFToken.as_view()),
@@ -19,6 +19,8 @@ urlpatterns = [
     path('profile/user', UserProfileView.as_view()),
     path('profile/user/update', UserProfileView.as_view()),
     path('comics/books', BookView.as_view()),
+    path('comics/books/wishlist', BookWishlistView.as_view()),
+    path('comics/books/owned', BookOwnedView.as_view()),
     path('comics/characters', CharacterView.as_view()),
     path('comics/publishers', PublisherView.as_view()),
     path('comics/authors', AuthorView.as_view()),

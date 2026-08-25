@@ -37,7 +37,7 @@ const LoginPage: React.FC<Props> = ({ login, isAuthenticated }) => {
     }
 
     if (isAuthenticated)
-        return <Navigate to='/dashboard' />;
+        return <Navigate to='/comics' />;
 
     return (
         <div className='w-full md:max-w-[48rem] mx-auto mt-20 px-4'>

@@ -67,6 +67,8 @@ export type BooksPageFilters = {
     artistIds?: number[]
     authorIds?: number[]
     teamIds?: number[]
+    wishlistedOnly?: boolean
+    ownedOnly?: boolean
 }
 
 export type BooksPageResult = {
@@ -92,6 +94,8 @@ export async function fetchBooksPage(
     filters.artistIds?.forEach((id) => params.append("artists", String(id)))
     filters.authorIds?.forEach((id) => params.append("authors", String(id)))
     filters.teamIds?.forEach((id) => params.append("team", String(id)))
+    if (filters.wishlistedOnly) params.set("wishlisted", "true")
+    if (filters.ownedOnly) params.set("owned", "true")
 
     const config = {
         headers: httpUtil.getHeaders("GET"),
@@ -106,6 +110,61 @@ export async function fetchBooksPage(
         books: res.data.books,
         hasMore: res.data.has_more,
         count: res.data.count,
+    }
+}
+
+// Toggle whether the logged-in user has this book wishlisted/owned.
+export async function toggleWishlist(
+    bookId: number,
+): Promise<boolean | undefined> {
+    const config = {
+        headers: httpUtil.getHeaders("POST"),
+    }
+
+    try {
+        const res = await axios.post(
+            `${window.location.origin}/api/comics/books/wishlist`,
+            JSON.stringify({ id: bookId }),
+            config,
+        )
+        toast.success(
+            res.data.is_wishlisted
+                ? "Added to wishlist!"
+                : "Removed from wishlist!",
+        )
+        return res.data.is_wishlisted
+    } catch (error) {
+        console.error(error)
+        toast.error(getErrorMessage(error, "Error updating your wishlist..."))
+        return undefined
+    }
+}
+
+export async function toggleOwned(
+    bookId: number,
+): Promise<boolean | undefined> {
+    const config = {
+        headers: httpUtil.getHeaders("POST"),
+    }
+
+    try {
+        const res = await axios.post(
+            `${window.location.origin}/api/comics/books/owned`,
+            JSON.stringify({ id: bookId }),
+            config,
+        )
+        toast.success(
+            res.data.is_owned
+                ? "Added to owned books!"
+                : "Removed from owned books!",
+        )
+        return res.data.is_owned
+    } catch (error) {
+        console.error(error)
+        toast.error(
+            getErrorMessage(error, "Error updating your owned books..."),
+        )
+        return undefined
     }
 }
 
