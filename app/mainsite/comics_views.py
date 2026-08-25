@@ -78,6 +78,13 @@ class BookView(APIView):
             if publisher_ids:
                 bookQueryset = bookQueryset.filter(publisher__id__in=publisher_ids)
 
+            # Named "book_format", not "format" - DRF reserves the "format"
+            # query param for response content-negotiation (e.g. ?format=json),
+            # and a collision here causes a 404 rather than an obvious error.
+            format_ids = request.query_params.getlist('book_format')
+            if format_ids:
+                bookQueryset = bookQueryset.filter(format__id__in=format_ids)
+
             team_ids = request.query_params.getlist('team')
             if team_ids:
                 bookQueryset = bookQueryset.filter(team__id__in=team_ids)

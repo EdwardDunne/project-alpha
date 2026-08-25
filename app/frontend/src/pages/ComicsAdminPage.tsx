@@ -10,6 +10,7 @@ import CharactersMultiSelector from "../components/CharactersMultiSelector"
 import TeamsMultiSelector from "../components/TeamsMultiSelector"
 import AuthorsSelector from "../components/AuthorsSelector"
 import ArtistsSelector from "../components/ArtistsSelector"
+import FormatsMultiSelector from "../components/FormatsMultiSelector"
 import AddEditBookModalContent from "../modals/dwModalContant/AddEditBookModalContent"
 import ManagePublishersModalContent from "../modals/dwModalContant/ManagePublishersModalContent"
 import ManageCharactersModalContent from "../modals/dwModalContant/ManageCharactersModalContent"
@@ -19,7 +20,15 @@ import ManageFormatsModalContent from "../modals/dwModalContant/ManageFormatsMod
 import ManageSubCategoriesModalContent from "../modals/dwModalContant/ManageSubCategoriesModalContent"
 import ManageTeamsModalContent from "../modals/dwModalContant/ManageTeamsModalContent"
 import { darkTheme } from "../App"
-import { type Book, Character, Publisher, Artist, Author, Team } from "types"
+import {
+    type Book,
+    Character,
+    Publisher,
+    Artist,
+    Author,
+    Team,
+    Format,
+} from "types"
 import { useDebounce } from "../hooks/useDebounce"
 import { usePaginatedBooks } from "../hooks/usePaginatedBooks"
 import { usePersistedState } from "../hooks/usePersistedState"
@@ -56,9 +65,14 @@ const ComicsAdmin: React.FC = () => {
         "comics-admin:teamFilter",
         [],
     )
+    const [formatFilter, setFormatFilter] = usePersistedState<Format[]>(
+        "comics-admin:formatFilter",
+        [],
+    )
 
     const debouncedTitleSearch = useDebounce(titleSearch)
     const debouncedPublisherFilter = useDebounce(publisherFilter)
+    const debouncedFormatFilter = useDebounce(formatFilter)
     const debouncedCharacterFilter = useDebounce(characterFilter)
     const debouncedArtistFilter = useDebounce(artistFilter)
     const debouncedAuthorFilter = useDebounce(authorFilter)
@@ -70,6 +84,7 @@ const ComicsAdmin: React.FC = () => {
         () => ({
             title: debouncedTitleSearch || undefined,
             publisherIds: debouncedPublisherFilter.map((p) => p.id),
+            formatIds: debouncedFormatFilter.map((f) => f.id),
             characterIds: debouncedCharacterFilter.map((c) => c.id),
             artistIds: debouncedArtistFilter.map((a) => a.id),
             authorIds: debouncedAuthorFilter.map((a) => a.id),
@@ -78,6 +93,7 @@ const ComicsAdmin: React.FC = () => {
         [
             debouncedTitleSearch,
             debouncedPublisherFilter,
+            debouncedFormatFilter,
             debouncedCharacterFilter,
             debouncedArtistFilter,
             debouncedAuthorFilter,
@@ -161,6 +177,7 @@ const ComicsAdmin: React.FC = () => {
 
     const clearFilters = () => {
         setPublisherFilter([])
+        setFormatFilter([])
         setCharacterFilter([])
         setArtistFilter([])
         setAuthorFilter([])
@@ -203,6 +220,11 @@ const ComicsAdmin: React.FC = () => {
             {filtersOpen && (
                 <ThemeProvider theme={darkTheme}>
                     <ul className="list-none p-0">
+                        <FormatsMultiSelector
+                            key={`format-${filterResetKey}`}
+                            setFormats={setFormatFilter}
+                            initialFormatIds={formatFilter.map((f) => f.id)}
+                        />
                         <PublishersMultiSelector
                             key={`publishers-${filterResetKey}`}
                             setPublishers={setPublisherFilter}
@@ -344,7 +366,7 @@ const ComicsAdmin: React.FC = () => {
                     </div>
                     <div
                         ref={scrollContainerRef}
-                        className="flex flex-col items-center overflow-y-scroll h-[calc(100vh-20rem)] px-2"
+                        className="flex flex-col items-center overflow-y-scroll h-[calc(100vh-13rem)] px-2 visible-scrollbar mr-[1.5rem]"
                     >
                         {books.map(displayBook)}
                         {!loading && books.length === 0 && (
