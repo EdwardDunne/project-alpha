@@ -2,12 +2,13 @@ import logging
 
 from django.core.cache import cache
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.db.models.deletion import ProtectedError
 from django.db.models.functions import Lower
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
-from mainsite.models import Artist, Author, Book, Character, Format, Publisher, SubCategory, Team
+from mainsite.models import Artist, Author, Book, Character, Format, Publisher, SubCategory, Team, UserProfile
 from .serializers import ArtistSerializer, AuthorSerializer, BookSerializer, CharacterSerializer, FormatSerializer, PublisherSerializer, SubCategorySerializer, TeamSerializer
 from .utils import serializer_error_message
 
@@ -23,6 +24,23 @@ class BookView(APIView):
         if self.request.method == 'GET':
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
+
+    def _get_profile(self, request):
+        if not request.user.is_authenticated:
+            return None
+        try:
+            return UserProfile.objects.get(user=request.user)
+        except UserProfile.DoesNotExist:
+            return None
+
+    def _wishlist_owned_context(self, profile):
+        if profile is None:
+            return {'wishlisted_ids': set(), 'owned_ids': set()}
+
+        return {
+            'wishlisted_ids': set(profile.wishlist_books.values_list('id', flat=True)),
+            'owned_ids': set(profile.owned_books.values_list('id', flat=True)),
+        }
 
     def get(self, request, format=None):
         try:
@@ -50,44 +68,62 @@ class BookView(APIView):
 
             page_size = max(1, min(page_size, MAX_PAGE_SIZE))
 
-            queryset = Book.objects.with_related()
+            bookQueryset = Book.objects.with_related()
 
             title = request.query_params.get('title')
             if title:
-                queryset = queryset.filter(title__icontains=title)
+                bookQueryset = bookQueryset.filter(title__icontains=title)
 
             publisher_ids = request.query_params.getlist('publisher')
             if publisher_ids:
-                queryset = queryset.filter(publisher__id__in=publisher_ids)
+                bookQueryset = bookQueryset.filter(publisher__id__in=publisher_ids)
 
             team_ids = request.query_params.getlist('team')
             if team_ids:
-                queryset = queryset.filter(team__id__in=team_ids)
+                bookQueryset = bookQueryset.filter(team__id__in=team_ids)
 
             character_ids = request.query_params.getlist('characters')
             if character_ids:
-                queryset = queryset.filter(characters__id__in=character_ids)
+                bookQueryset = bookQueryset.filter(characters__id__in=character_ids)
 
             artist_ids = request.query_params.getlist('artists')
             if artist_ids:
-                queryset = queryset.filter(artists__id__in=artist_ids)
+                bookQueryset = bookQueryset.filter(artists__id__in=artist_ids)
 
             author_ids = request.query_params.getlist('authors')
             if author_ids:
-                queryset = queryset.filter(authors__id__in=author_ids)
+                bookQueryset = bookQueryset.filter(authors__id__in=author_ids)
 
             # De-dupe duplicate rows
             if character_ids or artist_ids or author_ids:
-                queryset = queryset.distinct()
+                bookQueryset = bookQueryset.distinct()
 
-            queryset = queryset.order_by(Lower('title'))
+            profile = self._get_profile(request)
 
-            paginator = Paginator(queryset, page_size)
+            wishlisted_only = request.query_params.get('wishlisted') == 'true'
+            owned_only = request.query_params.get('owned') == 'true'
+            if wishlisted_only or owned_only:
+                if profile is None:
+                    bookQueryset = bookQueryset.none()
+                elif wishlisted_only and owned_only:
+                    # Either list qualifies - union, not intersection.
+                    bookQueryset = bookQueryset.filter(
+                        Q(wishlisted_by=profile) | Q(owned_by=profile)
+                    ).distinct()
+                elif wishlisted_only:
+                    bookQueryset = bookQueryset.filter(wishlisted_by=profile)
+                else:
+                    bookQueryset = bookQueryset.filter(owned_by=profile)
+
+            bookQueryset = bookQueryset.order_by(Lower('title'))
+
+            paginator = Paginator(bookQueryset, page_size)
             page_obj = paginator.get_page(page)
 
+            context = self._wishlist_owned_context(profile)
             return Response({
                 'success': 'true',
-                'books': BookSerializer(page_obj.object_list, many=True).data,
+                'books': BookSerializer(page_obj.object_list, many=True, context=context).data,
                 'has_more': page_obj.has_next(),
                 'count': paginator.count,
             })
@@ -168,6 +204,64 @@ class BookView(APIView):
         except Exception as e:
             logger.exception('Something went wrong when deleting the book: %s', e)
             return Response({'error': 'Something went wrong when deleting the book.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class BookWishlistView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        try:
+            try:
+                book_id = request.data['id']
+            except KeyError:
+                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                book = Book.objects.get(id=book_id)
+            except Book.DoesNotExist:
+                return Response({'error': 'Book not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+            if profile.wishlist_books.filter(id=book.id).exists():
+                profile.wishlist_books.remove(book)
+                is_wishlisted = False
+            else:
+                profile.wishlist_books.add(book)
+                is_wishlisted = True
+
+            return Response({'success': 'true', 'is_wishlisted': is_wishlisted})
+        except Exception as e:
+            logger.exception('Something went wrong when updating your wishlist: %s', e)
+            return Response({'error': 'Something went wrong when updating your wishlist.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class BookOwnedView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        try:
+            try:
+                book_id = request.data['id']
+            except KeyError:
+                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                book = Book.objects.get(id=book_id)
+            except Book.DoesNotExist:
+                return Response({'error': 'Book not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+            if profile.owned_books.filter(id=book.id).exists():
+                profile.owned_books.remove(book)
+                is_owned = False
+            else:
+                profile.owned_books.add(book)
+                is_owned = True
+
+            return Response({'success': 'true', 'is_owned': is_owned})
+        except Exception as e:
+            logger.exception('Something went wrong when updating your owned books: %s', e)
+            return Response({'error': 'Something went wrong when updating your owned books.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CharacterView(APIView):
     def get_permissions(self):

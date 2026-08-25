@@ -147,5 +147,47 @@ export function usePaginatedBooks(
         setReloadToken((t) => t + 1)
     }, [])
 
-    return { books, loading, hasMore, sentinelRef, reload }
+    // Update a single book in place (after a wishlist/owned toggle) so we
+    // don't have to refetch the whole list for each change.
+    const updateBook = useCallback(
+        (bookId: number, patch: Partial<Book>) => {
+            setBooks((prev) => {
+                const updated = prev.map((b) =>
+                    b.id === bookId ? { ...b, ...patch } : b,
+                )
+                const current = feedCache.get(cacheKey)
+                if (current) {
+                    feedCache.set(cacheKey, { ...current, books: updated })
+                }
+                return updated
+            })
+        },
+        [cacheKey],
+    )
+
+    // Drop a single book from the list in place (after wishlist/owned toggle),
+    // so it disappears immediately instead of waiting on a full reload.
+    const removeBook = useCallback(
+        (bookId: number) => {
+            setBooks((prev) => {
+                const updated = prev.filter((b) => b.id !== bookId)
+                const current = feedCache.get(cacheKey)
+                if (current) {
+                    feedCache.set(cacheKey, { ...current, books: updated })
+                }
+                return updated
+            })
+        },
+        [cacheKey],
+    )
+
+    return {
+        books,
+        loading,
+        hasMore,
+        sentinelRef,
+        reload,
+        updateBook,
+        removeBook,
+    }
 }

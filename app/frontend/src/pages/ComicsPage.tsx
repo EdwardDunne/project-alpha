@@ -1,8 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { BooksPageFilters } from "../actions/comics"
+import { connect } from "react-redux"
+import { Heart, BookOpenCheck } from "lucide-react"
+import {
+    BooksPageFilters,
+    toggleWishlist,
+    toggleOwned,
+} from "../actions/comics"
 import { usePaginatedBooks } from "../hooks/usePaginatedBooks"
 import { usePersistedState } from "../hooks/usePersistedState"
-import { ThemeProvider } from "@mui/material"
+import { ThemeProvider, Switch, FormControlLabel } from "@mui/material"
 import { darkTheme } from "../App"
 import PublishersMultiSelector from "../components/PublishersMultiSelector"
 import CharactersMultiSelector from "../components/CharactersMultiSelector"
@@ -16,8 +22,13 @@ import SidePanel from "../components/SidePanel"
 import { Book, Character, Publisher, Artist, Author, Team } from "../types"
 import BookModalContent from "modals/dwModalContant/BookModalContent"
 import { useDebounce } from "../hooks/useDebounce"
+import { RootState } from "../reducers"
 
-const ComicsPage: React.FC = () => {
+interface Props {
+    isAuthenticated: boolean | null
+}
+
+const ComicsPage: React.FC<Props> = ({ isAuthenticated }) => {
     const [characterFilter, setCharacterFilter] = usePersistedState<
         Character[]
     >("comics-public:characterFilter", [])
@@ -39,6 +50,14 @@ const ComicsPage: React.FC = () => {
     const [titleSearch, setTitleSearch] = usePersistedState(
         "comics-public:titleSearch",
         "",
+    )
+    const [wishlistOnlyFilter, setWishlistOnlyFilter] = usePersistedState(
+        "comics-public:wishlistOnlyFilter",
+        false,
+    )
+    const [ownedOnlyFilter, setOwnedOnlyFilter] = usePersistedState(
+        "comics-public:ownedOnlyFilter",
+        false,
     )
     const [dwModalOpen, setDwModalOpen] = useState(false)
     const [selectedBook, setSelectedBook] = useState<Book | null>(null)
@@ -62,6 +81,8 @@ const ComicsPage: React.FC = () => {
             artistIds: debouncedArtistFilter.map((a) => a.id),
             authorIds: debouncedAuthorFilter.map((a) => a.id),
             teamIds: debouncedTeamFilter.map((t) => t.id),
+            wishlistedOnly: wishlistOnlyFilter,
+            ownedOnly: ownedOnlyFilter,
         }),
         [
             debouncedTitleSearch,
@@ -70,19 +91,42 @@ const ComicsPage: React.FC = () => {
             debouncedArtistFilter,
             debouncedAuthorFilter,
             debouncedTeamFilter,
+            wishlistOnlyFilter,
+            ownedOnlyFilter,
         ],
     )
 
-    const { books, loading, sentinelRef } = usePaginatedBooks(
-        "comics-public",
-        filters,
-        scrollContainerRef,
-    )
+    const { books, loading, sentinelRef, updateBook, removeBook } =
+        usePaginatedBooks("comics-public", filters, scrollContainerRef)
 
     // Jump back to the top of the grid whenever the filters produce a new feed.
     useEffect(() => {
         scrollContainerRef.current?.scrollTo({ top: 0 })
     }, [filters])
+
+    const handleToggleWishlist = async (e: React.MouseEvent, book: Book) => {
+        e.stopPropagation()
+        const result = await toggleWishlist(book.id)
+        if (result === undefined) return
+        // If we're only showing wishlisted books and this one just got
+        // un-wishlisted, it no longer belongs in the list at all.
+        if (wishlistOnlyFilter && !result) {
+            removeBook(book.id)
+        } else {
+            updateBook(book.id, { is_wishlisted: result })
+        }
+    }
+
+    const handleToggleOwned = async (e: React.MouseEvent, book: Book) => {
+        e.stopPropagation()
+        const result = await toggleOwned(book.id)
+        if (result === undefined) return
+        if (ownedOnlyFilter && !result) {
+            removeBook(book.id)
+        } else {
+            updateBook(book.id, { is_owned: result })
+        }
+    }
 
     function renderBook(book: Book) {
         return (
@@ -94,12 +138,60 @@ const ComicsPage: React.FC = () => {
                     setDwModalOpen(true)
                 }}
             >
-                <div className="flex-none">
+                <div className="relative flex-none">
                     <img
                         className="rounded-[1rem] w-full md:w-48"
                         src={`${window.location.origin}${book.thumbnail}`}
                         alt={book.title}
                     />
+                    {isAuthenticated && (
+                        <div className="absolute top-2 right-2 flex gap-1.5">
+                            <button
+                                type="button"
+                                aria-label={
+                                    book.is_wishlisted
+                                        ? "Remove from wishlist"
+                                        : "Add to wishlist"
+                                }
+                                onClick={(e) => handleToggleWishlist(e, book)}
+                                className="p-1.5 rounded-full bg-black/80 hover:bg-black/70 transition-colors"
+                            >
+                                <Heart
+                                    size={20}
+                                    className={
+                                        book.is_wishlisted
+                                            ? "text-brand"
+                                            : "text-white"
+                                    }
+                                    fill={
+                                        book.is_wishlisted
+                                            ? "currentColor"
+                                            : "none"
+                                    }
+                                />
+                            </button>
+                            <button
+                                type="button"
+                                aria-label={
+                                    book.is_owned
+                                        ? "Remove from owned books"
+                                        : "Mark as owned"
+                                }
+                                onClick={(e) => handleToggleOwned(e, book)}
+                                className="p-1.5 rounded-full bg-black/80 hover:bg-black/70 transition-colors"
+                            >
+                                <BookOpenCheck
+                                    size={20}
+                                    strokeWidth={3}
+                                    className={
+                                        book.is_owned
+                                            ? "text-brand"
+                                            : "text-white"
+                                    }
+                                />
+                            </button>
+                        </div>
+                    )}
                 </div>
                 <div className="h-12 overflow-hidden text-ellipsis text-center text-[1.4rem] mt-1">
                     {book.title}
@@ -115,6 +207,8 @@ const ComicsPage: React.FC = () => {
         setArtistFilter([])
         setAuthorFilter([])
         setTeamFilter([])
+        setWishlistOnlyFilter(false)
+        setOwnedOnlyFilter(false)
         setFilterResetKey((key) => key + 1)
     }
 
@@ -131,6 +225,44 @@ const ComicsPage: React.FC = () => {
                     value={titleSearch}
                     onChange={(e) => setTitleSearch(e.target.value)}
                 />
+                {isAuthenticated && (
+                    <div className="flex flex-row mt-2 text-white font-bold">
+                        <FormControlLabel
+                            sx={{
+                                "& .MuiFormControlLabel-label": {
+                                    fontSize: "1.5rem",
+                                },
+                            }}
+                            control={
+                                <Switch
+                                    checked={wishlistOnlyFilter}
+                                    onChange={(e) =>
+                                        setWishlistOnlyFilter(e.target.checked)
+                                    }
+                                    color="primary"
+                                />
+                            }
+                            label="Wishlist"
+                        />
+                        <FormControlLabel
+                            sx={{
+                                "& .MuiFormControlLabel-label": {
+                                    fontSize: "1.5rem",
+                                },
+                            }}
+                            control={
+                                <Switch
+                                    checked={ownedOnlyFilter}
+                                    onChange={(e) =>
+                                        setOwnedOnlyFilter(e.target.checked)
+                                    }
+                                    color="primary"
+                                />
+                            }
+                            label="Owned"
+                        />
+                    </div>
+                )}
                 <ul className="list-none p-0">
                     <PublishersMultiSelector
                         key={`publishers-${filterResetKey}`}
@@ -237,4 +369,8 @@ const ComicsPage: React.FC = () => {
     )
 }
 
-export default ComicsPage
+const mapStateToProps = (state: RootState) => ({
+    isAuthenticated: state.auth.isAuthenticated,
+})
+
+export default connect(mapStateToProps)(ComicsPage)

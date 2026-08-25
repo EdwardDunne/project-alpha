@@ -23,6 +23,8 @@ export type Book = {
     format_data?: Format
     sub_category?: number
     sub_category_data?: SubCategory
+    is_wishlisted?: boolean
+    is_owned?: boolean
 }
 
 export type Character = {

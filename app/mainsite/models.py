@@ -18,6 +18,14 @@ class UserProfile(models.Model):
         default=USER,
     )
 
+    # A book can be on the wishlist, owned, both, or neither.
+    wishlist_books = models.ManyToManyField(
+        "Book", related_name="wishlisted_by", blank=True
+    )
+    owned_books = models.ManyToManyField(
+        "Book", related_name="owned_by", blank=True
+    )
+
     @property
     def email(self):
         # Derived from the linked User rather than stored separately

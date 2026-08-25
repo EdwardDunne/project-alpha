@@ -74,6 +74,10 @@ class BookSerializer(serializers.ModelSerializer):
     characters_data = CharacterSerializer(source='characters', many=True, read_only=True)
     authors_data = AuthorSerializer(source='authors', many=True, read_only=True)
     artists_data = ArtistSerializer(source='artists', many=True, read_only=True)
+    # Populated via context (BookView.get) with id sets computed once
+    # per request rather than once per book
+    is_wishlisted = serializers.SerializerMethodField()
+    is_owned = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
@@ -91,3 +95,9 @@ class BookSerializer(serializers.ModelSerializer):
             'sub_category': {'required': False},
             'team': {'required': False},
         }
+
+    def get_is_wishlisted(self, obj):
+        return obj.id in self.context.get('wishlisted_ids', set())
+
+    def get_is_owned(self, obj):
+        return obj.id in self.context.get('owned_ids', set())
