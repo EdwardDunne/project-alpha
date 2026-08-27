@@ -11,14 +11,14 @@ import TeamsMultiSelector from "../components/TeamsMultiSelector"
 import AuthorsSelector from "../components/AuthorsSelector"
 import ArtistsSelector from "../components/ArtistsSelector"
 import FormatsMultiSelector from "../components/FormatsMultiSelector"
-import AddEditBookModalContent from "../modals/dwModalContant/AddEditBookModalContent"
-import ManagePublishersModalContent from "../modals/dwModalContant/ManagePublishersModalContent"
-import ManageCharactersModalContent from "../modals/dwModalContant/ManageCharactersModalContent"
-import ManageAuthorsModalContent from "../modals/dwModalContant/ManageAuthorsModalContent"
-import ManageArtistsModalContent from "../modals/dwModalContant/ManageArtistsModalContent"
-import ManageFormatsModalContent from "../modals/dwModalContant/ManageFormatsModalContent"
-import ManageSubCategoriesModalContent from "../modals/dwModalContant/ManageSubCategoriesModalContent"
-import ManageTeamsModalContent from "../modals/dwModalContant/ManageTeamsModalContent"
+import AddEditBookModalContent from "../modals/dwModalContent/AddEditBookModalContent"
+import ManagePublishersModalContent from "../modals/dwModalContent/ManagePublishersModalContent"
+import ManageCharactersModalContent from "../modals/dwModalContent/ManageCharactersModalContent"
+import ManageAuthorsModalContent from "../modals/dwModalContent/ManageAuthorsModalContent"
+import ManageArtistsModalContent from "../modals/dwModalContent/ManageArtistsModalContent"
+import ManageFormatsModalContent from "../modals/dwModalContent/ManageFormatsModalContent"
+import ManageSubCategoriesModalContent from "../modals/dwModalContent/ManageSubCategoriesModalContent"
+import ManageTeamsModalContent from "../modals/dwModalContent/ManageTeamsModalContent"
 import { darkTheme } from "../App"
 import {
     type Book,
@@ -366,7 +366,7 @@ const ComicsAdmin: React.FC = () => {
                     </div>
                     <div
                         ref={scrollContainerRef}
-                        className="flex flex-col items-center overflow-y-scroll h-[calc(100vh-13rem)] px-2 visible-scrollbar mr-[1.5rem]"
+                        className="flex flex-col items-center overflow-y-scroll h-[calc(100vh-13rem)] px-2 md:visible-scrollbar mr-[1.5rem]"
                     >
                         {books.map(displayBook)}
                         {!loading && books.length === 0 && (

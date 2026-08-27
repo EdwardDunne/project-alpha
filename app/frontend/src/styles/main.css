@@ -15,27 +15,29 @@
   }
 }
 
-/* Custom scrollbar styles */
-.visible-scrollbar {
-  scrollbar-gutter: stable;
-  scrollbar-width: auto;
-  scrollbar-color: #9ca3af #f1f5f9;
-}
+@layer utilities {
+  /* Custom scrollbar styles */
+  .visible-scrollbar {
+    scrollbar-gutter: stable;
+    scrollbar-width: auto;
+    scrollbar-color: #9ca3af #f1f5f9;
+  }
 
-.visible-scrollbar::-webkit-scrollbar {
-  width: 14px;
-}
+  .visible-scrollbar::-webkit-scrollbar {
+    width: 14px;
+  }
 
-.visible-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
+  .visible-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
 
-.visible-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #9ca3af;
-  border-radius: 8px;
-  border: 3px solid #f1f5f9;
-}
+  .visible-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #9ca3af;
+    border-radius: 8px;
+    border: 3px solid #f1f5f9;
+  }
 
-.visible-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #6b7280;
+  .visible-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #6b7280;
+  }
 }
