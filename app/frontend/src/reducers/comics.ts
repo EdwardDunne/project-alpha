@@ -16,8 +16,18 @@ import {
     LOAD_TEAMS_FAIL,
     LOAD_BOOKS_SUCCESS,
     LOAD_BOOKS_FAIL,
+    UPDATE_SHOULD_RELOAD_BOOKS,
 } from "../actions/types"
-import { Book, Character, Publisher, Author, Artist, Format, SubCategory, Team } from "../types"
+import {
+    Book,
+    Character,
+    Publisher,
+    Author,
+    Artist,
+    Format,
+    SubCategory,
+    Team,
+} from "../types"
 
 type ComicsState = {
     all_characters: Character[]
@@ -28,6 +38,7 @@ type ComicsState = {
     all_sub_categories: SubCategory[]
     all_teams: Team[]
     all_books: Book[]
+    shouldReloadBooks: boolean
 }
 
 const initialState: ComicsState = {
@@ -39,6 +50,7 @@ const initialState: ComicsState = {
     all_sub_categories: [],
     all_teams: [],
     all_books: [],
+    shouldReloadBooks: false,
 }
 
 export default function comicsReducer(
@@ -133,6 +145,11 @@ export default function comicsReducer(
             return {
                 ...state,
                 all_books: [],
+            }
+        case UPDATE_SHOULD_RELOAD_BOOKS:
+            return {
+                ...state,
+                shouldReloadBooks: payload.shouldReloadBooks,
             }
         default:
             return state

@@ -20,6 +20,7 @@ import {
     LOAD_TEAMS_SUCCESS,
     LOAD_BOOKS_FAIL,
     LOAD_BOOKS_SUCCESS,
+    UPDATE_SHOULD_RELOAD_BOOKS,
 } from "./types"
 import store from "../store"
 import {
@@ -91,9 +92,7 @@ export async function fetchBooksPage(
     )
     // Named "book_format", not "format" - DRF reserves the "format" query
     // param for response content-negotiation (e.g. ?format=json).
-    filters.formatIds?.forEach((id) =>
-        params.append("book_format", String(id)),
-    )
+    filters.formatIds?.forEach((id) => params.append("book_format", String(id)))
     filters.characterIds?.forEach((id) =>
         params.append("characters", String(id)),
     )
@@ -608,4 +607,11 @@ export const deleteBook = async (
         console.error(error)
         toast.error(getErrorMessage(error, "Something went wrong..."))
     }
+}
+
+export const setShouldReloadBooks = (shouldReloadBooks: boolean) => {
+    store.dispatch({
+        type: UPDATE_SHOULD_RELOAD_BOOKS,
+        payload: { shouldReloadBooks: shouldReloadBooks },
+    })
 }

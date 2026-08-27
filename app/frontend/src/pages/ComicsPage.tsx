@@ -6,6 +6,7 @@ import {
     toggleWishlist,
     toggleOwned,
     getAllFormats,
+    setShouldReloadBooks,
 } from "../actions/comics"
 import { usePaginatedBooks } from "../hooks/usePaginatedBooks"
 import { usePersistedState } from "../hooks/usePersistedState"
@@ -30,19 +31,21 @@ import {
     Team,
     Format,
 } from "../types"
-import BookModalContent from "modals/dwModalContant/BookModalContent"
+import BookModalContent from "modals/dwModalContent/BookModalContent"
 import { useDebounce } from "../hooks/useDebounce"
 import { RootState } from "../reducers"
 
 interface Props {
     isAuthenticated: boolean | null
     allFormats: Format[]
+    shouldReloadBooks: boolean
     getAllFormats: () => void
 }
 
 const ComicsPage: React.FC<Props> = ({
     isAuthenticated,
     allFormats,
+    shouldReloadBooks,
     getAllFormats,
 }) => {
     const [characterFilter, setCharacterFilter] = usePersistedState<
@@ -137,8 +140,15 @@ const ComicsPage: React.FC<Props> = ({
         ],
     )
 
-    const { books, loading, sentinelRef, updateBook, removeBook } =
+    const { books, loading, sentinelRef, updateBook, removeBook, reload } =
         usePaginatedBooks("comics-public", filters, scrollContainerRef)
+
+    useEffect(() => {
+        if (shouldReloadBooks) {
+            setShouldReloadBooks(false)
+            reload()
+        }
+    }, [])
 
     // Jump back to the top of the grid whenever the filters produce a new feed.
     useEffect(() => {
@@ -390,7 +400,7 @@ const ComicsPage: React.FC<Props> = ({
                     </h4>
                     <div
                         ref={scrollContainerRef}
-                        className="w-full px-4 overflow-y-scroll h-full visible-scrollbar md:mr-[3rem]"
+                        className="w-full px-4 overflow-y-scroll h-full md:visible-scrollbar md:mr-[3rem]"
                     >
                         <div className="flex justify-center items-center flex-row flex-wrap">
                             {books.map(renderBook)}
@@ -419,6 +429,7 @@ const ComicsPage: React.FC<Props> = ({
 const mapStateToProps = (state: RootState) => ({
     isAuthenticated: state.auth.isAuthenticated,
     allFormats: state.comics.all_formats,
+    shouldReloadBooks: state.comics.shouldReloadBooks,
 })
 
 export default connect(mapStateToProps, { getAllFormats })(ComicsPage)
