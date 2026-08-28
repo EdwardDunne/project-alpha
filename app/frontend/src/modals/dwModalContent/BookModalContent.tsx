@@ -9,8 +9,6 @@ interface Props {
 
 const BookModalContent: React.FC<Props> = ({ book }) => {
     const thumbnail_url = book.thumbnail
-        ? `${window.location.origin}${book.thumbnail}`
-        : book.thumbnail_url
 
     return (
         <div className="flex flex-col md:flex-row justify-around items-center gap-6 w-full">
@@ -31,9 +29,7 @@ const BookModalContent: React.FC<Props> = ({ book }) => {
                     </span>
                     <span>
                         <b>Characters</b>:{" "}
-                        {book.characters_data
-                            ?.map((c) => c.name)
-                            .join(", ")}
+                        {book.characters_data?.map((c) => c.name).join(", ")}
                     </span>
                     <span>
                         <b>Authors</b>:{" "}

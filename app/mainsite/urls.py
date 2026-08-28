@@ -1,10 +1,21 @@
 from django.urls import path
+from rest_framework.routers import SimpleRouter
 
 from project_alpha import settings
 from django.conf.urls.static import static
 
 from .views import UserProfileView, SignupView, GetCSRFToken, LoginView, LogoutView, CheckAuthenticatedView, DeleteAccountView, GetUsersView, PasswordResetRequestView, PasswordResetConfirmView
-from .comics_views import ArtistView, AuthorView, BookOwnedView, BookView, BookWishlistView, CharacterView, FormatView, PublisherView, SubCategoryView, TeamView
+from .comics_views import ArtistViewSet, AuthorViewSet, BookViewSet, CharacterViewSet, FormatViewSet, PublisherViewSet, SubCategoryViewSet, TeamViewSet
+
+router = SimpleRouter()
+router.register('comics/books', BookViewSet, basename='book')
+router.register('comics/characters', CharacterViewSet, basename='character')
+router.register('comics/publishers', PublisherViewSet, basename='publisher')
+router.register('comics/authors', AuthorViewSet, basename='author')
+router.register('comics/artists', ArtistViewSet, basename='artist')
+router.register('comics/formats', FormatViewSet, basename='format')
+router.register('comics/sub-categories', SubCategoryViewSet, basename='subcategory')
+router.register('comics/teams', TeamViewSet, basename='team')
 
 urlpatterns = [
     path('csrf-cookie', GetCSRFToken.as_view()),
@@ -18,18 +29,8 @@ urlpatterns = [
     path('get-users', GetUsersView.as_view()),
     path('profile/user', UserProfileView.as_view()),
     path('profile/user/update', UserProfileView.as_view()),
-    path('comics/books', BookView.as_view()),
-    path('comics/books/wishlist', BookWishlistView.as_view()),
-    path('comics/books/owned', BookOwnedView.as_view()),
-    path('comics/characters', CharacterView.as_view()),
-    path('comics/publishers', PublisherView.as_view()),
-    path('comics/authors', AuthorView.as_view()),
-    path('comics/artists', ArtistView.as_view()),
-    path('comics/formats', FormatView.as_view()),
-    path('comics/sub-categories', SubCategoryView.as_view()),
-    path('comics/teams', TeamView.as_view()),
-]
+] + router.urls
 
 # File Uploads
-urlpatterns += static(settings.MEDIA_URL, 
+urlpatterns += static(settings.MEDIA_URL,
     document_root=settings.MEDIA_ROOT)

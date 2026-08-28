@@ -146,7 +146,9 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-    ]
+    ],
+    # Normalizes DRF's exception responses
+    'EXCEPTION_HANDLER': 'mainsite.utils.custom_exception_handler',
 }
 
 CORS_ORIGIN_ALLOW_ALL = True

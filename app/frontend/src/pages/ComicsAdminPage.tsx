@@ -114,8 +114,6 @@ const ComicsAdmin: React.FC = () => {
 
     function displayBook(book: Book) {
         const thumbnail_url = book.thumbnail
-            ? `${window.location.origin}${book.thumbnail}`
-            : book.thumbnail_url
 
         return (
             <div
@@ -272,7 +270,7 @@ const ComicsAdmin: React.FC = () => {
                     Actions
                 </li>
             </ul>
-            <div className="flex flex-col mt-2 gap-1">
+            <div className="flex flex-col mt-2 gap-1 pb-4">
                 {[
                     { label: "Add Book", type: "addBook" },
                     { label: "Manage Characters", type: "manageCharacters" },

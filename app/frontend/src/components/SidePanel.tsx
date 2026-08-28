@@ -20,7 +20,7 @@ const SidePanel: React.FC<Props> = ({
             {/* Desktop sidebar — hidden on mobile, collapsible via the tab on its edge */}
             <div className="hidden md:flex sticky top-[6rem] h-[calc(100dvh-6rem)] shrink-0">
                 <div
-                    className={`h-full bg-[#313a46] overflow-hidden transition-all duration-300 ${collapsed ? "w-0" : "w-[35rem]"}`}
+                    className={`h-full bg-[#313a46] overflow-y-auto overflow-x-hidden transition-all duration-300 ${collapsed ? "w-0" : "w-[35rem]"}`}
                 >
                     <div className="w-[35rem] h-full">{children}</div>
                 </div>
