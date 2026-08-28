@@ -18,8 +18,6 @@ import {
     LOAD_SUB_CATEGORIES_SUCCESS,
     LOAD_TEAMS_FAIL,
     LOAD_TEAMS_SUCCESS,
-    LOAD_BOOKS_FAIL,
-    LOAD_BOOKS_SUCCESS,
     UPDATE_SHOULD_RELOAD_BOOKS,
 } from "./types"
 import store from "../store"
@@ -34,31 +32,245 @@ import {
     Team,
 } from "../types"
 
-// Get all books from DB, this is cached unless you are an admin
-export const getAllBooks = () => async (dispatch: Dispatch) => {
-    const config = {
-        headers: httpUtil.getHeaders("GET"),
+// Generic Action Factory
+function makeViewSetActions<
+    TItem extends { id: number },
+    TCreateBody extends Record<string, unknown>,
+    TUpdateBody extends { id: number },
+>(cfg: {
+    url: string // example /api/comics/authors/
+    label: string // example "Author Added!"
+    pluralLabel: string // example"Error getting authors..."
+    successType: string
+    failType: string
+    selectList: () => TItem[]
+    buildPayload: (list: TItem[]) => Record<string, TItem[]>
+}) {
+    const url = `${window.location.origin}/api/comics/${cfg.url}/`
+
+    const getAll = () => async (dispatch: Dispatch) => {
+        const config = { headers: httpUtil.getHeaders("GET") }
+        try {
+            const res = await axios.get(url, config)
+            dispatch({
+                type: cfg.successType,
+                payload: cfg.buildPayload(res.data),
+            })
+        } catch (error) {
+            console.error(error)
+            toast.error(
+                getErrorMessage(error, `Error getting ${cfg.pluralLabel}...`),
+            )
+            dispatch({ type: cfg.failType })
+        }
     }
 
-    try {
-        const res = await axios.get(
-            `${window.location.origin}/api/comics/books`,
-            config,
-        )
-        dispatch({
-            type: LOAD_BOOKS_SUCCESS,
-            payload: res.data,
-        })
-    } catch (error) {
-        console.error(error)
-        toast.error(getErrorMessage(error, "Error getting books..."))
-        dispatch({
-            type: LOAD_BOOKS_FAIL,
-        })
+    const add = async (
+        body: TCreateBody,
+        setDwModalOpen: (open: boolean) => void,
+        onDataChanged?: () => void,
+    ) => {
+        const config = { headers: httpUtil.getHeaders("POST") }
+        try {
+            const res = await axios.post(url, JSON.stringify(body), config)
+            toast.success(`${cfg.label} Added!`)
+            store.dispatch({
+                type: cfg.successType,
+                payload: cfg.buildPayload([...cfg.selectList(), res.data]),
+            })
+            setDwModalOpen(false)
+            onDataChanged?.()
+        } catch (error) {
+            console.error(error)
+            toast.error(getErrorMessage(error, "Something went wrong..."))
+        }
     }
+
+    const update = async (
+        body: TUpdateBody,
+        onSuccess?: () => void,
+        onDataChanged?: () => void,
+    ) => {
+        const config = { headers: httpUtil.getHeaders("PUT") }
+        try {
+            const res = await axios.put(
+                `${url}${body.id}/`,
+                JSON.stringify(body),
+                config,
+            )
+            toast.success(`${cfg.label} Updated!`)
+            const updatedList = cfg
+                .selectList()
+                .map((item) => (item.id === res.data.id ? res.data : item))
+            store.dispatch({
+                type: cfg.successType,
+                payload: cfg.buildPayload(updatedList),
+            })
+            onSuccess?.()
+            onDataChanged?.()
+        } catch (error) {
+            console.error(error)
+            toast.error(getErrorMessage(error, "Something went wrong..."))
+        }
+    }
+
+    const del = async (id: number, onDataChanged?: () => void) => {
+        const config = { headers: httpUtil.getHeaders("DELETE") }
+        try {
+            await axios.delete(`${url}${id}/`, config)
+            toast.success(`${cfg.label} Deleted!`)
+            const remainingList = cfg
+                .selectList()
+                .filter((item) => item.id !== id)
+            store.dispatch({
+                type: cfg.successType,
+                payload: cfg.buildPayload(remainingList),
+            })
+            onDataChanged?.()
+        } catch (error) {
+            console.error(error)
+            toast.error(getErrorMessage(error, "Something went wrong..."))
+        }
+    }
+
+    return { getAll, add, update, del }
 }
 
-// PAGINATED / FILTERED BOOK FEED
+// Publisher Actions
+const publisherActions = makeViewSetActions<
+    Publisher,
+    { name: string },
+    { id: number; name: string }
+>({
+    url: "publishers",
+    label: "Publisher",
+    pluralLabel: "publishers",
+    successType: LOAD_PUBLISHERS_SUCCESS,
+    failType: LOAD_PUBLISHERS_FAIL,
+    selectList: () => store.getState().comics.all_publishers,
+    buildPayload: (publishers) => ({ publishers }),
+})
+export const getAllPublishers = publisherActions.getAll
+export const addPublisher = publisherActions.add
+export const updatePublisher = publisherActions.update
+export const deletePublisher = publisherActions.del
+
+// Character Actions
+const characterActions = makeViewSetActions<
+    Character,
+    { name: string; publisher: string },
+    { id: number; name: string; publisher: string }
+>({
+    url: "characters",
+    label: "Character",
+    pluralLabel: "characters",
+    successType: LOAD_CHARACTERS_SUCCESS,
+    failType: LOAD_CHARACTERS_FAIL,
+    selectList: () => store.getState().comics.all_characters,
+    buildPayload: (characters) => ({ characters }),
+})
+export const getAllCharacters = characterActions.getAll
+export const addCharacter = characterActions.add
+export const updateCharacter = characterActions.update
+export const deleteCharacter = characterActions.del
+
+// Author Actions
+const authorActions = makeViewSetActions<
+    Author,
+    { name: string },
+    { id: number; name: string }
+>({
+    url: "authors",
+    label: "Author",
+    pluralLabel: "authors",
+    successType: LOAD_AUTHORS_SUCCESS,
+    failType: LOAD_AUTHORS_FAIL,
+    selectList: () => store.getState().comics.all_authors,
+    buildPayload: (authors) => ({ authors }),
+})
+export const getAllAuthors = authorActions.getAll
+export const addAuthor = authorActions.add
+export const updateAuthor = authorActions.update
+export const deleteAuthor = authorActions.del
+
+// Artist Actions
+const artistActions = makeViewSetActions<
+    Artist,
+    { name: string },
+    { id: number; name: string }
+>({
+    url: "artists",
+    label: "Artist",
+    pluralLabel: "artists",
+    successType: LOAD_ARTISTS_SUCCESS,
+    failType: LOAD_ARTISTS_FAIL,
+    selectList: () => store.getState().comics.all_artists,
+    buildPayload: (artists) => ({ artists }),
+})
+export const getAllArtists = artistActions.getAll
+export const addArtist = artistActions.add
+export const updateArtist = artistActions.update
+export const deleteArtist = artistActions.del
+
+// Format Actions
+const formatActions = makeViewSetActions<
+    Format,
+    { name: string; abbreviation: string },
+    { id: number; name: string; abbreviation: string }
+>({
+    url: "formats",
+    label: "Format",
+    pluralLabel: "formats",
+    successType: LOAD_FORMATS_SUCCESS,
+    failType: LOAD_FORMATS_FAIL,
+    selectList: () => store.getState().comics.all_formats,
+    buildPayload: (formats) => ({ formats }),
+})
+export const getAllFormats = formatActions.getAll
+export const addFormat = formatActions.add
+export const updateFormat = formatActions.update
+export const deleteFormat = formatActions.del
+
+// Sub Category Actions
+const subCategoryActions = makeViewSetActions<
+    SubCategory,
+    { name: string },
+    { id: number; name: string }
+>({
+    url: "sub-categories",
+    label: "Sub Category",
+    pluralLabel: "sub categories",
+    successType: LOAD_SUB_CATEGORIES_SUCCESS,
+    failType: LOAD_SUB_CATEGORIES_FAIL,
+    selectList: () => store.getState().comics.all_sub_categories,
+    buildPayload: (sub_categories) => ({ sub_categories }),
+})
+export const getAllSubCategories = subCategoryActions.getAll
+export const addSubCategory = subCategoryActions.add
+export const updateSubCategory = subCategoryActions.update
+export const deleteSubCategory = subCategoryActions.del
+
+// Team Actions
+const teamActions = makeViewSetActions<
+    Team,
+    { name: string; characters: string[] },
+    { id: number; name: string; characters: string[] }
+>({
+    url: "teams",
+    label: "Team",
+    pluralLabel: "teams",
+    successType: LOAD_TEAMS_SUCCESS,
+    failType: LOAD_TEAMS_FAIL,
+    selectList: () => store.getState().comics.all_teams,
+    buildPayload: (teams) => ({ teams }),
+})
+export const getAllTeams = teamActions.getAll
+export const addTeam = teamActions.add
+export const updateTeam = teamActions.update
+export const deleteTeam = teamActions.del
+
+// Book Actions
+// Get paginated/filtered Books
 export const BOOKS_PAGE_SIZE = 24
 
 export type BooksPageFilters = {
@@ -90,8 +302,8 @@ export async function fetchBooksPage(
     filters.publisherIds?.forEach((id) =>
         params.append("publisher", String(id)),
     )
-    // Named "book_format", not "format" - DRF reserves the "format" query
-    // param for response content-negotiation (e.g. ?format=json).
+    // Named "book_format" not "format" (DRF reserves the "format" query
+    // param).
     filters.formatIds?.forEach((id) => params.append("book_format", String(id)))
     filters.characterIds?.forEach((id) =>
         params.append("characters", String(id)),
@@ -107,7 +319,7 @@ export async function fetchBooksPage(
     }
 
     const res = await axios.get(
-        `${window.location.origin}/api/comics/books?${params.toString()}`,
+        `${window.location.origin}/api/comics/books/?${params.toString()}`,
         config,
     )
 
@@ -118,7 +330,7 @@ export async function fetchBooksPage(
     }
 }
 
-// Toggle whether the logged-in user has this book wishlisted/owned.
+// Toggle whether the logged in user has this book wishlisted/owned.
 export async function toggleWishlist(
     bookId: number,
 ): Promise<boolean | undefined> {
@@ -128,8 +340,8 @@ export async function toggleWishlist(
 
     try {
         const res = await axios.post(
-            `${window.location.origin}/api/comics/books/wishlist`,
-            JSON.stringify({ id: bookId }),
+            `${window.location.origin}/api/comics/books/${bookId}/wishlist/`,
+            null,
             config,
         )
         toast.success(
@@ -154,8 +366,8 @@ export async function toggleOwned(
 
     try {
         const res = await axios.post(
-            `${window.location.origin}/api/comics/books/owned`,
-            JSON.stringify({ id: bookId }),
+            `${window.location.origin}/api/comics/books/${bookId}/owned/`,
+            null,
             config,
         )
         toast.success(
@@ -173,303 +385,7 @@ export async function toggleOwned(
     }
 }
 
-// GENERIC COMIC ENTITY ACTIONS
-type ComicEntityConfig<TItem extends { id: number }> = {
-    url: string // e.g. "publishers" -> /api/comics/publishers (GET/POST/PUT/DELETE)
-    label: string // e.g. "Publisher" -> "Publisher Added!"
-    pluralLabel: string // e.g. "publishers" -> "Error getting publishers..."
-    newItemKey: string // e.g. "new_publisher"
-    successType: string
-    failType: string
-    selectList: () => TItem[]
-    buildPayload: (list: TItem[]) => Record<string, TItem[]>
-}
-
-function getComicData<TItem extends { id: number }>(
-    cfg: ComicEntityConfig<TItem>,
-) {
-    return () => async (dispatch: Dispatch) => {
-        const config = {
-            headers: httpUtil.getHeaders("GET"),
-        }
-
-        try {
-            const res = await axios.get(
-                `${window.location.origin}/api/comics/${cfg.url}`,
-                config,
-            )
-            dispatch({ type: cfg.successType, payload: res.data })
-        } catch (error) {
-            console.error(error)
-            toast.error(
-                getErrorMessage(error, `Error getting ${cfg.pluralLabel}...`),
-            )
-            dispatch({ type: cfg.failType })
-        }
-    }
-}
-
-function createComicData<
-    TBody extends Record<string, unknown>,
-    TItem extends { id: number },
->(cfg: ComicEntityConfig<TItem>) {
-    return async (
-        body: TBody,
-        setDwModalOpen: (open: boolean) => void,
-        // Explicit action to refetch paginated book data.
-        onDataChanged?: () => void,
-    ) => {
-        const config = {
-            headers: httpUtil.getHeaders("POST"),
-        }
-
-        try {
-            const res = await axios.post(
-                `${window.location.origin}/api/comics/${cfg.url}`,
-                JSON.stringify(body),
-                config,
-            )
-            const newItem = res.data[cfg.newItemKey]
-            toast.success(`${cfg.label} Added!`)
-            store.dispatch({
-                type: cfg.successType,
-                payload: cfg.buildPayload([...cfg.selectList(), newItem]),
-            })
-            store.dispatch(getAllBooks()) // Refresh books' derived names
-            setDwModalOpen(false)
-            onDataChanged?.()
-        } catch (error) {
-            console.error(error)
-            toast.error(getErrorMessage(error, "Something went wrong..."))
-        }
-    }
-}
-
-function updateComicData<
-    TBody extends { id: number },
-    TItem extends { id: number },
->(cfg: ComicEntityConfig<TItem>) {
-    return async (
-        body: TBody,
-        onSuccess?: () => void,
-        onDataChanged?: () => void,
-    ) => {
-        const config = {
-            headers: httpUtil.getHeaders("PUT"),
-        }
-
-        try {
-            const res = await axios.put(
-                `${window.location.origin}/api/comics/${cfg.url}`,
-                JSON.stringify(body),
-                config,
-            )
-            const updatedItem = res.data[cfg.newItemKey]
-            toast.success(`${cfg.label} Updated!`)
-            const updatedList = cfg
-                .selectList()
-                .map((item) =>
-                    item.id === updatedItem.id ? updatedItem : item,
-                )
-            store.dispatch({
-                type: cfg.successType,
-                payload: cfg.buildPayload(updatedList),
-            })
-            store.dispatch(getAllBooks()) // Refresh books' derived names
-            onSuccess?.()
-            onDataChanged?.()
-        } catch (error) {
-            console.error(error)
-            toast.error(getErrorMessage(error, "Something went wrong..."))
-        }
-    }
-}
-
-function deleteComicData<TItem extends { id: number }>(
-    cfg: ComicEntityConfig<TItem>,
-) {
-    return async (id: number, onDataChanged?: () => void) => {
-        const config = {
-            headers: httpUtil.getHeaders("DELETE"),
-            data: { id },
-        }
-
-        try {
-            await axios.delete(
-                `${window.location.origin}/api/comics/${cfg.url}`,
-                config,
-            )
-            toast.success(`${cfg.label} Deleted!`)
-            const remainingList = cfg
-                .selectList()
-                .filter((item) => item.id !== id)
-            store.dispatch({
-                type: cfg.successType,
-                payload: cfg.buildPayload(remainingList),
-            })
-            store.dispatch(getAllBooks()) // Refresh books' derived names
-            onDataChanged?.()
-        } catch (error) {
-            console.error(error)
-            toast.error(getErrorMessage(error, "Something went wrong..."))
-        }
-    }
-}
-
-// PUBLISHER ACTIONS
-const publisherConfig: ComicEntityConfig<Publisher> = {
-    url: "publishers",
-    label: "Publisher",
-    pluralLabel: "publishers",
-    newItemKey: "new_publisher",
-    successType: LOAD_PUBLISHERS_SUCCESS,
-    failType: LOAD_PUBLISHERS_FAIL,
-    selectList: () => store.getState().comics.all_publishers,
-    buildPayload: (publishers) => ({ publishers }),
-}
-
-export const getAllPublishers = getComicData(publisherConfig)
-export const addPublisher = createComicData<{ name: string }, Publisher>(
-    publisherConfig,
-)
-export const updatePublisher = updateComicData<
-    { id: number; name: string },
-    Publisher
->(publisherConfig)
-export const deletePublisher = deleteComicData(publisherConfig)
-
-// AUTHOR ACTIONS
-const authorConfig: ComicEntityConfig<Author> = {
-    url: "authors",
-    label: "Author",
-    pluralLabel: "authors",
-    newItemKey: "new_author",
-    successType: LOAD_AUTHORS_SUCCESS,
-    failType: LOAD_AUTHORS_FAIL,
-    selectList: () => store.getState().comics.all_authors,
-    buildPayload: (authors) => ({ authors }),
-}
-
-export const getAllAuthors = getComicData(authorConfig)
-export const addAuthor = createComicData<{ name: string }, Author>(authorConfig)
-export const updateAuthor = updateComicData<
-    { id: number; name: string },
-    Author
->(authorConfig)
-export const deleteAuthor = deleteComicData(authorConfig)
-
-// ARTIST ACTIONS
-const artistConfig: ComicEntityConfig<Artist> = {
-    url: "artists",
-    label: "Artist",
-    pluralLabel: "artists",
-    newItemKey: "new_artist",
-    successType: LOAD_ARTISTS_SUCCESS,
-    failType: LOAD_ARTISTS_FAIL,
-    selectList: () => store.getState().comics.all_artists,
-    buildPayload: (artists) => ({ artists }),
-}
-
-export const getAllArtists = getComicData(artistConfig)
-export const addArtist = createComicData<{ name: string }, Artist>(artistConfig)
-export const updateArtist = updateComicData<
-    { id: number; name: string },
-    Artist
->(artistConfig)
-export const deleteArtist = deleteComicData(artistConfig)
-
-// FORMAT ACTIONS
-const formatConfig: ComicEntityConfig<Format> = {
-    url: "formats",
-    label: "Format",
-    pluralLabel: "formats",
-    newItemKey: "new_format",
-    successType: LOAD_FORMATS_SUCCESS,
-    failType: LOAD_FORMATS_FAIL,
-    selectList: () => store.getState().comics.all_formats,
-    buildPayload: (formats) => ({ formats }),
-}
-
-export const getAllFormats = getComicData(formatConfig)
-export const addFormat = createComicData<
-    { name: string; abbreviation: string },
-    Format
->(formatConfig)
-export const updateFormat = updateComicData<
-    { id: number; name: string; abbreviation: string },
-    Format
->(formatConfig)
-export const deleteFormat = deleteComicData(formatConfig)
-
-// SUB CATEGORY ACTIONS
-const subCategoryConfig: ComicEntityConfig<SubCategory> = {
-    url: "sub-categories",
-    label: "Sub Category",
-    pluralLabel: "sub categories",
-    newItemKey: "new_sub_category",
-    successType: LOAD_SUB_CATEGORIES_SUCCESS,
-    failType: LOAD_SUB_CATEGORIES_FAIL,
-    selectList: () => store.getState().comics.all_sub_categories,
-    buildPayload: (sub_categories) => ({ sub_categories }),
-}
-
-export const getAllSubCategories = getComicData(subCategoryConfig)
-export const addSubCategory = createComicData<{ name: string }, SubCategory>(
-    subCategoryConfig,
-)
-export const updateSubCategory = updateComicData<
-    { id: number; name: string },
-    SubCategory
->(subCategoryConfig)
-export const deleteSubCategory = deleteComicData(subCategoryConfig)
-
-// TEAM ACTIONS
-const teamConfig: ComicEntityConfig<Team> = {
-    url: "teams",
-    label: "Team",
-    pluralLabel: "teams",
-    newItemKey: "new_team",
-    successType: LOAD_TEAMS_SUCCESS,
-    failType: LOAD_TEAMS_FAIL,
-    selectList: () => store.getState().comics.all_teams,
-    buildPayload: (teams) => ({ teams }),
-}
-
-export const getAllTeams = getComicData(teamConfig)
-export const addTeam = createComicData<
-    { name: string; characters: string[] },
-    Team
->(teamConfig)
-export const updateTeam = updateComicData<
-    { id: number; name: string; characters: string[] },
-    Team
->(teamConfig)
-export const deleteTeam = deleteComicData(teamConfig)
-
-// CHARACTER ACTIONS
-const characterConfig: ComicEntityConfig<Character> = {
-    url: "characters",
-    label: "Character",
-    pluralLabel: "characters",
-    newItemKey: "new_character",
-    successType: LOAD_CHARACTERS_SUCCESS,
-    failType: LOAD_CHARACTERS_FAIL,
-    selectList: () => store.getState().comics.all_characters,
-    buildPayload: (characters) => ({ characters }),
-}
-
-export const getAllCharacters = getComicData(characterConfig)
-export const addCharacter = createComicData<
-    { name: string; publisher: string },
-    Character
->(characterConfig)
-export const updateCharacter = updateComicData<
-    { id: number; name: string; publisher: string },
-    Character
->(characterConfig)
-export const deleteCharacter = deleteComicData(characterConfig)
-
-// BOOK ACTIONS
+// Add Book
 export const addBook = async (
     formData: {
         publisher: string
@@ -510,12 +426,11 @@ export const addBook = async (
 
     try {
         await axios.post(
-            `${window.location.origin}/api/comics/books`,
+            `${window.location.origin}/api/comics/books/`,
             _formData,
             config,
         )
         toast.success("Book Added!")
-        store.dispatch(getAllBooks()) // Refresh Books (kept for future use of the full-list view)
         setDwModalOpen(false)
         onSuccess?.()
     } catch (error) {
@@ -567,12 +482,11 @@ export const updateBook = async (
 
     try {
         await axios.put(
-            `${window.location.origin}/api/comics/books`,
+            `${window.location.origin}/api/comics/books/${formData.id}/`,
             _formData,
             config,
         )
         toast.success("Book Updated!")
-        store.dispatch(getAllBooks()) // Refresh Books (kept for future use of the full-list view)
         setDwModalOpen(false)
         onSuccess?.()
     } catch (error) {
@@ -589,18 +503,14 @@ export const deleteBook = async (
 ) => {
     const config = {
         headers: httpUtil.getHeaders("DELETE"),
-        data: { id },
     }
 
     try {
-        await axios.delete(`${window.location.origin}/api/comics/books`, config)
+        await axios.delete(
+            `${window.location.origin}/api/comics/books/${id}/`,
+            config,
+        )
         toast.success("Book Deleted!")
-        // Kept for future use of the full-list view.
-        const books = store.getState().comics.all_books
-        store.dispatch({
-            type: LOAD_BOOKS_SUCCESS,
-            payload: { books: books.filter((b) => b.id !== id) },
-        })
         setDwModalOpen(false)
         onSuccess?.()
     } catch (error) {

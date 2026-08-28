@@ -1,28 +1,56 @@
 import logging
 
-from django.core.cache import cache
-from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db.models.deletion import ProtectedError
 from django.db.models.functions import Lower
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import permissions, status
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from mainsite.models import Artist, Author, Book, Character, Format, Publisher, SubCategory, Team, UserProfile
 from .serializers import ArtistSerializer, AuthorSerializer, BookSerializer, CharacterSerializer, FormatSerializer, PublisherSerializer, SubCategorySerializer, TeamSerializer
-from .utils import serializer_error_message
 
 logger = logging.getLogger(__name__)
 
-CACHE_TTL = 60 * 60 * 24  # 24 hours
 DEFAULT_PAGE_SIZE = 24
 MAX_PAGE_SIZE = 100
 
 
-class BookView(APIView):
+class BooksPagination(PageNumberPagination):
+    page_size = DEFAULT_PAGE_SIZE
+    page_size_query_param = 'page_size'
+    max_page_size = MAX_PAGE_SIZE
+
+    def get_paginated_response(self, data):
+        return Response({
+            'success': 'true',
+            'books': data,
+            'has_more': self.page.has_next(),
+            'count': self.page.paginator.count,
+        })
+
+class BookViewSet(viewsets.ModelViewSet):
+    """
+        GET    /api/comics/books/                 -> list (paginated if
+                                                       ?page, else the
+                                                       full unfiltered list)
+        POST   /api/comics/books/                  -> create
+        GET    /api/comics/books/<pk>/             -> retrieve
+        PUT    /api/comics/books/<pk>/             -> update
+        PATCH  /api/comics/books/<pk>/             -> partial_update
+        DELETE /api/comics/books/<pk>/             -> destroy
+        POST   /api/comics/books/<pk>/wishlist/    -> toggle wishlisted
+        POST   /api/comics/books/<pk>/owned/       -> toggle owned
+    """
+    queryset = Book.objects.with_related()
+    serializer_class = BookSerializer
+    pagination_class = BooksPagination
+
     def get_permissions(self):
-        if self.request.method == 'GET':
+        if self.action in ('list', 'retrieve'):
             return [permissions.AllowAny()]
+        if self.action in ('wishlist', 'owned'):
+            return [permissions.IsAuthenticated()]
         return [permissions.IsAdminUser()]
 
     def _get_profile(self, request):
@@ -42,858 +70,370 @@ class BookView(APIView):
             'owned_ids': set(profile.owned_books.values_list('id', flat=True)),
         }
 
-    def get(self, request, format=None):
-        try:
-            # Original behavior - get all books cached
-            if 'page' not in request.query_params:
-                if not request.user.is_staff:
-                    cached = cache.get('all_books')
-                    if cached is not None:
-                        return Response({'success': 'true', 'books': cached})
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.action != 'list':
+            return queryset
 
-                books = Book.objects.with_related()
-                all_books = BookSerializer(books, many=True).data
+        request = self.request
 
-                if not request.user.is_staff:
-                    cache.set('all_books', all_books, CACHE_TTL)
+        title = request.query_params.get('title')
+        if title:
+            queryset = queryset.filter(title__icontains=title)
 
-                return Response({'success': 'true', 'books': all_books})
+        publisher_ids = request.query_params.getlist('publisher')
+        if publisher_ids:
+            queryset = queryset.filter(publisher__id__in=publisher_ids)
 
-            # Get filtered books by page
-            try:
-                page = int(request.query_params['page'])
-                page_size = int(request.query_params.get('page_size', DEFAULT_PAGE_SIZE))
-            except ValueError:
-                return Response({'error': 'page and page_size must be integers.'}, status=status.HTTP_400_BAD_REQUEST)
+        # Named "book_format" not "format" (DRF reserves the "format"
+        # query param)
+        format_ids = request.query_params.getlist('book_format')
+        if format_ids:
+            queryset = queryset.filter(format__id__in=format_ids)
 
-            page_size = max(1, min(page_size, MAX_PAGE_SIZE))
+        team_ids = request.query_params.getlist('team')
+        if team_ids:
+            queryset = queryset.filter(team__id__in=team_ids)
 
-            bookQueryset = Book.objects.with_related()
+        character_ids = request.query_params.getlist('characters')
+        if character_ids:
+            queryset = queryset.filter(characters__id__in=character_ids)
 
-            title = request.query_params.get('title')
-            if title:
-                bookQueryset = bookQueryset.filter(title__icontains=title)
+        artist_ids = request.query_params.getlist('artists')
+        if artist_ids:
+            queryset = queryset.filter(artists__id__in=artist_ids)
 
-            publisher_ids = request.query_params.getlist('publisher')
-            if publisher_ids:
-                bookQueryset = bookQueryset.filter(publisher__id__in=publisher_ids)
+        author_ids = request.query_params.getlist('authors')
+        if author_ids:
+            queryset = queryset.filter(authors__id__in=author_ids)
 
-            # Named "book_format", not "format" - DRF reserves the "format"
-            # query param for response content-negotiation (e.g. ?format=json),
-            # and a collision here causes a 404 rather than an obvious error.
-            format_ids = request.query_params.getlist('book_format')
-            if format_ids:
-                bookQueryset = bookQueryset.filter(format__id__in=format_ids)
+        # De-dupe duplicate rows
+        if character_ids or artist_ids or author_ids:
+            queryset = queryset.distinct()
 
-            team_ids = request.query_params.getlist('team')
-            if team_ids:
-                bookQueryset = bookQueryset.filter(team__id__in=team_ids)
+        profile = self._get_profile(request)
 
-            character_ids = request.query_params.getlist('characters')
-            if character_ids:
-                bookQueryset = bookQueryset.filter(characters__id__in=character_ids)
-
-            artist_ids = request.query_params.getlist('artists')
-            if artist_ids:
-                bookQueryset = bookQueryset.filter(artists__id__in=artist_ids)
-
-            author_ids = request.query_params.getlist('authors')
-            if author_ids:
-                bookQueryset = bookQueryset.filter(authors__id__in=author_ids)
-
-            # De-dupe duplicate rows
-            if character_ids or artist_ids or author_ids:
-                bookQueryset = bookQueryset.distinct()
-
-            profile = self._get_profile(request)
-
-            wishlisted_only = request.query_params.get('wishlisted') == 'true'
-            owned_only = request.query_params.get('owned') == 'true'
-            if wishlisted_only or owned_only:
-                if profile is None:
-                    bookQueryset = bookQueryset.none()
-                elif wishlisted_only and owned_only:
-                    # Either list qualifies - union, not intersection.
-                    bookQueryset = bookQueryset.filter(
-                        Q(wishlisted_by=profile) | Q(owned_by=profile)
-                    ).distinct()
-                elif wishlisted_only:
-                    bookQueryset = bookQueryset.filter(wishlisted_by=profile)
-                else:
-                    bookQueryset = bookQueryset.filter(owned_by=profile)
-
-            bookQueryset = bookQueryset.order_by(Lower('title'))
-
-            paginator = Paginator(bookQueryset, page_size)
-            page_obj = paginator.get_page(page)
-
-            context = self._wishlist_owned_context(profile)
-            return Response({
-                'success': 'true',
-                'books': BookSerializer(page_obj.object_list, many=True, context=context).data,
-                'has_more': page_obj.has_next(),
-                'count': paginator.count,
-            })
-        except Exception as e:
-            logger.exception('Something went wrong when retrieving books: %s', e)
-            return Response({'error': 'Something went wrong when retrieving books.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def post(self, request, format=None):
-        try:
-            serializer = BookSerializer(data=request.data)
-            if not serializer.is_valid():
-                logger.warning('Book creation failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            new_book = serializer.save()
-            cache.delete('all_books')
-            return Response({'success': 'true', 'new_book': BookSerializer(new_book).data}, status=status.HTTP_201_CREATED)
-
-        # Book thumbnail url example
-        # http://localhost:8000/media/uploads/book-thumbnails/comics-hex-img.jpg
-
-        except Exception as e:
-            logger.exception('Something went wrong when adding new book: %s', e)
-            return Response({'error': 'Something went wrong when adding new book.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def put(self, request, format=None):
-        try:
-            data = self.request.data.copy()
-            # Users can clear these fields by removing all the 
-            # attached objects. This section gives the serializer
-            # the empty list necessary to validate this change
-            if 'authors' not in data:
-                data.setlist('authors', [])
-            if 'artists' not in data:
-                data.setlist('artists', [])
-            if 'characters' not in data:
-                data.setlist('characters', [])
-
-            try:
-                book_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                book = Book.objects.get(id=book_id)
-            except Book.DoesNotExist:
-                return Response({'error': 'Book not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            serializer = BookSerializer(book, data=data, partial=True)
-            if not serializer.is_valid():
-                logger.warning('Book update failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            updated_book = serializer.save()
-            cache.delete('all_books')
-            return Response({'success': 'true', 'new_book': BookSerializer(updated_book).data})
-
-        except Exception as e:
-            logger.exception('Something went wrong when updating the book: %s', e)
-            return Response({'error': 'Something went wrong when updating the book.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def delete(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                book_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                book = Book.objects.get(id=book_id)
-            except Book.DoesNotExist:
-                return Response({'error': 'Book not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            book.delete()
-            cache.delete('all_books')
-            return Response({'success': 'true'})
-        except Exception as e:
-            logger.exception('Something went wrong when deleting the book: %s', e)
-            return Response({'error': 'Something went wrong when deleting the book.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class BookWishlistView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, format=None):
-        try:
-            try:
-                book_id = request.data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                book = Book.objects.get(id=book_id)
-            except Book.DoesNotExist:
-                return Response({'error': 'Book not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            profile, _ = UserProfile.objects.get_or_create(user=request.user)
-
-            if profile.wishlist_books.filter(id=book.id).exists():
-                profile.wishlist_books.remove(book)
-                is_wishlisted = False
+        wishlisted_only = request.query_params.get('wishlisted') == 'true'
+        owned_only = request.query_params.get('owned') == 'true'
+        if wishlisted_only or owned_only:
+            if profile is None:
+                queryset = queryset.none()
+            elif wishlisted_only and owned_only:
+                # wishlist OR owned
+                queryset = queryset.filter(
+                    Q(wishlisted_by=profile) | Q(owned_by=profile)
+                ).distinct()
+            elif wishlisted_only:
+                queryset = queryset.filter(wishlisted_by=profile)
             else:
-                profile.wishlist_books.add(book)
-                is_wishlisted = True
+                queryset = queryset.filter(owned_by=profile)
 
-            return Response({'success': 'true', 'is_wishlisted': is_wishlisted})
-        except Exception as e:
-            logger.exception('Something went wrong when updating your wishlist: %s', e)
-            return Response({'error': 'Something went wrong when updating your wishlist.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return queryset.order_by(Lower('title'))
 
-class BookOwnedView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # If this is a list action, add wishlist and owned data to context
+        if self.action == 'list':
+            profile = self._get_profile(self.request)
+            context.update(self._wishlist_owned_context(profile))
+        return context
 
-    def post(self, request, format=None):
-        try:
-            try:
-                book_id = request.data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
+    def list(self, request, *args, **kwargs):
+        # Old behavior, list all comics, not currently in use
+        if 'page' not in request.query_params:
+            books = Book.objects.with_related()
+            serializer = self.get_serializer(books, many=True)
+            return Response({'success': 'true', 'books': serializer.data})
 
-            try:
-                book = Book.objects.get(id=book_id)
-            except Book.DoesNotExist:
-                return Response({'error': 'Book not found.'}, status=status.HTTP_404_NOT_FOUND)
+        return super().list(request, *args, **kwargs)
 
-            profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    def update(self, request, *args, **kwargs):
+        # Users can clear authors/artists/characters by omitting those
+        # keys entirely
+        data = request.data.copy()
+        if 'authors' not in data:
+            data.setlist('authors', [])
+        if 'artists' not in data:
+            data.setlist('artists', [])
+        if 'characters' not in data:
+            data.setlist('characters', [])
 
-            if profile.owned_books.filter(id=book.id).exists():
-                profile.owned_books.remove(book)
-                is_owned = False
-            else:
-                profile.owned_books.add(book)
-                is_owned = True
+        # Always partial
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
 
-            return Response({'success': 'true', 'is_owned': is_owned})
-        except Exception as e:
-            logger.exception('Something went wrong when updating your owned books: %s', e)
-            return Response({'error': 'Something went wrong when updating your owned books.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
 
-class CharacterView(APIView):
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def wishlist(self, request, pk=None):
+        book = self.get_object()
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+        if profile.wishlist_books.filter(id=book.id).exists():
+            profile.wishlist_books.remove(book)
+            is_wishlisted = False
+        else:
+            profile.wishlist_books.add(book)
+            is_wishlisted = True
+
+        return Response({'success': 'true', 'is_wishlisted': is_wishlisted})
+
+    @action(detail=True, methods=['post'])
+    def owned(self, request, pk=None):
+        book = self.get_object()
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+        if profile.owned_books.filter(id=book.id).exists():
+            profile.owned_books.remove(book)
+            is_owned = False
+        else:
+            profile.owned_books.add(book)
+            is_owned = True
+
+        return Response({'success': 'true', 'is_owned': is_owned})
+
+class CharacterViewSet(viewsets.ModelViewSet):
+    """
+        GET    /api/comics/characters/        -> list
+        POST   /api/comics/characters/        -> create
+        GET    /api/comics/characters/<pk>/   -> retrieve
+        PUT    /api/comics/characters/<pk>/   -> update
+        PATCH  /api/comics/characters/<pk>/   -> partial_update
+        DELETE /api/comics/characters/<pk>/   -> destroy
+    """
+    queryset = Character.objects.all()
+    serializer_class = CharacterSerializer
+
     def get_permissions(self):
-        if self.request.method == 'GET':
+        if self.action in ('list', 'retrieve'):
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
 
-    def get(self, request, format=None):
+    def destroy(self, request, *args, **kwargs):
+        # Overridden (rather than just perform_destroy) so this can keep the
+        # same 409-with-count convention every other delete endpoint in this
+        # file uses - DRF's default ValidationError maps to 400, not 409.
+        instance = self.get_object()
+
+        book_count = Book.objects.filter(characters=instance).count()
+        if book_count:
+            return Response(
+                {'error': f'Cannot delete: {book_count} book(s) reference this character.'},
+                status=status.HTTP_409_CONFLICT,
+            )
+
         try:
-            if not request.user.is_staff:
-                cached_characters = cache.get('all_characters')
-                if cached_characters is not None:
-                    return Response({'success': 'true', 'characters': cached_characters})
+            instance.delete()
+        except ProtectedError as e:
+            blocking_count = len(e.protected_objects)
+            return Response(
+                {'error': f'Cannot delete: {blocking_count} record(s) reference this character.'},
+                status=status.HTTP_409_CONFLICT,
+            )
 
-            all_characters = [
-                CharacterSerializer(character).data for character in Character.objects.all()]
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-            if not request.user.is_staff:
-                cache.set('all_characters', all_characters, CACHE_TTL)
+class PublisherViewSet(viewsets.ModelViewSet):
+    """
+        GET    /api/comics/publishers/        -> list
+        POST   /api/comics/publishers/        -> create
+        GET    /api/comics/publishers/<pk>/   -> retrieve
+        PUT    /api/comics/publishers/<pk>/   -> update
+        PATCH  /api/comics/publishers/<pk>/   -> partial_update
+        DELETE /api/comics/publishers/<pk>/   -> destroy
+    """
+    queryset = Publisher.objects.all()
+    serializer_class = PublisherSerializer
 
-            return Response({'success': 'true', 'characters': all_characters})
-        except Exception as e:
-            logger.exception('Something went wrong when retrieving characters: %s', e)
-            return Response({'error': 'Something went wrong when retrieving characters.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def post(self, request, format=None):
-        try:
-            serializer = CharacterSerializer(data=request.data)
-            if not serializer.is_valid():
-                logger.warning('Character creation failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            new_character = serializer.save()
-            cache.delete('all_characters')
-            return Response({'success': 'true', 'new_character': CharacterSerializer(new_character).data}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            logger.exception('Something went wrong when creating character: %s', e)
-            return Response({'error': 'Something went wrong when creating character.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def put(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                character_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                character = Character.objects.get(id=character_id)
-            except Character.DoesNotExist:
-                return Response({'error': 'Character not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            serializer = CharacterSerializer(character, data=request.data, partial=True)
-            if not serializer.is_valid():
-                logger.warning('Character update failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            updated_character = serializer.save()
-            cache.delete('all_characters')
-            return Response({'success': 'true', 'new_character': CharacterSerializer(updated_character).data})
-        except Exception as e:
-            logger.exception('Something went wrong when updating character: %s', e)
-            return Response({'error': 'Something went wrong when updating character.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def delete(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                character_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                character = Character.objects.get(id=character_id)
-            except Character.DoesNotExist:
-                return Response({'error': 'Character not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            book_count = Book.objects.filter(characters=character).count()
-            if book_count:
-                return Response({'error': f'Cannot delete: {book_count} book(s) reference this character.'}, status=status.HTTP_409_CONFLICT)
-
-            try:
-                character.delete()
-            except ProtectedError as e:
-                blocking_count = len(e.protected_objects)
-                return Response({'error': f'Cannot delete: {blocking_count} record(s) reference this character.'}, status=status.HTTP_409_CONFLICT)
-
-            cache.delete('all_characters')
-            return Response({'success': 'true'})
-        except Exception as e:
-            logger.exception('Something went wrong when deleting character: %s', e)
-            return Response({'error': 'Something went wrong when deleting character.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class PublisherView(APIView):
     def get_permissions(self):
-        if self.request.method == 'GET':
+        if self.action in ('list', 'retrieve'):
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
 
-    def get(self, request, format=None):
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
         try:
-            if not request.user.is_staff:
-                cached_publishers = cache.get('all_publishers')
-                if cached_publishers is not None:
-                    return Response({'success': 'true', 'publishers': cached_publishers})
+            instance.delete()
+        except ProtectedError as e:
+            blocking_count = len(e.protected_objects)
+            return Response(
+                {'error': f'Cannot delete: {blocking_count} record(s) reference this publisher.'},
+                status=status.HTTP_409_CONFLICT,
+            )
 
-            all_publishers = [
-                PublisherSerializer(publisher).data for publisher in Publisher.objects.all()]
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-            if not request.user.is_staff:
-                cache.set('all_publishers', all_publishers, CACHE_TTL)
+class AuthorViewSet(viewsets.ModelViewSet):
+    """
+        GET    /api/comics/authors/        -> list
+        POST   /api/comics/authors/        -> create
+        GET    /api/comics/authors/<pk>/   -> retrieve
+        PUT    /api/comics/authors/<pk>/   -> update
+        PATCH  /api/comics/authors/<pk>/   -> partial_update
+        DELETE /api/comics/authors/<pk>/   -> destroy
+    """
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
 
-            return Response({'success': 'true', 'publishers': all_publishers})
-        except Exception as e:
-            logger.exception('Something went wrong when retrieving publishers: %s', e)
-            return Response({'error': 'Something went wrong when retrieving publishers.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def post(self, request, format=None):
-        try:
-            serializer = PublisherSerializer(data=request.data)
-            if not serializer.is_valid():
-                logger.warning('Publisher creation failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            new_publisher = serializer.save()
-            cache.delete('all_publishers')
-            return Response({'success': 'true', 'new_publisher': PublisherSerializer(new_publisher).data}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            logger.exception('Something went wrong when creating publisher: %s', e)
-            return Response({'error': 'Something went wrong when creating publisher.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def put(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                publisher_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                publisher = Publisher.objects.get(id=publisher_id)
-            except Publisher.DoesNotExist:
-                return Response({'error': 'Publisher not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            serializer = PublisherSerializer(publisher, data=request.data, partial=True)
-            if not serializer.is_valid():
-                logger.warning('Publisher update failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            updated_publisher = serializer.save()
-            cache.delete('all_publishers')
-            return Response({'success': 'true', 'new_publisher': PublisherSerializer(updated_publisher).data})
-        except Exception as e:
-            logger.exception('Something went wrong when updating publisher: %s', e)
-            return Response({'error': 'Something went wrong when updating publisher.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def delete(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                publisher_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                publisher = Publisher.objects.get(id=publisher_id)
-            except Publisher.DoesNotExist:
-                return Response({'error': 'Publisher not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            try:
-                publisher.delete()
-            except ProtectedError as e:
-                blocking_count = len(e.protected_objects)
-                return Response({'error': f'Cannot delete: {blocking_count} record(s) reference this publisher.'}, status=status.HTTP_409_CONFLICT)
-
-            cache.delete('all_publishers')
-            return Response({'success': 'true'})
-        except Exception as e:
-            logger.exception('Something went wrong when deleting publisher: %s', e)
-            return Response({'error': 'Something went wrong when deleting publisher.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class AuthorView(APIView):
     def get_permissions(self):
-        if self.request.method == 'GET':
+        if self.action in ('list', 'retrieve'):
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
 
-    def get(self, request, format=None):
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        book_count = Book.objects.filter(authors=instance).count()
+        if book_count:
+            return Response(
+                {'error': f'Cannot delete: {book_count} book(s) reference this author.'},
+                status=status.HTTP_409_CONFLICT,
+            )
+
         try:
-            if not request.user.is_staff:
-                cached_authors = cache.get('all_authors')
-                if cached_authors is not None:
-                    return Response({'success': 'true', 'authors': cached_authors})
+            instance.delete()
+        except ProtectedError as e:
+            blocking_count = len(e.protected_objects)
+            return Response(
+                {'error': f'Cannot delete: {blocking_count} record(s) reference this author.'},
+                status=status.HTTP_409_CONFLICT,
+            )
 
-            all_authors = [
-                AuthorSerializer(author).data for author in Author.objects.all()]
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-            if not request.user.is_staff:
-                cache.set('all_authors', all_authors, CACHE_TTL)
+class ArtistViewSet(viewsets.ModelViewSet):
+    """
+        GET    /api/comics/artists/        -> list
+        POST   /api/comics/artists/        -> create
+        GET    /api/comics/artists/<pk>/   -> retrieve
+        PUT    /api/comics/artists/<pk>/   -> update
+        PATCH  /api/comics/artists/<pk>/   -> partial_update
+        DELETE /api/comics/artists/<pk>/   -> destroy
+    """
+    queryset = Artist.objects.all()
+    serializer_class = ArtistSerializer
 
-            return Response({'success': 'true', 'authors': all_authors})
-        except Exception as e:
-            logger.exception('Something went wrong when retrieving authors: %s', e)
-            return Response({'error': 'Something went wrong when retrieving authors.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def post(self, request, format=None):
-        try:
-            serializer = AuthorSerializer(data=request.data)
-            if not serializer.is_valid():
-                logger.warning('Author creation failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            new_author = serializer.save()
-            cache.delete('all_authors')
-            return Response({'success': 'true', 'new_author': AuthorSerializer(new_author).data}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            logger.exception('Something went wrong when creating author: %s', e)
-            return Response({'error': 'Something went wrong when creating author.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def put(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                author_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                author = Author.objects.get(id=author_id)
-            except Author.DoesNotExist:
-                return Response({'error': 'Author not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            serializer = AuthorSerializer(author, data=request.data, partial=True)
-            if not serializer.is_valid():
-                logger.warning('Author update failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            updated_author = serializer.save()
-            cache.delete('all_authors')
-            return Response({'success': 'true', 'new_author': AuthorSerializer(updated_author).data})
-        except Exception as e:
-            logger.exception('Something went wrong when updating author: %s', e)
-            return Response({'error': 'Something went wrong when updating author.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def delete(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                author_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                author = Author.objects.get(id=author_id)
-            except Author.DoesNotExist:
-                return Response({'error': 'Author not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            book_count = Book.objects.filter(authors=author).count()
-            if book_count:
-                return Response({'error': f'Cannot delete: {book_count} book(s) reference this author.'}, status=status.HTTP_409_CONFLICT)
-
-            try:
-                author.delete()
-            except ProtectedError as e:
-                blocking_count = len(e.protected_objects)
-                return Response({'error': f'Cannot delete: {blocking_count} record(s) reference this author.'}, status=status.HTTP_409_CONFLICT)
-
-            cache.delete('all_authors')
-            return Response({'success': 'true'})
-        except Exception as e:
-            logger.exception('Something went wrong when deleting author: %s', e)
-            return Response({'error': 'Something went wrong when deleting author.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class ArtistView(APIView):
     def get_permissions(self):
-        if self.request.method == 'GET':
+        if self.action in ('list', 'retrieve'):
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
 
-    def get(self, request, format=None):
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        book_count = Book.objects.filter(artists=instance).count()
+        if book_count:
+            return Response(
+                {'error': f'Cannot delete: {book_count} book(s) reference this artist.'},
+                status=status.HTTP_409_CONFLICT,
+            )
+
         try:
-            if not request.user.is_staff:
-                cached_artists = cache.get('all_artists')
-                if cached_artists is not None:
-                    return Response({'success': 'true', 'artists': cached_artists})
+            instance.delete()
+        except ProtectedError as e:
+            blocking_count = len(e.protected_objects)
+            return Response(
+                {'error': f'Cannot delete: {blocking_count} record(s) reference this artist.'},
+                status=status.HTTP_409_CONFLICT,
+            )
 
-            all_artists = [
-                ArtistSerializer(artist).data for artist in Artist.objects.all()]
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-            if not request.user.is_staff:
-                cache.set('all_artists', all_artists, CACHE_TTL)
+class FormatViewSet(viewsets.ModelViewSet):
+    """
+        GET    /api/comics/formats/        -> list
+        POST   /api/comics/formats/        -> create
+        GET    /api/comics/formats/<pk>/   -> retrieve
+        PUT    /api/comics/formats/<pk>/   -> update
+        PATCH  /api/comics/formats/<pk>/   -> partial_update
+        DELETE /api/comics/formats/<pk>/   -> destroy
+    """
+    queryset = Format.objects.all()
+    serializer_class = FormatSerializer
 
-            return Response({'success': 'true', 'artists': all_artists})
-        except Exception as e:
-            logger.exception('Something went wrong when retrieving artists: %s', e)
-            return Response({'error': 'Something went wrong when retrieving artists.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def post(self, request, format=None):
-        try:
-            serializer = ArtistSerializer(data=request.data)
-            if not serializer.is_valid():
-                logger.warning('Artist creation failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            new_artist = serializer.save()
-            cache.delete('all_artists')
-            return Response({'success': 'true', 'new_artist': ArtistSerializer(new_artist).data}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            logger.exception('Something went wrong when creating artist: %s', e)
-            return Response({'error': 'Something went wrong when creating artist.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def put(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                artist_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                artist = Artist.objects.get(id=artist_id)
-            except Artist.DoesNotExist:
-                return Response({'error': 'Artist not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            serializer = ArtistSerializer(artist, data=request.data, partial=True)
-            if not serializer.is_valid():
-                logger.warning('Artist update failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            updated_artist = serializer.save()
-            cache.delete('all_artists')
-            return Response({'success': 'true', 'new_artist': ArtistSerializer(updated_artist).data})
-        except Exception as e:
-            logger.exception('Something went wrong when updating artist: %s', e)
-            return Response({'error': 'Something went wrong when updating artist.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def delete(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                artist_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                artist = Artist.objects.get(id=artist_id)
-            except Artist.DoesNotExist:
-                return Response({'error': 'Artist not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            book_count = Book.objects.filter(artists=artist).count()
-            if book_count:
-                return Response({'error': f'Cannot delete: {book_count} book(s) reference this artist.'}, status=status.HTTP_409_CONFLICT)
-
-            try:
-                artist.delete()
-            except ProtectedError as e:
-                blocking_count = len(e.protected_objects)
-                return Response({'error': f'Cannot delete: {blocking_count} record(s) reference this artist.'}, status=status.HTTP_409_CONFLICT)
-
-            cache.delete('all_artists')
-            return Response({'success': 'true'})
-        except Exception as e:
-            logger.exception('Something went wrong when deleting artist: %s', e)
-            return Response({'error': 'Something went wrong when deleting artist.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class FormatView(APIView):
     def get_permissions(self):
-        if self.request.method == 'GET':
+        if self.action in ('list', 'retrieve'):
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
 
-    def get(self, request, format=None):
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
         try:
-            if not request.user.is_staff:
-                cached_formats = cache.get('all_formats')
-                if cached_formats is not None:
-                    return Response({'success': 'true', 'formats': cached_formats})
+            instance.delete()
+        except ProtectedError as e:
+            blocking_count = len(e.protected_objects)
+            return Response(
+                {'error': f'Cannot delete: {blocking_count} record(s) reference this format.'},
+                status=status.HTTP_409_CONFLICT,
+            )
 
-            all_formats = [
-                FormatSerializer(fmt).data for fmt in Format.objects.all()]
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-            if not request.user.is_staff:
-                cache.set('all_formats', all_formats, CACHE_TTL)
+class SubCategoryViewSet(viewsets.ModelViewSet):
+    """
+        GET    /api/comics/sub-categories/        -> list
+        POST   /api/comics/sub-categories/        -> create
+        GET    /api/comics/sub-categories/<pk>/   -> retrieve
+        PUT    /api/comics/sub-categories/<pk>/   -> update
+        PATCH  /api/comics/sub-categories/<pk>/   -> partial_update
+        DELETE /api/comics/sub-categories/<pk>/   -> destroy
+    """
+    queryset = SubCategory.objects.all()
+    serializer_class = SubCategorySerializer
 
-            return Response({'success': 'true', 'formats': all_formats})
-        except Exception as e:
-            logger.exception('Something went wrong when retrieving formats: %s', e)
-            return Response({'error': 'Something went wrong when retrieving formats.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def post(self, request, format=None):
-        try:
-            serializer = FormatSerializer(data=request.data)
-            if not serializer.is_valid():
-                logger.warning('Format creation failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            new_format = serializer.save()
-            cache.delete('all_formats')
-            return Response({'success': 'true', 'new_format': FormatSerializer(new_format).data}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            logger.exception('Something went wrong when creating format: %s', e)
-            return Response({'error': 'Something went wrong when creating format.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def put(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                fmt_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                fmt = Format.objects.get(id=fmt_id)
-            except Format.DoesNotExist:
-                return Response({'error': 'Format not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            serializer = FormatSerializer(fmt, data=request.data, partial=True)
-            if not serializer.is_valid():
-                logger.warning('Format update failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            updated_format = serializer.save()
-            cache.delete('all_formats')
-            return Response({'success': 'true', 'new_format': FormatSerializer(updated_format).data})
-        except Exception as e:
-            logger.exception('Something went wrong when updating format: %s', e)
-            return Response({'error': 'Something went wrong when updating format.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def delete(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                fmt_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                fmt = Format.objects.get(id=fmt_id)
-            except Format.DoesNotExist:
-                return Response({'error': 'Format not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            try:
-                fmt.delete()
-            except ProtectedError as e:
-                blocking_count = len(e.protected_objects)
-                return Response({'error': f'Cannot delete: {blocking_count} record(s) reference this format.'}, status=status.HTTP_409_CONFLICT)
-
-            cache.delete('all_formats')
-            return Response({'success': 'true'})
-        except Exception as e:
-            logger.exception('Something went wrong when deleting format: %s', e)
-            return Response({'error': 'Something went wrong when deleting format.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class SubCategoryView(APIView):
     def get_permissions(self):
-        if self.request.method == 'GET':
+        if self.action in ('list', 'retrieve'):
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
 
-    def get(self, request, format=None):
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
         try:
-            if not request.user.is_staff:
-                cached_sub_categories = cache.get('all_sub_categories')
-                if cached_sub_categories is not None:
-                    return Response({'success': 'true', 'sub_categories': cached_sub_categories})
+            instance.delete()
+        except ProtectedError as e:
+            blocking_count = len(e.protected_objects)
+            return Response(
+                {'error': f'Cannot delete: {blocking_count} record(s) reference this sub category.'},
+                status=status.HTTP_409_CONFLICT,
+            )
 
-            all_sub_categories = [
-                SubCategorySerializer(sub_category).data for sub_category in SubCategory.objects.all()]
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-            if not request.user.is_staff:
-                cache.set('all_sub_categories', all_sub_categories, CACHE_TTL)
+class TeamViewSet(viewsets.ModelViewSet):
+    """
+        GET    /api/comics/teams/        -> list
+        POST   /api/comics/teams/        -> create
+        GET    /api/comics/teams/<pk>/   -> retrieve
+        PUT    /api/comics/teams/<pk>/   -> update
+        PATCH  /api/comics/teams/<pk>/   -> partial_update
+        DELETE /api/comics/teams/<pk>/   -> destroy
+    """
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
 
-            return Response({'success': 'true', 'sub_categories': all_sub_categories})
-        except Exception as e:
-            logger.exception('Something went wrong when retrieving sub categories: %s', e)
-            return Response({'error': 'Something went wrong when retrieving sub categories.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def post(self, request, format=None):
-        try:
-            serializer = SubCategorySerializer(data=request.data)
-            if not serializer.is_valid():
-                logger.warning('Sub category creation failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            new_sub_category = serializer.save()
-            cache.delete('all_sub_categories')
-            return Response({'success': 'true', 'new_sub_category': SubCategorySerializer(new_sub_category).data}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            logger.exception('Something went wrong when creating sub category: %s', e)
-            return Response({'error': 'Something went wrong when creating sub category.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def put(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                sub_category_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                sub_category = SubCategory.objects.get(id=sub_category_id)
-            except SubCategory.DoesNotExist:
-                return Response({'error': 'Sub category not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            serializer = SubCategorySerializer(sub_category, data=request.data, partial=True)
-            if not serializer.is_valid():
-                logger.warning('Sub category update failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            updated_sub_category = serializer.save()
-            cache.delete('all_sub_categories')
-            return Response({'success': 'true', 'new_sub_category': SubCategorySerializer(updated_sub_category).data})
-        except Exception as e:
-            logger.exception('Something went wrong when updating sub category: %s', e)
-            return Response({'error': 'Something went wrong when updating sub category.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def delete(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                sub_category_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                sub_category = SubCategory.objects.get(id=sub_category_id)
-            except SubCategory.DoesNotExist:
-                return Response({'error': 'Sub category not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            try:
-                sub_category.delete()
-            except ProtectedError as e:
-                blocking_count = len(e.protected_objects)
-                return Response({'error': f'Cannot delete: {blocking_count} record(s) reference this sub category.'}, status=status.HTTP_409_CONFLICT)
-
-            cache.delete('all_sub_categories')
-            return Response({'success': 'true'})
-        except Exception as e:
-            logger.exception('Something went wrong when deleting sub category: %s', e)
-            return Response({'error': 'Something went wrong when deleting sub category.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class TeamView(APIView):
     def get_permissions(self):
-        if self.request.method == 'GET':
+        if self.action in ('list', 'retrieve'):
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
 
-    def get(self, request, format=None):
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
         try:
-            if not request.user.is_staff:
-                cached_teams = cache.get('all_teams')
-                if cached_teams is not None:
-                    return Response({'success': 'true', 'teams': cached_teams})
+            instance.delete()
+        except ProtectedError as e:
+            blocking_count = len(e.protected_objects)
+            return Response(
+                {'error': f'Cannot delete: {blocking_count} record(s) reference this team.'},
+                status=status.HTTP_409_CONFLICT,
+            )
 
-            all_teams = [
-                TeamSerializer(team).data for team in Team.objects.all()]
-
-            if not request.user.is_staff:
-                cache.set('all_teams', all_teams, CACHE_TTL)
-
-            return Response({'success': 'true', 'teams': all_teams})
-        except Exception as e:
-            logger.exception('Something went wrong when retrieving teams: %s', e)
-            return Response({'error': 'Something went wrong when retrieving teams.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def post(self, request, format=None):
-        try:
-            serializer = TeamSerializer(data=request.data)
-            if not serializer.is_valid():
-                logger.warning('Team creation failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            new_team = serializer.save()
-            cache.delete('all_teams')
-            return Response({'success': 'true', 'new_team': TeamSerializer(new_team).data}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            logger.exception('Something went wrong when creating team: %s', e)
-            return Response({'error': 'Something went wrong when creating team.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def put(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                team_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                team = Team.objects.get(id=team_id)
-            except Team.DoesNotExist:
-                return Response({'error': 'Team not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            serializer = TeamSerializer(team, data=request.data, partial=True)
-            if not serializer.is_valid():
-                logger.warning('Team update failed validation: %s', serializer.errors)
-                return Response({'error': serializer_error_message(serializer)}, status=status.HTTP_400_BAD_REQUEST)
-
-            updated_team = serializer.save()
-            cache.delete('all_teams')
-            return Response({'success': 'true', 'new_team': TeamSerializer(updated_team).data})
-        except Exception as e:
-            logger.exception('Something went wrong when updating team: %s', e)
-            return Response({'error': 'Something went wrong when updating team.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def delete(self, request, format=None):
-        try:
-            data = self.request.data
-            try:
-                team_id = data['id']
-            except KeyError:
-                return Response({'error': 'Missing required field: id.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                team = Team.objects.get(id=team_id)
-            except Team.DoesNotExist:
-                return Response({'error': 'Team not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            try:
-                team.delete()
-            except ProtectedError as e:
-                blocking_count = len(e.protected_objects)
-                return Response({'error': f'Cannot delete: {blocking_count} record(s) reference this team.'}, status=status.HTTP_409_CONFLICT)
-
-            cache.delete('all_teams')
-            return Response({'success': 'true'})
-        except Exception as e:
-            logger.exception('Something went wrong when deleting team: %s', e)
-            return Response({'error': 'Something went wrong when deleting team.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -192,7 +192,7 @@ const ComicsPage: React.FC<Props> = ({
                 <div className="relative flex-none">
                     <img
                         className="rounded-[1rem] w-full md:w-48"
-                        src={`${window.location.origin}${book.thumbnail}`}
+                        src={book.thumbnail}
                         alt={book.title}
                     />
                     {isAuthenticated && (
