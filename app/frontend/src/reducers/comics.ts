@@ -1,4 +1,4 @@
-import { AnyAction } from "redux"
+import { UnknownAction } from "redux"
 import {
     LOAD_CHARACTERS_SUCCESS,
     LOAD_CHARACTERS_FAIL,
@@ -27,108 +27,156 @@ import {
 } from "../types"
 
 type ComicsState = {
-    all_characters: Character[]
-    all_publishers: Publisher[]
-    all_authors: Author[]
-    all_artists: Artist[]
-    all_formats: Format[]
-    all_sub_categories: SubCategory[]
-    all_teams: Team[]
+    allCharacters: Character[]
+    allPublishers: Publisher[]
+    allAuthors: Author[]
+    allArtists: Artist[]
+    allFormats: Format[]
+    allSubCategories: SubCategory[]
+    allTeams: Team[]
     shouldReloadBooks: boolean
 }
 
 const initialState: ComicsState = {
-    all_characters: [],
-    all_publishers: [],
-    all_authors: [],
-    all_artists: [],
-    all_formats: [],
-    all_sub_categories: [],
-    all_teams: [],
+    allCharacters: [],
+    allPublishers: [],
+    allAuthors: [],
+    allArtists: [],
+    allFormats: [],
+    allSubCategories: [],
+    allTeams: [],
     shouldReloadBooks: false,
 }
 
+interface LoadCharactersSuccessAction extends UnknownAction {
+    type: typeof LOAD_CHARACTERS_SUCCESS
+    payload: { characters: Character[] }
+}
+interface LoadCharactersFailAction extends UnknownAction {
+    type: typeof LOAD_CHARACTERS_FAIL
+}
+interface LoadPublishersSuccessAction extends UnknownAction {
+    type: typeof LOAD_PUBLISHERS_SUCCESS
+    payload: { publishers: Publisher[] }
+}
+interface LoadPublishersFailAction extends UnknownAction {
+    type: typeof LOAD_PUBLISHERS_FAIL
+}
+interface LoadAuthorsSuccessAction extends UnknownAction {
+    type: typeof LOAD_AUTHORS_SUCCESS
+    payload: { authors: Author[] }
+}
+interface LoadAuthorsFailAction extends UnknownAction {
+    type: typeof LOAD_AUTHORS_FAIL
+}
+interface LoadArtistsSuccessAction extends UnknownAction {
+    type: typeof LOAD_ARTISTS_SUCCESS
+    payload: { artists: Artist[] }
+}
+interface LoadArtistsFailAction extends UnknownAction {
+    type: typeof LOAD_ARTISTS_FAIL
+}
+interface LoadFormatsSuccessAction extends UnknownAction {
+    type: typeof LOAD_FORMATS_SUCCESS
+    payload: { formats: Format[] }
+}
+interface LoadFormatsFailAction extends UnknownAction {
+    type: typeof LOAD_FORMATS_FAIL
+}
+interface LoadSubCategoriesSuccessAction extends UnknownAction {
+    type: typeof LOAD_SUB_CATEGORIES_SUCCESS
+    payload: { sub_categories: SubCategory[] }
+}
+interface LoadSubCategoriesFailAction extends UnknownAction {
+    type: typeof LOAD_SUB_CATEGORIES_FAIL
+}
+interface LoadTeamsSuccessAction extends UnknownAction {
+    type: typeof LOAD_TEAMS_SUCCESS
+    payload: { teams: Team[] }
+}
+interface LoadTeamsFailAction extends UnknownAction {
+    type: typeof LOAD_TEAMS_FAIL
+}
+interface UpdateShouldReloadBooksAction extends UnknownAction {
+    type: typeof UPDATE_SHOULD_RELOAD_BOOKS
+    payload: { shouldReloadBooks: boolean }
+}
+
+type ComicsAction =
+    | LoadCharactersSuccessAction
+    | LoadCharactersFailAction
+    | LoadPublishersSuccessAction
+    | LoadPublishersFailAction
+    | LoadAuthorsSuccessAction
+    | LoadAuthorsFailAction
+    | LoadArtistsSuccessAction
+    | LoadArtistsFailAction
+    | LoadFormatsSuccessAction
+    | LoadFormatsFailAction
+    | LoadSubCategoriesSuccessAction
+    | LoadSubCategoriesFailAction
+    | LoadTeamsSuccessAction
+    | LoadTeamsFailAction
+    | UpdateShouldReloadBooksAction
+
 export default function comicsReducer(
     state: ComicsState = initialState,
-    action: AnyAction,
+    action: ComicsAction,
 ): ComicsState {
-    const { type, payload } = action
-
-    switch (type) {
+    switch (action.type) {
         case LOAD_CHARACTERS_SUCCESS:
             return {
                 ...state,
-                all_characters: payload.characters,
+                allCharacters: action.payload.characters,
             }
         case LOAD_CHARACTERS_FAIL:
-            return {
-                ...state,
-                all_characters: [],
-            }
+            return state
         case LOAD_PUBLISHERS_SUCCESS:
             return {
                 ...state,
-                all_publishers: payload.publishers,
+                allPublishers: action.payload.publishers,
             }
         case LOAD_PUBLISHERS_FAIL:
-            return {
-                ...state,
-                all_publishers: [],
-            }
+            return state
         case LOAD_AUTHORS_SUCCESS:
             return {
                 ...state,
-                all_authors: payload.authors,
+                allAuthors: action.payload.authors,
             }
         case LOAD_AUTHORS_FAIL:
-            return {
-                ...state,
-                all_authors: [],
-            }
+            return state
         case LOAD_ARTISTS_SUCCESS:
             return {
                 ...state,
-                all_artists: payload.artists,
+                allArtists: action.payload.artists,
             }
         case LOAD_ARTISTS_FAIL:
-            return {
-                ...state,
-                all_artists: [],
-            }
+            return state
         case LOAD_FORMATS_SUCCESS:
             return {
                 ...state,
-                all_formats: payload.formats,
+                allFormats: action.payload.formats,
             }
         case LOAD_FORMATS_FAIL:
-            return {
-                ...state,
-                all_formats: [],
-            }
+            return state
         case LOAD_SUB_CATEGORIES_SUCCESS:
             return {
                 ...state,
-                all_sub_categories: payload.sub_categories,
+                allSubCategories: action.payload.sub_categories,
             }
         case LOAD_SUB_CATEGORIES_FAIL:
-            return {
-                ...state,
-                all_sub_categories: [],
-            }
+            return state
         case LOAD_TEAMS_SUCCESS:
             return {
                 ...state,
-                all_teams: payload.teams,
+                allTeams: action.payload.teams,
             }
         case LOAD_TEAMS_FAIL:
-            return {
-                ...state,
-                all_teams: [],
-            }
+            return state
         case UPDATE_SHOULD_RELOAD_BOOKS:
             return {
                 ...state,
-                shouldReloadBooks: payload.shouldReloadBooks,
+                shouldReloadBooks: action.payload.shouldReloadBooks,
             }
         default:
             return state

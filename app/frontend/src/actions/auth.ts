@@ -97,11 +97,7 @@ export const logout = () => async (dispatch: Dispatch) => {
     }
 
     try {
-        await axios.post(
-            `${window.location.origin}/api/logout`,
-            null,
-            config,
-        )
+        await axios.post(`${window.location.origin}/api/logout`, null, config)
 
         dispatch({
             type: LOGOUT_SUCCESS,
@@ -149,9 +145,7 @@ export const register =
     }
 
 // Request Password Reset
-export const requestPasswordReset = async (
-    email: string,
-): Promise<boolean> => {
+export const requestPasswordReset = async (email: string): Promise<boolean> => {
     const config = {
         headers: httpUtil.getHeaders("POST"),
     }
@@ -165,10 +159,13 @@ export const requestPasswordReset = async (
             config,
         )
 
+        toast.dismiss()
         toast.success(res.data.success)
         return true
     } catch (error) {
-        toast.error(getErrorMessage(error, "Something went wrong. Please try again."))
+        toast.error(
+            getErrorMessage(error, "Something went wrong. Please try again."),
+        )
         console.error(error)
         return false
     }
@@ -193,11 +190,13 @@ export const resetPassword = async (
             body,
             config,
         )
-
+        toast.dismiss()
         toast.success(res.data.success)
         return true
     } catch (error) {
-        toast.error(getErrorMessage(error, "Something went wrong. Please try again."))
+        toast.error(
+            getErrorMessage(error, "Something went wrong. Please try again."),
+        )
         console.error(error)
         return false
     }

@@ -73,6 +73,7 @@ function makeViewSetActions<
         const config = { headers: httpUtil.getHeaders("POST") }
         try {
             const res = await axios.post(url, JSON.stringify(body), config)
+            toast.dismiss()
             toast.success(`${cfg.label} Added!`)
             store.dispatch({
                 type: cfg.successType,
@@ -98,6 +99,7 @@ function makeViewSetActions<
                 JSON.stringify(body),
                 config,
             )
+            toast.dismiss()
             toast.success(`${cfg.label} Updated!`)
             const updatedList = cfg
                 .selectList()
@@ -118,6 +120,7 @@ function makeViewSetActions<
         const config = { headers: httpUtil.getHeaders("DELETE") }
         try {
             await axios.delete(`${url}${id}/`, config)
+            toast.dismiss()
             toast.success(`${cfg.label} Deleted!`)
             const remainingList = cfg
                 .selectList()
@@ -147,7 +150,7 @@ const publisherActions = makeViewSetActions<
     pluralLabel: "publishers",
     successType: LOAD_PUBLISHERS_SUCCESS,
     failType: LOAD_PUBLISHERS_FAIL,
-    selectList: () => store.getState().comics.all_publishers,
+    selectList: () => store.getState().comics.allPublishers,
     buildPayload: (publishers) => ({ publishers }),
 })
 export const getAllPublishers = publisherActions.getAll
@@ -166,7 +169,7 @@ const characterActions = makeViewSetActions<
     pluralLabel: "characters",
     successType: LOAD_CHARACTERS_SUCCESS,
     failType: LOAD_CHARACTERS_FAIL,
-    selectList: () => store.getState().comics.all_characters,
+    selectList: () => store.getState().comics.allCharacters,
     buildPayload: (characters) => ({ characters }),
 })
 export const getAllCharacters = characterActions.getAll
@@ -185,7 +188,7 @@ const authorActions = makeViewSetActions<
     pluralLabel: "authors",
     successType: LOAD_AUTHORS_SUCCESS,
     failType: LOAD_AUTHORS_FAIL,
-    selectList: () => store.getState().comics.all_authors,
+    selectList: () => store.getState().comics.allAuthors,
     buildPayload: (authors) => ({ authors }),
 })
 export const getAllAuthors = authorActions.getAll
@@ -204,7 +207,7 @@ const artistActions = makeViewSetActions<
     pluralLabel: "artists",
     successType: LOAD_ARTISTS_SUCCESS,
     failType: LOAD_ARTISTS_FAIL,
-    selectList: () => store.getState().comics.all_artists,
+    selectList: () => store.getState().comics.allArtists,
     buildPayload: (artists) => ({ artists }),
 })
 export const getAllArtists = artistActions.getAll
@@ -223,7 +226,7 @@ const formatActions = makeViewSetActions<
     pluralLabel: "formats",
     successType: LOAD_FORMATS_SUCCESS,
     failType: LOAD_FORMATS_FAIL,
-    selectList: () => store.getState().comics.all_formats,
+    selectList: () => store.getState().comics.allFormats,
     buildPayload: (formats) => ({ formats }),
 })
 export const getAllFormats = formatActions.getAll
@@ -242,7 +245,7 @@ const subCategoryActions = makeViewSetActions<
     pluralLabel: "sub categories",
     successType: LOAD_SUB_CATEGORIES_SUCCESS,
     failType: LOAD_SUB_CATEGORIES_FAIL,
-    selectList: () => store.getState().comics.all_sub_categories,
+    selectList: () => store.getState().comics.allSubCategories,
     buildPayload: (sub_categories) => ({ sub_categories }),
 })
 export const getAllSubCategories = subCategoryActions.getAll
@@ -261,7 +264,7 @@ const teamActions = makeViewSetActions<
     pluralLabel: "teams",
     successType: LOAD_TEAMS_SUCCESS,
     failType: LOAD_TEAMS_FAIL,
-    selectList: () => store.getState().comics.all_teams,
+    selectList: () => store.getState().comics.allTeams,
     buildPayload: (teams) => ({ teams }),
 })
 export const getAllTeams = teamActions.getAll
@@ -344,6 +347,7 @@ export async function toggleWishlist(
             null,
             config,
         )
+        toast.dismiss()
         toast.success(
             res.data.is_wishlisted
                 ? "Added to wishlist!"
@@ -370,6 +374,7 @@ export async function toggleOwned(
             null,
             config,
         )
+        toast.dismiss()
         toast.success(
             res.data.is_owned
                 ? "Added to owned books!"
@@ -430,6 +435,7 @@ export const addBook = async (
             _formData,
             config,
         )
+        toast.dismiss()
         toast.success("Book Added!")
         setDwModalOpen(false)
         onSuccess?.()
@@ -486,6 +492,7 @@ export const updateBook = async (
             _formData,
             config,
         )
+        toast.dismiss()
         toast.success("Book Updated!")
         setDwModalOpen(false)
         onSuccess?.()
@@ -510,6 +517,7 @@ export const deleteBook = async (
             `${window.location.origin}/api/comics/books/${id}/`,
             config,
         )
+        toast.dismiss()
         toast.success("Book Deleted!")
         setDwModalOpen(false)
         onSuccess?.()

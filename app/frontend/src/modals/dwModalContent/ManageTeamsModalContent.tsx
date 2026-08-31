@@ -211,7 +211,7 @@ const ManageTeamsModalContent: React.FC<Props> = ({
 }
 
 const mapStateToProps = (state: RootState) => ({
-    allTeams: state.comics.all_teams,
+    allTeams: state.comics.allTeams,
 })
 export default connect(mapStateToProps, { getAllTeams })(
     ManageTeamsModalContent,

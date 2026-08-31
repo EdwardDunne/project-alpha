@@ -24,6 +24,8 @@ export function usePaginatedBooks(
     cacheKey: string,
     filters: BooksPageFilters,
     scrollContainerRef: React.RefObject<HTMLDivElement | null>,
+    // Set to false to hold off on initial fetch
+    enabled = true,
 ) {
     const signature = signatureFor(filters)
     const cached = feedCache.get(cacheKey)
@@ -50,6 +52,8 @@ export function usePaginatedBooks(
     // Reset to page 1 whenever the filters change, or after
     // adding/editing/deleting a book
     useEffect(() => {
+        if (!enabled) return
+
         if (skipNextFetchRef.current) {
             skipNextFetchRef.current = false
             return
@@ -80,11 +84,11 @@ export function usePaginatedBooks(
                 if (generation === generationRef.current) setLoading(false)
             })
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [signature, reloadToken])
+    }, [signature, reloadToken, enabled])
 
     // useCallback used here mostly so that this function doesn't reevaluate on every render
     const loadNextPage = useCallback(() => {
-        if (loading || !hasMore) return
+        if (!enabled || loading || !hasMore) return
 
         const nextPage = page + 1
         const generation = generationRef.current
@@ -113,7 +117,7 @@ export function usePaginatedBooks(
             .finally(() => {
                 if (generation === generationRef.current) setLoading(false)
             })
-    }, [loading, hasMore, page, filters, cacheKey, signature])
+    }, [enabled, loading, hasMore, page, filters, cacheKey, signature])
 
     // The below useEffect only renders once, this way we don't
     // create a new instance of IntersectionObserver on every rerender.
@@ -183,7 +187,8 @@ export function usePaginatedBooks(
 
     return {
         books,
-        loading,
+        // Still "loading" if fetches are being withheld by "enabled"
+        loading: loading || !enabled,
         hasMore,
         sentinelRef,
         reload,
