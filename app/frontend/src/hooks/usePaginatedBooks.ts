@@ -188,7 +188,7 @@ export function usePaginatedBooks(
     return {
         books,
         // Still "loading" if fetches are being withheld by "enabled"
-        loading: loading || !enabled,
+        loading: loading || !enabled || !freshCache,
         hasMore,
         sentinelRef,
         reload,
