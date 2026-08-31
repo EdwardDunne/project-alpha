@@ -102,6 +102,6 @@ const AuthorsSelector: React.FC<Props> = ({
 }
 
 const mapStateToProps = (state: RootState) => ({
-    allAuthors: state.comics.all_authors,
+    allAuthors: state.comics.allAuthors,
 })
 export default connect(mapStateToProps, { getAllAuthors })(AuthorsSelector)

@@ -140,8 +140,19 @@ const ComicsPage: React.FC<Props> = ({
         ],
     )
 
+    // Don't make first books request until formats have loaded
+    const formatFilterReady =
+        formatFilter !== undefined &&
+        JSON.stringify(debouncedFormatFilter.map((f) => f.id).sort()) ===
+            JSON.stringify(formatFilter.map((f) => f.id).sort())
+
     const { books, loading, sentinelRef, updateBook, removeBook, reload } =
-        usePaginatedBooks("comics-public", filters, scrollContainerRef)
+        usePaginatedBooks(
+            "comics-public",
+            filters,
+            scrollContainerRef,
+            formatFilterReady,
+        )
 
     useEffect(() => {
         if (shouldReloadBooks) {
@@ -155,13 +166,25 @@ const ComicsPage: React.FC<Props> = ({
         scrollContainerRef.current?.scrollTo({ top: 0 })
     }, [filters])
 
+    // with both switches on, a book matches if it's wishlisted OR owned, so
+    // toggling one off shouldn't drop a book that still satisfies the other
+    // active filter.
+    const matchesWishlistOwnedFilters = (
+        book: Pick<Book, "is_wishlisted" | "is_owned">,
+    ) => {
+        if (wishlistOnlyFilter && ownedOnlyFilter) {
+            return book.is_wishlisted || book.is_owned
+        }
+        if (wishlistOnlyFilter) return !!book.is_wishlisted
+        if (ownedOnlyFilter) return !!book.is_owned
+        return true
+    }
+
     const handleToggleWishlist = async (e: React.MouseEvent, book: Book) => {
         e.stopPropagation()
         const result = await toggleWishlist(book.id)
         if (result === undefined) return
-        // If we're only showing wishlisted books and this one just got
-        // un-wishlisted, it no longer belongs in the list at all.
-        if (wishlistOnlyFilter && !result) {
+        if (!matchesWishlistOwnedFilters({ ...book, is_wishlisted: result })) {
             removeBook(book.id)
         } else {
             updateBook(book.id, { is_wishlisted: result })
@@ -172,7 +195,7 @@ const ComicsPage: React.FC<Props> = ({
         e.stopPropagation()
         const result = await toggleOwned(book.id)
         if (result === undefined) return
-        if (ownedOnlyFilter && !result) {
+        if (!matchesWishlistOwnedFilters({ ...book, is_owned: result })) {
             removeBook(book.id)
         } else {
             updateBook(book.id, { is_owned: result })
@@ -183,15 +206,16 @@ const ComicsPage: React.FC<Props> = ({
         return (
             <div
                 key={book.id}
-                className="m-[0.5rem] w-[calc(50%-1rem)] sm:w-[calc(33.33%-1rem)] md:w-[20rem] cursor-pointer"
+                className="m-[0.5rem] w-[calc(50%-1rem)] sm:w-[calc(33.33%-1rem)] md:w-[20rem] cursor-pointer
+                            flex flex-col justify-center items-center"
                 onClick={() => {
                     setSelectedBook(book)
                     setDwModalOpen(true)
                 }}
             >
-                <div className="relative flex-none">
+                <div className="relative flex content-center items-center h-[29.5rem]">
                     <img
-                        className="rounded-[1rem] w-full md:w-48"
+                        className="rounded-[1rem] object-cover min-w-0 h-[29.5rem]"
                         src={book.thumbnail}
                         alt={book.title}
                     />
@@ -244,7 +268,7 @@ const ComicsPage: React.FC<Props> = ({
                         </div>
                     )}
                 </div>
-                <div className="h-12 overflow-hidden text-ellipsis text-center text-[1.4rem] mt-1">
+                <div className="h-fit text-ellipsis text-center text-[1.6rem] mt-1">
                     {book.title}
                 </div>
             </div>
@@ -402,11 +426,11 @@ const ComicsPage: React.FC<Props> = ({
                         ref={scrollContainerRef}
                         className="w-full px-4 overflow-y-scroll h-full md:visible-scrollbar md:mr-[3rem]"
                     >
-                        <div className="flex justify-center items-center flex-row flex-wrap">
+                        <div className="flex justify-center items-start flex-row flex-wrap">
                             {books.map(renderBook)}
                         </div>
                         {!loading && books.length === 0 && (
-                            <div className="text-center text-[1.4rem] text-gray-400 py-8">
+                            <div className="text-center text-[2.4rem] text-gray-400 py-8">
                                 No books found.
                             </div>
                         )}
@@ -415,7 +439,7 @@ const ComicsPage: React.FC<Props> = ({
                             className="h-1"
                         />
                         {loading && (
-                            <div className="text-center text-[1.4rem] text-gray-400 py-4">
+                            <div className="text-center text-[2.4rem] text-gray-400 py-4">
                                 Loading...
                             </div>
                         )}
@@ -428,7 +452,7 @@ const ComicsPage: React.FC<Props> = ({
 
 const mapStateToProps = (state: RootState) => ({
     isAuthenticated: state.auth.isAuthenticated,
-    allFormats: state.comics.all_formats,
+    allFormats: state.comics.allFormats,
     shouldReloadBooks: state.comics.shouldReloadBooks,
 })
 

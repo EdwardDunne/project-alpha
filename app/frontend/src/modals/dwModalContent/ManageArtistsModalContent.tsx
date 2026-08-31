@@ -173,7 +173,7 @@ const ManageArtistsModalContent: React.FC<Props> = ({
 }
 
 const mapStateToProps = (state: RootState) => ({
-    allArtists: state.comics.all_artists,
+    allArtists: state.comics.allArtists,
 })
 export default connect(mapStateToProps, { getAllArtists })(
     ManageArtistsModalContent,

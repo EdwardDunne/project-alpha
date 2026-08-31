@@ -91,6 +91,6 @@ const FormatSelector: React.FC<Props> = ({
 }
 
 const mapStateToProps = (state: RootState) => ({
-    allFormats: state.comics.all_formats,
+    allFormats: state.comics.allFormats,
 })
 export default connect(mapStateToProps, { getAllFormats })(FormatSelector)

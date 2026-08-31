@@ -96,7 +96,7 @@ const SubCategorySelector: React.FC<Props> = ({
 }
 
 const mapStateToProps = (state: RootState) => ({
-    allSubCategories: state.comics.all_sub_categories,
+    allSubCategories: state.comics.allSubCategories,
 })
 export default connect(mapStateToProps, { getAllSubCategories })(
     SubCategorySelector,

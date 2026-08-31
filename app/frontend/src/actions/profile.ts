@@ -52,7 +52,7 @@ export const updateProfile =
                 body,
                 config,
             )
-
+            toast.dismiss()
             toast.success("Profile Updated!")
             dispatch({
                 type: UPDATE_USER_PROFILE_SUCCESS,

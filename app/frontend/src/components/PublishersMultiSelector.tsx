@@ -106,7 +106,7 @@ const PublishersMultiSelector: React.FC<Props> = ({
 }
 
 const mapStateToProps = (state: RootState) => ({
-    allPublishers: state.comics.all_publishers,
+    allPublishers: state.comics.allPublishers,
 })
 export default connect(mapStateToProps, { getAllPublishers })(
     PublishersMultiSelector,

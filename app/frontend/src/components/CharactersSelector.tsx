@@ -92,7 +92,7 @@ const CharactersSelector: React.FC<Props> = ({
 }
 
 const mapStateToProps = (state: RootState) => ({
-    allCharacters: state.comics.all_characters,
+    allCharacters: state.comics.allCharacters,
 })
 export default connect(mapStateToProps, { getAllCharacters })(
     CharactersSelector,
