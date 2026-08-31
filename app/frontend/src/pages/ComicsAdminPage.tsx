@@ -356,7 +356,7 @@ const ComicsAdmin: React.FC = () => {
                 )}
 
                 {/* Main content */}
-                <div className="w-full md:flex-1">
+                <div className="w-full md:flex-1 md:pr-[1.5rem]">
                     <div className="h-[7rem] flex justify-center items-center">
                         <h4 className="font-semibold m-0 text-[3rem]">
                             Comics Admin
@@ -364,7 +364,7 @@ const ComicsAdmin: React.FC = () => {
                     </div>
                     <div
                         ref={scrollContainerRef}
-                        className="flex flex-col items-center overflow-y-scroll h-[calc(100vh-13rem)] px-2 md:visible-scrollbar mr-[1.5rem]"
+                        className="flex flex-col items-center overflow-y-scroll h-[calc(100vh-13rem)] px-2 md:visible-scrollbar"
                     >
                         {books.map(displayBook)}
                         {!loading && books.length === 0 && (

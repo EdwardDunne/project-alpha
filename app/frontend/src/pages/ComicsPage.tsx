@@ -418,13 +418,13 @@ const ComicsPage: React.FC<Props> = ({
                 )}
 
                 {/* Main content */}
-                <div className="flex flex-col items-center w-full md:flex-1 h-[calc(100dvh-6rem)] pt-5">
+                <div className="flex flex-col items-center w-full md:flex-1 h-[calc(100dvh-6rem)] pt-5 md:pr-[1.5rem]">
                     <h4 className="text-center mb-4 font-semibold text-[3rem]">
                         Comics
                     </h4>
                     <div
                         ref={scrollContainerRef}
-                        className="w-full px-4 overflow-y-scroll h-full md:visible-scrollbar md:mr-[3rem]"
+                        className="w-full px-4 overflow-y-scroll h-full md:visible-scrollbar"
                     >
                         <div className="flex justify-center items-start flex-row flex-wrap">
                             {books.map(renderBook)}
