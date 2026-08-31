@@ -424,7 +424,7 @@ const ComicsPage: React.FC<Props> = ({
                     </h4>
                     <div
                         ref={scrollContainerRef}
-                        className="w-full px-4 overflow-y-scroll h-full md:visible-scrollbar"
+                        className="w-full overflow-y-scroll h-full md:visible-scrollbar"
                     >
                         <div className="flex justify-center items-start flex-row flex-wrap">
                             {books.map(renderBook)}
