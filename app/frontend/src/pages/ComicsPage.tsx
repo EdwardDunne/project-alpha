@@ -295,7 +295,8 @@ const ComicsPage: React.FC<Props> = ({
                     Filter Books
                 </span>
                 <input
-                    className="w-full mt-3 bg-[#3f4a58] border border-gray-500 rounded px-3 py-2 text-[1.4rem] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
+                    className="w-full mt-3 bg-[#3f4a58] border border-gray-500 rounded px-3 py-2 text-[1.4rem] text-white 
+                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                     type="text"
                     placeholder="Search title..."
                     value={titleSearch}
