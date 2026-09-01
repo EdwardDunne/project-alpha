@@ -45,7 +45,8 @@ const SidePanel: React.FC<Props> = ({
 
             {/* Mobile: slide-in drawer */}
             <div
-                className={`md:hidden fixed top-0 left-0 h-full w-[30rem] max-w-[85vw] bg-[#313a46] z-[60] transition-transform duration-300 ${open ? "translate-x-0" : "-translate-x-full"}`}
+                className={`md:hidden overflow-y-auto fixed top-0 left-0 h-full w-[30rem] max-w-[85vw] bg-[#313a46] z-[60]
+                            transition-transform duration-300 ${open ? "translate-x-0" : "-translate-x-full"}`}
             >
                 <button
                     className="absolute top-4 right-4 text-white text-[2.4rem] leading-none z-10"
