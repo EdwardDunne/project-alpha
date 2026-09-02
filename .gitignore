@@ -8,3 +8,4 @@ app/staticfiles/
 app/db.sqlite3
 *.pyc
 __pycache__/
+remote-deploy.sh

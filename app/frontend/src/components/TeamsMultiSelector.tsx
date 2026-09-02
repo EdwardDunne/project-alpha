@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react"
 import { connect } from "react-redux"
 import { Team } from "../types"
 import { RootState } from "../reducers"
+import MobileMultiSelect from "./MobileMultiSelect"
+import { useSyncSelectedFromIds } from "../hooks/useSyncSelectedFromIds"
 
 interface Props {
     setTeams: (teams: Team[]) => void
@@ -22,7 +24,6 @@ const TeamsMultiSelector: React.FC<Props> = ({
 }) => {
     const [teamOptions, setTeamOptions] = useState<Team[]>([])
     const [selectedTeams, setSelectedTeams] = useState<Team[]>([])
-    const [hasAppliedInitial, setHasAppliedInitial] = useState(false)
 
     useEffect(() => {
         allTeams.length ? _setTeamOptions(allTeams) : getAllTeams()
@@ -32,22 +33,12 @@ const TeamsMultiSelector: React.FC<Props> = ({
         _setTeamOptions(allTeams)
     }, [allTeams])
 
-    useEffect(() => {
-        if (
-            initialTeamIds?.length &&
-            !hasAppliedInitial &&
-            teamOptions.length
-        ) {
-            const matches = teamOptions.filter((t) =>
-                initialTeamIds.includes(t.id),
-            )
-            if (matches.length) {
-                setSelectedTeams(matches)
-                setTeams(matches)
-                setHasAppliedInitial(true)
-            }
-        }
-    }, [initialTeamIds, teamOptions])
+    useSyncSelectedFromIds(
+        initialTeamIds,
+        teamOptions,
+        selectedTeams,
+        setSelectedTeams,
+    )
 
     const _setTeamOptions = (teams: Team[]) => {
         // Already sorted server-side
@@ -55,49 +46,65 @@ const TeamsMultiSelector: React.FC<Props> = ({
     }
 
     return (
-        <div className="mt-3">
-            <Autocomplete
-                multiple
-                disableCloseOnSelect
-                id="team-multi-selector"
+        <>
+            <div className="hidden md:block mt-3">
+                <Autocomplete
+                    multiple
+                    disableCloseOnSelect
+                    id="team-multi-selector"
+                    options={teamOptions}
+                    value={selectedTeams}
+                    getOptionLabel={(option) => option["name"]}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Teams"
+                            variant={variant}
+                            InputProps={{
+                                ...params.InputProps,
+                                sx: { fontSize: "1.6rem" },
+                            }}
+                            InputLabelProps={{
+                                ...params.InputLabelProps,
+                                sx: { fontSize: "1.6rem" },
+                            }}
+                        />
+                    )}
+                    onChange={(e, teams) => {
+                        setSelectedTeams(teams)
+                        setTeams(teams)
+                    }}
+                    slotProps={{ paper: { sx: { fontSize: "1.6rem" } } }}
+                    sx={{
+                        "& .MuiChip-root": {
+                            height: "auto",
+                            paddingY: "4px",
+                        },
+                        "& .MuiChip-label": {
+                            fontSize: "1.4rem",
+                            whiteSpace: "normal",
+                        },
+                        "& .MuiAutocomplete-popupIndicator svg": {
+                            fontSize: "2rem",
+                        },
+                        "& .MuiAutocomplete-clearIndicator svg": {
+                            fontSize: "2rem",
+                        },
+                    }}
+                />
+            </div>
+            <MobileMultiSelect
+                label="Teams"
                 options={teamOptions}
-                value={selectedTeams}
-                getOptionLabel={(option) => option["name"]}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        label="Teams"
-                        variant={variant}
-                        InputProps={{
-                            ...params.InputProps,
-                            sx: { fontSize: "1.6rem" },
-                        }}
-                        InputLabelProps={{
-                            ...params.InputLabelProps,
-                            sx: { fontSize: "1.6rem" },
-                        }}
-                    />
-                )}
-                onChange={(e, teams) => {
-                    setSelectedTeams(teams)
-                    setTeams(teams)
+                selected={selectedTeams}
+                onChange={(next) => {
+                    setSelectedTeams(next)
+                    setTeams(next)
                 }}
-                slotProps={{ paper: { sx: { fontSize: "1.6rem" } } }}
-                sx={{
-                    "& .MuiChip-root": { height: "auto", paddingY: "4px" },
-                    "& .MuiChip-label": {
-                        fontSize: "1.4rem",
-                        whiteSpace: "normal",
-                    },
-                    "& .MuiAutocomplete-popupIndicator svg": {
-                        fontSize: "2rem",
-                    },
-                    "& .MuiAutocomplete-clearIndicator svg": {
-                        fontSize: "2rem",
-                    },
-                }}
+                getOptionLabel={(t) => t.name}
+                searchPlaceholder="Find a team..."
             />
-        </div>
+        </>
     )
 }
 

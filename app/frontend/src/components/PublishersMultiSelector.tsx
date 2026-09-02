@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react"
 import { connect } from "react-redux"
 import { Publisher } from "../types"
 import { RootState } from "../reducers"
+import MobileMultiSelect from "./MobileMultiSelect"
+import { useSyncSelectedFromIds } from "../hooks/useSyncSelectedFromIds"
 
 interface Props {
     setPublishers: (publishers: Publisher[]) => void
@@ -24,7 +26,6 @@ const PublishersMultiSelector: React.FC<Props> = ({
     const [selectedPublishers, setSelectedPublishers] = useState<Publisher[]>(
         [],
     )
-    const [hasAppliedInitial, setHasAppliedInitial] = useState(false)
 
     useEffect(() => {
         allPublishers.length
@@ -36,22 +37,12 @@ const PublishersMultiSelector: React.FC<Props> = ({
         _setPublisherOptions(allPublishers)
     }, [allPublishers])
 
-    useEffect(() => {
-        if (
-            initialPublisherIds?.length &&
-            !hasAppliedInitial &&
-            publisherOptions.length
-        ) {
-            const matches = publisherOptions.filter((p) =>
-                initialPublisherIds.includes(p.id),
-            )
-            if (matches.length) {
-                setSelectedPublishers(matches)
-                setPublishers(matches)
-                setHasAppliedInitial(true)
-            }
-        }
-    }, [initialPublisherIds, publisherOptions])
+    useSyncSelectedFromIds(
+        initialPublisherIds,
+        publisherOptions,
+        selectedPublishers,
+        setSelectedPublishers,
+    )
 
     const _setPublisherOptions = (publishers: Publisher[]) => {
         // Already sorted server-side
@@ -59,49 +50,65 @@ const PublishersMultiSelector: React.FC<Props> = ({
     }
 
     return (
-        <div className="mt-3">
-            <Autocomplete
-                multiple
-                disableCloseOnSelect
-                id="publisher-multi-selector"
+        <>
+            <div className="hidden md:block mt-3">
+                <Autocomplete
+                    multiple
+                    disableCloseOnSelect
+                    id="publisher-multi-selector"
+                    options={publisherOptions}
+                    value={selectedPublishers}
+                    getOptionLabel={(option) => option["name"]}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Publishers"
+                            variant={variant}
+                            InputProps={{
+                                ...params.InputProps,
+                                sx: { fontSize: "1.6rem" },
+                            }}
+                            InputLabelProps={{
+                                ...params.InputLabelProps,
+                                sx: { fontSize: "1.6rem" },
+                            }}
+                        />
+                    )}
+                    onChange={(e, publishers) => {
+                        setSelectedPublishers(publishers)
+                        setPublishers(publishers)
+                    }}
+                    slotProps={{ paper: { sx: { fontSize: "1.6rem" } } }}
+                    sx={{
+                        "& .MuiChip-root": {
+                            height: "auto",
+                            paddingY: "4px",
+                        },
+                        "& .MuiChip-label": {
+                            fontSize: "1.4rem",
+                            whiteSpace: "normal",
+                        },
+                        "& .MuiAutocomplete-popupIndicator svg": {
+                            fontSize: "2rem",
+                        },
+                        "& .MuiAutocomplete-clearIndicator svg": {
+                            fontSize: "2rem",
+                        },
+                    }}
+                />
+            </div>
+            <MobileMultiSelect
+                label="Publishers"
                 options={publisherOptions}
-                value={selectedPublishers}
-                getOptionLabel={(option) => option["name"]}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        label="Publishers"
-                        variant={variant}
-                        InputProps={{
-                            ...params.InputProps,
-                            sx: { fontSize: "1.6rem" },
-                        }}
-                        InputLabelProps={{
-                            ...params.InputLabelProps,
-                            sx: { fontSize: "1.6rem" },
-                        }}
-                    />
-                )}
-                onChange={(e, publishers) => {
-                    setSelectedPublishers(publishers)
-                    setPublishers(publishers)
+                selected={selectedPublishers}
+                onChange={(next) => {
+                    setSelectedPublishers(next)
+                    setPublishers(next)
                 }}
-                slotProps={{ paper: { sx: { fontSize: "1.6rem" } } }}
-                sx={{
-                    "& .MuiChip-root": { height: "auto", paddingY: "4px" },
-                    "& .MuiChip-label": {
-                        fontSize: "1.4rem",
-                        whiteSpace: "normal",
-                    },
-                    "& .MuiAutocomplete-popupIndicator svg": {
-                        fontSize: "2rem",
-                    },
-                    "& .MuiAutocomplete-clearIndicator svg": {
-                        fontSize: "2rem",
-                    },
-                }}
+                getOptionLabel={(p) => p.name}
+                searchPlaceholder="Find a publisher..."
             />
-        </div>
+        </>
     )
 }
 
