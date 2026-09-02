@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 
 interface Props {
     open: boolean
@@ -14,6 +14,51 @@ const SidePanel: React.FC<Props> = ({
     children,
 }) => {
     const [collapsed, setCollapsed] = useState(false)
+
+    // Handles bug where selecting an input field near
+    // the bottom of the side panel scrolls overall page
+    useEffect(() => {
+        if (!open) return
+
+        const isDesktop = window.matchMedia("(min-width: 768px)")
+        let scrollY = 0
+        let locked = false
+
+        const lock = () => {
+            if (locked) return
+            locked = true
+            scrollY = window.scrollY
+            const { body } = document
+            body.style.position = "fixed"
+            body.style.top = `-${scrollY}px`
+            body.style.left = "0"
+            body.style.right = "0"
+        }
+
+        const unlock = () => {
+            if (!locked) return
+            locked = false
+            const { body } = document
+            body.style.position = ""
+            body.style.top = ""
+            body.style.left = ""
+            body.style.right = ""
+            window.scrollTo(0, scrollY)
+        }
+
+        const syncToBreakpoint = () => {
+            if (isDesktop.matches) unlock()
+            else lock()
+        }
+
+        syncToBreakpoint()
+        isDesktop.addEventListener("change", syncToBreakpoint)
+
+        return () => {
+            isDesktop.removeEventListener("change", syncToBreakpoint)
+            unlock()
+        }
+    }, [open])
 
     return (
         <>

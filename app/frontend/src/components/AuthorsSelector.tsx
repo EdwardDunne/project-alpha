@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react"
 import { connect } from "react-redux"
 import { Author } from "../types"
 import { RootState } from "../reducers"
+import MobileMultiSelect from "./MobileMultiSelect"
+import { useSyncSelectedFromIds } from "../hooks/useSyncSelectedFromIds"
 
 interface Props {
     setAuthors: (authors: Author[]) => void
@@ -22,7 +24,6 @@ const AuthorsSelector: React.FC<Props> = ({
 }) => {
     const [authorOptions, setAuthorOptions] = useState<Author[]>([])
     const [selectedAuthors, setSelectedAuthors] = useState<Author[]>([])
-    const [hasAppliedInitial, setHasAppliedInitial] = useState(false)
 
     useEffect(() => {
         allAuthors.length ? _setAuthorOptions(allAuthors) : getAllAuthors()
@@ -32,22 +33,12 @@ const AuthorsSelector: React.FC<Props> = ({
         _setAuthorOptions(allAuthors)
     }, [allAuthors])
 
-    useEffect(() => {
-        if (
-            initialAuthorIds?.length &&
-            !hasAppliedInitial &&
-            authorOptions.length
-        ) {
-            const matches = authorOptions.filter((a) =>
-                initialAuthorIds.includes(a.id),
-            )
-            if (matches.length) {
-                setSelectedAuthors(matches)
-                setAuthors(matches)
-                setHasAppliedInitial(true)
-            }
-        }
-    }, [initialAuthorIds, authorOptions])
+    useSyncSelectedFromIds(
+        initialAuthorIds,
+        authorOptions,
+        selectedAuthors,
+        setSelectedAuthors,
+    )
 
     const _setAuthorOptions = (authors: Author[]) => {
         // Already sorted server-side
@@ -55,49 +46,65 @@ const AuthorsSelector: React.FC<Props> = ({
     }
 
     return (
-        <div className="mt-3">
-            <Autocomplete
-                multiple
-                disableCloseOnSelect
-                id="author-selector"
+        <>
+            <div className="hidden md:block w-full mt-3">
+                <Autocomplete
+                    multiple
+                    disableCloseOnSelect
+                    id="author-selector"
+                    options={authorOptions}
+                    value={selectedAuthors}
+                    getOptionLabel={(option) => option["name"]}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Authors"
+                            variant={variant}
+                            InputProps={{
+                                ...params.InputProps,
+                                sx: { fontSize: "1.6rem" },
+                            }}
+                            InputLabelProps={{
+                                ...params.InputLabelProps,
+                                sx: { fontSize: "1.6rem" },
+                            }}
+                        />
+                    )}
+                    onChange={(e, authors) => {
+                        setSelectedAuthors(authors)
+                        setAuthors(authors)
+                    }}
+                    slotProps={{ paper: { sx: { fontSize: "1.6rem" } } }}
+                    sx={{
+                        "& .MuiChip-root": {
+                            height: "auto",
+                            paddingY: "4px",
+                        },
+                        "& .MuiChip-label": {
+                            fontSize: "1.4rem",
+                            whiteSpace: "normal",
+                        },
+                        "& .MuiAutocomplete-popupIndicator svg": {
+                            fontSize: "2rem",
+                        },
+                        "& .MuiAutocomplete-clearIndicator svg": {
+                            fontSize: "2rem",
+                        },
+                    }}
+                />
+            </div>
+            <MobileMultiSelect
+                label="Authors"
                 options={authorOptions}
-                value={selectedAuthors}
-                getOptionLabel={(option) => option["name"]}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        label="Authors"
-                        variant={variant}
-                        InputProps={{
-                            ...params.InputProps,
-                            sx: { fontSize: "1.6rem" },
-                        }}
-                        InputLabelProps={{
-                            ...params.InputLabelProps,
-                            sx: { fontSize: "1.6rem" },
-                        }}
-                    />
-                )}
-                onChange={(e, authors) => {
-                    setSelectedAuthors(authors)
-                    setAuthors(authors)
+                selected={selectedAuthors}
+                onChange={(next) => {
+                    setSelectedAuthors(next)
+                    setAuthors(next)
                 }}
-                slotProps={{ paper: { sx: { fontSize: "1.6rem" } } }}
-                sx={{
-                    "& .MuiChip-root": { height: "auto", paddingY: "4px" },
-                    "& .MuiChip-label": {
-                        fontSize: "1.4rem",
-                        whiteSpace: "normal",
-                    },
-                    "& .MuiAutocomplete-popupIndicator svg": {
-                        fontSize: "2rem",
-                    },
-                    "& .MuiAutocomplete-clearIndicator svg": {
-                        fontSize: "2rem",
-                    },
-                }}
+                getOptionLabel={(a) => a.name}
+                searchPlaceholder="Find an author..."
             />
-        </div>
+        </>
     )
 }
 

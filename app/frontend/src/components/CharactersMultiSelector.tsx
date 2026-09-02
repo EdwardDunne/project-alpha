@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react"
 import { connect } from "react-redux"
 import { Character } from "../types"
 import { RootState } from "../reducers"
+import MobileMultiSelect from "./MobileMultiSelect"
+import { useSyncSelectedFromIds } from "../hooks/useSyncSelectedFromIds"
 
 interface Props {
     setCharacters: (characters: Character[]) => void
@@ -24,7 +26,6 @@ const CharactersMultiSelector: React.FC<Props> = ({
     const [selectedCharacters, setSelectedCharacters] = useState<Character[]>(
         [],
     )
-    const [hasAppliedInitial, setHasAppliedInitial] = useState(false)
 
     useEffect(() => {
         allCharacters.length
@@ -36,22 +37,12 @@ const CharactersMultiSelector: React.FC<Props> = ({
         _setCharacterOptions(allCharacters)
     }, [allCharacters])
 
-    useEffect(() => {
-        if (
-            initialCharacterIds?.length &&
-            !hasAppliedInitial &&
-            characterOptions.length
-        ) {
-            const matches = characterOptions.filter((c) =>
-                initialCharacterIds.includes(c.id),
-            )
-            if (matches.length) {
-                setSelectedCharacters(matches)
-                setCharacters(matches)
-                setHasAppliedInitial(true)
-            }
-        }
-    }, [initialCharacterIds, characterOptions])
+    useSyncSelectedFromIds(
+        initialCharacterIds,
+        characterOptions,
+        selectedCharacters,
+        setSelectedCharacters,
+    )
 
     const _setCharacterOptions = (characters: Character[]) => {
         // Already sorted server-side
@@ -59,49 +50,65 @@ const CharactersMultiSelector: React.FC<Props> = ({
     }
 
     return (
-        <div className="mt-3">
-            <Autocomplete
-                multiple
-                disableCloseOnSelect
-                id="character-multi-selector"
+        <>
+            <div className="hidden md:block mt-3">
+                <Autocomplete
+                    multiple
+                    disableCloseOnSelect
+                    id="character-multi-selector"
+                    options={characterOptions}
+                    value={selectedCharacters}
+                    getOptionLabel={(option) => option["name"]}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Characters"
+                            variant={variant}
+                            InputProps={{
+                                ...params.InputProps,
+                                sx: { fontSize: "1.6rem" },
+                            }}
+                            InputLabelProps={{
+                                ...params.InputLabelProps,
+                                sx: { fontSize: "1.6rem" },
+                            }}
+                        />
+                    )}
+                    onChange={(e, characters) => {
+                        setSelectedCharacters(characters)
+                        setCharacters(characters)
+                    }}
+                    slotProps={{ paper: { sx: { fontSize: "1.6rem" } } }}
+                    sx={{
+                        "& .MuiChip-root": {
+                            height: "auto",
+                            paddingY: "4px",
+                        },
+                        "& .MuiChip-label": {
+                            fontSize: "1.4rem",
+                            whiteSpace: "normal",
+                        },
+                        "& .MuiAutocomplete-popupIndicator svg": {
+                            fontSize: "2rem",
+                        },
+                        "& .MuiAutocomplete-clearIndicator svg": {
+                            fontSize: "2rem",
+                        },
+                    }}
+                />
+            </div>
+            <MobileMultiSelect
+                label="Characters"
                 options={characterOptions}
-                value={selectedCharacters}
-                getOptionLabel={(option) => option["name"]}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        label="Characters"
-                        variant={variant}
-                        InputProps={{
-                            ...params.InputProps,
-                            sx: { fontSize: "1.6rem" },
-                        }}
-                        InputLabelProps={{
-                            ...params.InputLabelProps,
-                            sx: { fontSize: "1.6rem" },
-                        }}
-                    />
-                )}
-                onChange={(e, characters) => {
-                    setSelectedCharacters(characters)
-                    setCharacters(characters)
+                selected={selectedCharacters}
+                onChange={(next) => {
+                    setSelectedCharacters(next)
+                    setCharacters(next)
                 }}
-                slotProps={{ paper: { sx: { fontSize: "1.6rem" } } }}
-                sx={{
-                    "& .MuiChip-root": { height: "auto", paddingY: "4px" },
-                    "& .MuiChip-label": {
-                        fontSize: "1.4rem",
-                        whiteSpace: "normal",
-                    },
-                    "& .MuiAutocomplete-popupIndicator svg": {
-                        fontSize: "2rem",
-                    },
-                    "& .MuiAutocomplete-clearIndicator svg": {
-                        fontSize: "2rem",
-                    },
-                }}
+                getOptionLabel={(c) => c.name}
+                searchPlaceholder="Find a character..."
             />
-        </div>
+        </>
     )
 }
 
