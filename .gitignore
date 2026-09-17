@@ -9,3 +9,4 @@ app/db.sqlite3
 *.pyc
 __pycache__/
 remote-deploy.sh
+promote-books.sh
