@@ -82,14 +82,14 @@ const AddEditBookModalContent: React.FC<Props> = ({
         format: "",
         sub_category: "",
         title: book?.title ?? "",
-        authors: [],
-        artists: [],
+        authors: book?.authors?.map(String) ?? [],
+        artists: book?.artists?.map(String) ?? [],
         description: book?.description ?? "",
         thumbnail_url: book?.thumbnail_url ?? "",
         thumbnail: "",
         page_count: book?.page_count ?? 0,
         volume_number: book?.volume_number ?? 0,
-        characters: [],
+        characters: book?.characters?.map(String) ?? [],
         team: book?.team ? String(book.team) : "",
     })
 
@@ -251,7 +251,7 @@ const AddEditBookModalContent: React.FC<Props> = ({
                 </div>
                 <CharactersMultiSelector
                     setCharacters={setCharacters}
-                    initialCharacterIds={book?.characters}
+                    initialCharacterIds={formData.characters.map(Number)}
                 />
                 <TeamSelector
                     setTeam={setTeam}
@@ -259,11 +259,11 @@ const AddEditBookModalContent: React.FC<Props> = ({
                 />
                 <AuthorsSelector
                     setAuthors={setAuthors}
-                    initialAuthorIds={book?.authors}
+                    initialAuthorIds={formData.authors.map(Number)}
                 />
                 <ArtistsSelector
                     setArtists={setArtists}
-                    initialArtistIds={book?.artists}
+                    initialArtistIds={formData.artists.map(Number)}
                 />
                 <PublishersSelector
                     setPublisher={setPublisher}
