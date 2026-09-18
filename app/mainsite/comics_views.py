@@ -206,7 +206,8 @@ class CharacterViewSet(viewsets.ModelViewSet):
         PATCH  /api/comics/characters/<pk>/   -> partial_update
         DELETE /api/comics/characters/<pk>/   -> destroy
     """
-    queryset = Character.objects.all()
+    
+    queryset = Character.objects.select_related("publisher")
     serializer_class = CharacterSerializer
 
     def get_permissions(self):
