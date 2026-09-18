@@ -6,6 +6,7 @@ import { Character } from "../types"
 import { RootState } from "../reducers"
 import MobileMultiSelect from "./MobileMultiSelect"
 import { useSyncSelectedFromIds } from "../hooks/useSyncSelectedFromIds"
+import { characterLabel } from "../utils/characterLabel"
 
 interface Props {
     setCharacters: (characters: Character[]) => void
@@ -58,7 +59,7 @@ const CharactersMultiSelector: React.FC<Props> = ({
                     id="character-multi-selector"
                     options={characterOptions}
                     value={selectedCharacters}
-                    getOptionLabel={(option) => option["name"]}
+                    getOptionLabel={characterLabel}
                     renderInput={(params) => (
                         <TextField
                             {...params}
@@ -105,7 +106,7 @@ const CharactersMultiSelector: React.FC<Props> = ({
                     setSelectedCharacters(next)
                     setCharacters(next)
                 }}
-                getOptionLabel={(c) => c.name}
+                getOptionLabel={characterLabel}
                 searchPlaceholder="Find a character..."
             />
         </>

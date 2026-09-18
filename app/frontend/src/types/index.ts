@@ -31,6 +31,7 @@ export type Character = {
     id: number
     name: string
     publisher: number
+    publisher_name: string
 }
 
 export type Publisher = {

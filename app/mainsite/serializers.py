@@ -32,6 +32,11 @@ class PublisherSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CharacterSerializer(serializers.ModelSerializer):
+    # The same character name can exist under two different publishers, so
+    # the frontend needs the publisher's name (not just its id) to display
+    # e.g. "Batman (DC Comics)" and disambiguate between them.
+    publisher_name = serializers.ReadOnlyField(source='publisher.name')
+
     class Meta:
         model = Character
         fields = '__all__'

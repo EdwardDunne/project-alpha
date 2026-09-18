@@ -1,6 +1,7 @@
 import React from "react"
 import { connect } from "react-redux"
 import { Book as BookType } from "../../types"
+import { characterLabel } from "../../utils/characterLabel"
 
 interface Props {
     setDwModalOpen: (open: boolean) => void
@@ -29,7 +30,7 @@ const BookModalContent: React.FC<Props> = ({ book }) => {
                     </span>
                     <span>
                         <b>Characters</b>:{" "}
-                        {book.characters_data?.map((c) => c.name).join(", ")}
+                        {book.characters_data?.map(characterLabel).join(", ")}
                     </span>
                     <span>
                         <b>Authors</b>:{" "}

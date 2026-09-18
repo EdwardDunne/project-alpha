@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react"
 import { connect } from "react-redux"
 import { Character } from "../types"
 import { RootState } from "../reducers"
+import { characterLabel } from "../utils/characterLabel"
 
 interface Props {
     setCharacter: (character: Character | null) => void
@@ -57,7 +58,7 @@ const CharactersSelector: React.FC<Props> = ({
                 id="character-selector"
                 options={characterOptions}
                 value={selectedCharacter}
-                getOptionLabel={(option) => option["name"]}
+                getOptionLabel={characterLabel}
                 renderInput={(params) => (
                     <TextField
                         {...params}

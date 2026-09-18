@@ -10,3 +10,5 @@ app/db.sqlite3
 __pycache__/
 remote-deploy.sh
 promote-books.sh
+promote-characters.sh
+all-marvel-characters.json
