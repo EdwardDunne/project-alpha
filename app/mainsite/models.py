@@ -74,11 +74,21 @@ class Book(models.Model):
 
 
 class Character(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    publisher = models.ForeignKey("Publisher", on_delete=models.PROTECT, null=True)
+    # Unique per-publisher rather than globally - the same name can belong
+    # to two different characters at two different publishers (e.g.
+    # "Batman" at DC vs a same-named character at Marvel), so uniqueness
+    # has to be scoped to (name, publisher) instead of name alone.
+    name = models.CharField(max_length=100)
+    publisher = models.ForeignKey("Publisher", on_delete=models.PROTECT)
 
     class Meta:
         ordering = ['name']
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name", "publisher"],
+                name="unique_character_name_per_publisher",
+            )
+        ]
 
     def __str__(self):
         return self.name

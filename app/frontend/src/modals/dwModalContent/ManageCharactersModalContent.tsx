@@ -10,6 +10,7 @@ import {
 import { Character, Publisher } from "../../types"
 import { RootState } from "../../reducers"
 import ConfirmDialog from "../../components/ConfirmDialog"
+import { characterLabel } from "../../utils/characterLabel"
 
 interface Props {
     getAllCharacters: () => void
@@ -142,7 +143,7 @@ const ManageCharactersModalContent: React.FC<Props> = ({
                         ) : (
                             <div className="flex items-center gap-2">
                                 <span className="flex-1 text-[1.4rem]">
-                                    {character.name}
+                                    {characterLabel(character)}
                                 </span>
                                 <button
                                     className={editBtnClass}
@@ -192,7 +193,7 @@ const ManageCharactersModalContent: React.FC<Props> = ({
             </div>
             {deleteTarget && (
                 <ConfirmDialog
-                    message={`Delete character "${deleteTarget.name}"?`}
+                    message={`Delete character "${characterLabel(deleteTarget)}"?`}
                     onConfirm={() => {
                         deleteCharacter(deleteTarget.id, onDataChanged)
                         setDeleteTarget(null)
