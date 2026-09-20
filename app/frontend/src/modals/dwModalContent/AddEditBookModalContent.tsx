@@ -251,7 +251,7 @@ const AddEditBookModalContent: React.FC<Props> = ({
                 </div>
                 <CharactersMultiSelector
                     setCharacters={setCharacters}
-                    initialCharacterIds={formData.characters.map(Number)}
+                    initialCharacters={book?.characters_data}
                 />
                 <TeamSelector
                     setTeam={setTeam}
@@ -259,11 +259,11 @@ const AddEditBookModalContent: React.FC<Props> = ({
                 />
                 <AuthorsSelector
                     setAuthors={setAuthors}
-                    initialAuthorIds={formData.authors.map(Number)}
+                    initialAuthors={book?.authors_data}
                 />
                 <ArtistsSelector
                     setArtists={setArtists}
-                    initialArtistIds={formData.artists.map(Number)}
+                    initialArtists={book?.artists_data}
                 />
                 <PublishersSelector
                     setPublisher={setPublisher}

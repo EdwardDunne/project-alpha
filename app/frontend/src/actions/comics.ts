@@ -272,6 +272,44 @@ export const addTeam = teamActions.add
 export const updateTeam = teamActions.update
 export const deleteTeam = teamActions.del
 
+// Name search (Characters/Authors/Artists selectors)
+// Paginated
+export type NameSearchResult<T> = {
+    results: T[]
+    hasMore: boolean
+    count: number
+}
+
+async function searchByName<T>(
+    resource: string,
+    query: string,
+    page: number,
+): Promise<NameSearchResult<T>> {
+    const params = new URLSearchParams()
+    params.set("page", String(page))
+    params.set("page_size", "50")
+    if (query) params.set("search", query)
+
+    const config = { headers: httpUtil.getHeaders("GET") }
+    const res = await axios.get(
+        `${window.location.origin}/api/comics/${resource}/?${params.toString()}`,
+        config,
+    )
+
+    return {
+        results: res.data.results,
+        hasMore: res.data.has_more,
+        count: res.data.count,
+    }
+}
+
+export const searchCharacters = (query: string, page: number) =>
+    searchByName<Character>("characters", query, page)
+export const searchAuthors = (query: string, page: number) =>
+    searchByName<Author>("authors", query, page)
+export const searchArtists = (query: string, page: number) =>
+    searchByName<Artist>("artists", query, page)
+
 // Book Actions
 // Get paginated/filtered Books
 export const BOOKS_PAGE_SIZE = 24

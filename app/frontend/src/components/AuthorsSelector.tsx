@@ -1,49 +1,54 @@
 import { Autocomplete, TextField } from "@mui/material"
-import { getAllAuthors } from "../actions/comics"
-import React, { useEffect, useState } from "react"
-import { connect } from "react-redux"
+import { searchAuthors } from "../actions/comics"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Author } from "../types"
-import { RootState } from "../reducers"
-import MobileMultiSelect from "./MobileMultiSelect"
-import { useSyncSelectedFromIds } from "../hooks/useSyncSelectedFromIds"
+import VirtualizedMobileMultiSelect from "./VirtualizedMobileMultiSelect"
+import { useVirtualizedSearch } from "../hooks/useVirtualizedSearch"
+import {
+    createVirtualizedListbox,
+    VirtualizedPopper,
+    VirtualizedSearchController,
+} from "./VirtualizedListbox"
 
 interface Props {
     setAuthors: (authors: Author[]) => void
     variant?: "standard" | "outlined" | "filled"
-    allAuthors: Author[]
-    getAllAuthors: () => void
-    initialAuthorIds?: number[]
+    initialAuthors?: Author[]
 }
 
 const AuthorsSelector: React.FC<Props> = ({
     setAuthors,
     variant = "standard",
-    allAuthors,
-    getAllAuthors,
-    initialAuthorIds,
+    initialAuthors,
 }) => {
-    const [authorOptions, setAuthorOptions] = useState<Author[]>([])
-    const [selectedAuthors, setSelectedAuthors] = useState<Author[]>([])
-
-    useEffect(() => {
-        allAuthors.length ? _setAuthorOptions(allAuthors) : getAllAuthors()
-    }, [])
-
-    useEffect(() => {
-        _setAuthorOptions(allAuthors)
-    }, [allAuthors])
-
-    useSyncSelectedFromIds(
-        initialAuthorIds,
-        authorOptions,
-        selectedAuthors,
-        setSelectedAuthors,
+    const [selectedAuthors, setSelectedAuthors] = useState<Author[]>(
+        initialAuthors ?? [],
     )
+    const { query, setQuery, options, hasMore, loading, loadMore } =
+        useVirtualizedSearch(searchAuthors)
 
-    const _setAuthorOptions = (authors: Author[]) => {
-        // Already sorted server-side
-        setAuthorOptions(authors)
-    }
+    useEffect(() => {
+        if (!initialAuthors) return
+        const currentIds = selectedAuthors.map((a) => a.id)
+        const nextIds = initialAuthors.map((a) => a.id)
+        const inSync =
+            currentIds.length === nextIds.length &&
+            currentIds.every((id) => nextIds.includes(id))
+        if (!inSync) setSelectedAuthors(initialAuthors)
+    }, [initialAuthors])
+
+    const controllerRef = useRef<VirtualizedSearchController>({
+        hasMore,
+        loading,
+        loadMore,
+    })
+    useEffect(() => {
+        controllerRef.current = { hasMore, loading, loadMore }
+    })
+    const ListboxComponent = useMemo(
+        () => createVirtualizedListbox(controllerRef),
+        [],
+    )
 
     return (
         <>
@@ -51,10 +56,26 @@ const AuthorsSelector: React.FC<Props> = ({
                 <Autocomplete
                     multiple
                     disableCloseOnSelect
+                    disableListWrap
                     id="author-selector"
-                    options={authorOptions}
+                    options={options}
                     value={selectedAuthors}
+                    loading={loading}
+                    filterOptions={(x) => x}
+                    isOptionEqualToValue={(option, value) =>
+                        option.id === value.id
+                    }
+                    onInputChange={(e, value, reason) => {
+                        if (reason === "input") setQuery(value)
+                        else if (reason === "reset" || reason === "clear")
+                            setQuery("")
+                    }}
+                    ListboxComponent={ListboxComponent}
+                    PopperComponent={VirtualizedPopper}
                     getOptionLabel={(option) => option["name"]}
+                    renderOption={(props, option) =>
+                        [props, option.name] as React.ReactNode
+                    }
                     renderInput={(params) => (
                         <TextField
                             {...params}
@@ -93,9 +114,9 @@ const AuthorsSelector: React.FC<Props> = ({
                     }}
                 />
             </div>
-            <MobileMultiSelect
+            <VirtualizedMobileMultiSelect
                 label="Authors"
-                options={authorOptions}
+                options={options}
                 selected={selectedAuthors}
                 onChange={(next) => {
                     setSelectedAuthors(next)
@@ -103,12 +124,14 @@ const AuthorsSelector: React.FC<Props> = ({
                 }}
                 getOptionLabel={(a) => a.name}
                 searchPlaceholder="Find an author..."
+                query={query}
+                onQueryChange={setQuery}
+                hasMore={hasMore}
+                loading={loading}
+                onLoadMore={loadMore}
             />
         </>
     )
 }
 
-const mapStateToProps = (state: RootState) => ({
-    allAuthors: state.comics.allAuthors,
-})
-export default connect(mapStateToProps, { getAllAuthors })(AuthorsSelector)
+export default AuthorsSelector

@@ -1,54 +1,58 @@
 import { Autocomplete, TextField } from "@mui/material"
-import { getAllCharacters } from "../actions/comics"
-import React, { useEffect, useState } from "react"
-import { connect } from "react-redux"
+import { searchCharacters } from "../actions/comics"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Character } from "../types"
-import { RootState } from "../reducers"
-import MobileMultiSelect from "./MobileMultiSelect"
-import { useSyncSelectedFromIds } from "../hooks/useSyncSelectedFromIds"
+import VirtualizedMobileMultiSelect from "./VirtualizedMobileMultiSelect"
 import { characterLabel } from "../utils/characterLabel"
+import { useVirtualizedSearch } from "../hooks/useVirtualizedSearch"
+import {
+    createVirtualizedListbox,
+    VirtualizedPopper,
+    VirtualizedSearchController,
+} from "./VirtualizedListbox"
 
 interface Props {
     setCharacters: (characters: Character[]) => void
     variant?: "standard" | "outlined" | "filled"
-    allCharacters: Character[]
-    getAllCharacters: () => void
-    initialCharacterIds?: number[]
+    initialCharacters?: Character[]
 }
 
 const CharactersMultiSelector: React.FC<Props> = ({
     setCharacters,
     variant = "standard",
-    allCharacters,
-    getAllCharacters,
-    initialCharacterIds,
+    initialCharacters,
 }) => {
-    const [characterOptions, setCharacterOptions] = useState<Character[]>([])
     const [selectedCharacters, setSelectedCharacters] = useState<Character[]>(
+        initialCharacters ?? [],
+    )
+    const { query, setQuery, options, hasMore, loading, loadMore } =
+        useVirtualizedSearch(searchCharacters)
+
+    useEffect(() => {
+        if (!initialCharacters) return
+        const currentIds = selectedCharacters.map((c) => c.id)
+        const nextIds = initialCharacters.map((c) => c.id)
+        const inSync =
+            currentIds.length === nextIds.length &&
+            currentIds.every((id) => nextIds.includes(id))
+        if (!inSync) setSelectedCharacters(initialCharacters)
+    }, [initialCharacters])
+
+    // Reads current hasMore/loading/loadMore via the ref
+    // instead of a stale closure. Keeps render consistent
+    // for scroll position
+    const controllerRef = useRef<VirtualizedSearchController>({
+        hasMore,
+        loading,
+        loadMore,
+    })
+    useEffect(() => {
+        controllerRef.current = { hasMore, loading, loadMore }
+    })
+    const ListboxComponent = useMemo(
+        () => createVirtualizedListbox(controllerRef),
         [],
     )
-
-    useEffect(() => {
-        allCharacters.length
-            ? _setCharacterOptions(allCharacters)
-            : getAllCharacters()
-    }, [])
-
-    useEffect(() => {
-        _setCharacterOptions(allCharacters)
-    }, [allCharacters])
-
-    useSyncSelectedFromIds(
-        initialCharacterIds,
-        characterOptions,
-        selectedCharacters,
-        setSelectedCharacters,
-    )
-
-    const _setCharacterOptions = (characters: Character[]) => {
-        // Already sorted server-side
-        setCharacterOptions(characters)
-    }
 
     return (
         <>
@@ -56,10 +60,26 @@ const CharactersMultiSelector: React.FC<Props> = ({
                 <Autocomplete
                     multiple
                     disableCloseOnSelect
+                    disableListWrap
                     id="character-multi-selector"
-                    options={characterOptions}
+                    options={options}
                     value={selectedCharacters}
+                    loading={loading}
+                    filterOptions={(x) => x}
+                    isOptionEqualToValue={(option, value) =>
+                        option.id === value.id
+                    }
+                    onInputChange={(e, value, reason) => {
+                        if (reason === "input") setQuery(value)
+                        else if (reason === "reset" || reason === "clear")
+                            setQuery("")
+                    }}
+                    ListboxComponent={ListboxComponent}
+                    PopperComponent={VirtualizedPopper}
                     getOptionLabel={characterLabel}
+                    renderOption={(props, option) =>
+                        [props, characterLabel(option)] as React.ReactNode
+                    }
                     renderInput={(params) => (
                         <TextField
                             {...params}
@@ -98,9 +118,9 @@ const CharactersMultiSelector: React.FC<Props> = ({
                     }}
                 />
             </div>
-            <MobileMultiSelect
+            <VirtualizedMobileMultiSelect
                 label="Characters"
-                options={characterOptions}
+                options={options}
                 selected={selectedCharacters}
                 onChange={(next) => {
                     setSelectedCharacters(next)
@@ -108,14 +128,14 @@ const CharactersMultiSelector: React.FC<Props> = ({
                 }}
                 getOptionLabel={characterLabel}
                 searchPlaceholder="Find a character..."
+                query={query}
+                onQueryChange={setQuery}
+                hasMore={hasMore}
+                loading={loading}
+                onLoadMore={loadMore}
             />
         </>
     )
 }
 
-const mapStateToProps = (state: RootState) => ({
-    allCharacters: state.comics.allCharacters,
-})
-export default connect(mapStateToProps, { getAllCharacters })(
-    CharactersMultiSelector,
-)
+export default CharactersMultiSelector

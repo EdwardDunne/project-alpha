@@ -55,7 +55,7 @@ function MobileMultiSelect<T extends Option>({
                 placeholder={searchPlaceholder}
                 className="w-full bg-[#3f4a58] border border-gray-500 rounded px-3 py-2 text-[1.4rem] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
-            <div className="mt-2 max-h-[20rem] overflow-y-auto rounded border border-gray-600">
+            <div className="mt-2 h-[20rem] overflow-y-auto rounded border border-gray-600">
                 {filteredOptions.length === 0 ? (
                     <div className="px-3 py-2 text-[1.3rem] text-gray-400">
                         No matches.

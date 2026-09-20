@@ -63,6 +63,7 @@ class SubCategorySerializer(serializers.ModelSerializer):
 
 class TeamSerializer(serializers.ModelSerializer):
     character_names = serializers.ReadOnlyField()
+    characters_data = CharacterSerializer(source='characters', many=True, read_only=True)
 
     class Meta:
         model = Team

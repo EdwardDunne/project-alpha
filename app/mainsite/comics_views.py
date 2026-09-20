@@ -29,6 +29,18 @@ class BooksPagination(PageNumberPagination):
             'count': self.page.paginator.count,
         })
 
+class NameSearchPagination(PageNumberPagination):
+    page_size = 50
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+
+    def get_paginated_response(self, data):
+        return Response({
+            'results': data,
+            'has_more': self.page.has_next(),
+            'count': self.page.paginator.count,
+        })
+
 class BookViewSet(viewsets.ModelViewSet):
     """
         GET    /api/comics/books/                 -> list (paginated if
@@ -209,11 +221,33 @@ class CharacterViewSet(viewsets.ModelViewSet):
     
     queryset = Character.objects.select_related("publisher")
     serializer_class = CharacterSerializer
+    pagination_class = NameSearchPagination
 
     def get_permissions(self):
         if self.action in ('list', 'retrieve'):
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.action != 'list':
+            return queryset
+
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        # Old behavior for existing consumers (admin pages, CRUD sync): no
+        # `page` param means return the full unpaginated list.
+        if 'page' not in request.query_params:
+            queryset = self.filter_queryset(self.get_queryset())
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+
+        return super().list(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         # Overridden (rather than just perform_destroy) so this can keep the
@@ -281,11 +315,31 @@ class AuthorViewSet(viewsets.ModelViewSet):
     """
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
+    pagination_class = NameSearchPagination
 
     def get_permissions(self):
         if self.action in ('list', 'retrieve'):
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.action != 'list':
+            return queryset
+
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        if 'page' not in request.query_params:
+            queryset = self.filter_queryset(self.get_queryset())
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+
+        return super().list(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -319,11 +373,31 @@ class ArtistViewSet(viewsets.ModelViewSet):
     """
     queryset = Artist.objects.all()
     serializer_class = ArtistSerializer
+    pagination_class = NameSearchPagination
 
     def get_permissions(self):
         if self.action in ('list', 'retrieve'):
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.action != 'list':
+            return queryset
+
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        if 'page' not in request.query_params:
+            queryset = self.filter_queryset(self.get_queryset())
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+
+        return super().list(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

@@ -26,7 +26,11 @@ const FormatSelector: React.FC<Props> = ({
     const [selectedFormat, setSelectedFormat] = useState<Format | null>(null)
 
     useEffect(() => {
-        allFormats.length ? _setFormatOptions(allFormats) : getAllFormats()
+        if (allFormats.length) {
+            _setFormatOptions(allFormats)
+        } else {
+            getAllFormats()
+        }
     }, [])
 
     useEffect(() => {

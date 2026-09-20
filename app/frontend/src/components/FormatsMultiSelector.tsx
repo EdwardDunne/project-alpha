@@ -26,7 +26,11 @@ const FormatsMultiSelector: React.FC<Props> = ({
     const [selectedFormats, setSelectedFormats] = useState<Format[]>([])
 
     useEffect(() => {
-        allFormats.length ? _setFormatOptions(allFormats) : getAllFormats()
+        if (allFormats.length) {
+            _setFormatOptions(allFormats)
+        } else {
+            getAllFormats()
+        }
     }, [])
 
     useEffect(() => {
@@ -113,6 +117,4 @@ const FormatsMultiSelector: React.FC<Props> = ({
 const mapStateToProps = (state: RootState) => ({
     allFormats: state.comics.allFormats,
 })
-export default connect(mapStateToProps, { getAllFormats })(
-    FormatsMultiSelector,
-)
+export default connect(mapStateToProps, { getAllFormats })(FormatsMultiSelector)

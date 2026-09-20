@@ -29,9 +29,11 @@ const SubCategorySelector: React.FC<Props> = ({
         useState<SubCategory | null>(null)
 
     useEffect(() => {
-        allSubCategories.length
-            ? _setSubCategoryOptions(allSubCategories)
-            : getAllSubCategories()
+        if (allSubCategories.length) {
+            _setSubCategoryOptions(allSubCategories)
+        } else {
+            getAllSubCategories()
+        }
     }, [])
 
     useEffect(() => {

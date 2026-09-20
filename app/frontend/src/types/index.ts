@@ -64,5 +64,6 @@ export type Team = {
     id: number
     name: string
     characters: number[]
+    characters_data?: Character[]
     character_names: string[]
 }
