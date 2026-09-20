@@ -26,7 +26,11 @@ const TeamSelector: React.FC<Props> = ({
     const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
 
     useEffect(() => {
-        allTeams.length ? _setTeamOptions(allTeams) : getAllTeams()
+        if (allTeams.length) {
+            _setTeamOptions(allTeams)
+        } else {
+            getAllTeams()
+        }
     }, [])
 
     useEffect(() => {

@@ -26,9 +26,11 @@ const CharactersSelector: React.FC<Props> = ({
         useState<Character | null>(null)
 
     useEffect(() => {
-        allCharacters.length
-            ? _setCharacterOptions(allCharacters)
-            : getAllCharacters()
+        if (allCharacters.length) {
+            _setCharacterOptions(allCharacters)
+        } else {
+            getAllCharacters()
+        }
     }, [])
 
     useEffect(() => {

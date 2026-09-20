@@ -354,7 +354,7 @@ const ComicsPage: React.FC<Props> = ({
                     <CharactersMultiSelector
                         key={`characters-${filterResetKey}`}
                         setCharacters={setCharacterFilter}
-                        initialCharacterIds={characterFilter.map((c) => c.id)}
+                        initialCharacters={characterFilter}
                     />
                     <TeamsMultiSelector
                         key={`teams-${filterResetKey}`}
@@ -364,12 +364,12 @@ const ComicsPage: React.FC<Props> = ({
                     <AuthorsSelector
                         key={`authors-${filterResetKey}`}
                         setAuthors={setAuthorFilter}
-                        initialAuthorIds={authorFilter.map((a) => a.id)}
+                        initialAuthors={authorFilter}
                     />
                     <ArtistsSelector
                         key={`artists-${filterResetKey}`}
                         setArtists={setArtistFilter}
-                        initialArtistIds={artistFilter.map((a) => a.id)}
+                        initialArtists={artistFilter}
                     />
                 </ul>
                 <button

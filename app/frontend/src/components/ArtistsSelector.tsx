@@ -1,49 +1,54 @@
 import { Autocomplete, TextField } from "@mui/material"
-import { getAllArtists } from "../actions/comics"
-import React, { useEffect, useState } from "react"
-import { connect } from "react-redux"
+import { searchArtists } from "../actions/comics"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Artist } from "../types"
-import { RootState } from "../reducers"
-import MobileMultiSelect from "./MobileMultiSelect"
-import { useSyncSelectedFromIds } from "../hooks/useSyncSelectedFromIds"
+import VirtualizedMobileMultiSelect from "./VirtualizedMobileMultiSelect"
+import { useVirtualizedSearch } from "../hooks/useVirtualizedSearch"
+import {
+    createVirtualizedListbox,
+    VirtualizedPopper,
+    VirtualizedSearchController,
+} from "./VirtualizedListbox"
 
 interface Props {
     setArtists: (artists: Artist[]) => void
     variant?: "standard" | "outlined" | "filled"
-    allArtists: Artist[]
-    getAllArtists: () => void
-    initialArtistIds?: number[]
+    initialArtists?: Artist[]
 }
 
 const ArtistsSelector: React.FC<Props> = ({
     setArtists,
     variant = "standard",
-    allArtists,
-    getAllArtists,
-    initialArtistIds,
+    initialArtists,
 }) => {
-    const [artistOptions, setArtistOptions] = useState<Artist[]>([])
-    const [selectedArtists, setSelectedArtists] = useState<Artist[]>([])
-
-    useEffect(() => {
-        allArtists.length ? _setArtistOptions(allArtists) : getAllArtists()
-    }, [])
-
-    useEffect(() => {
-        _setArtistOptions(allArtists)
-    }, [allArtists])
-
-    useSyncSelectedFromIds(
-        initialArtistIds,
-        artistOptions,
-        selectedArtists,
-        setSelectedArtists,
+    const [selectedArtists, setSelectedArtists] = useState<Artist[]>(
+        initialArtists ?? [],
     )
+    const { query, setQuery, options, hasMore, loading, loadMore } =
+        useVirtualizedSearch(searchArtists)
 
-    const _setArtistOptions = (artists: Artist[]) => {
-        // Already sorted server-side
-        setArtistOptions(artists)
-    }
+    useEffect(() => {
+        if (!initialArtists) return
+        const currentIds = selectedArtists.map((a) => a.id)
+        const nextIds = initialArtists.map((a) => a.id)
+        const inSync =
+            currentIds.length === nextIds.length &&
+            currentIds.every((id) => nextIds.includes(id))
+        if (!inSync) setSelectedArtists(initialArtists)
+    }, [initialArtists])
+
+    const controllerRef = useRef<VirtualizedSearchController>({
+        hasMore,
+        loading,
+        loadMore,
+    })
+    useEffect(() => {
+        controllerRef.current = { hasMore, loading, loadMore }
+    })
+    const ListboxComponent = useMemo(
+        () => createVirtualizedListbox(controllerRef),
+        [],
+    )
 
     return (
         <>
@@ -51,10 +56,26 @@ const ArtistsSelector: React.FC<Props> = ({
                 <Autocomplete
                     multiple
                     disableCloseOnSelect
+                    disableListWrap
                     id="artist-selector"
-                    options={artistOptions}
+                    options={options}
                     value={selectedArtists}
+                    loading={loading}
+                    filterOptions={(x) => x}
+                    isOptionEqualToValue={(option, value) =>
+                        option.id === value.id
+                    }
+                    onInputChange={(e, value, reason) => {
+                        if (reason === "input") setQuery(value)
+                        else if (reason === "reset" || reason === "clear")
+                            setQuery("")
+                    }}
+                    ListboxComponent={ListboxComponent}
+                    PopperComponent={VirtualizedPopper}
                     getOptionLabel={(option) => option["name"]}
+                    renderOption={(props, option) =>
+                        [props, option.name] as React.ReactNode
+                    }
                     renderInput={(params) => (
                         <TextField
                             {...params}
@@ -93,9 +114,9 @@ const ArtistsSelector: React.FC<Props> = ({
                     }}
                 />
             </div>
-            <MobileMultiSelect
+            <VirtualizedMobileMultiSelect
                 label="Artists"
-                options={artistOptions}
+                options={options}
                 selected={selectedArtists}
                 onChange={(next) => {
                     setSelectedArtists(next)
@@ -103,12 +124,14 @@ const ArtistsSelector: React.FC<Props> = ({
                 }}
                 getOptionLabel={(a) => a.name}
                 searchPlaceholder="Find an artist..."
+                query={query}
+                onQueryChange={setQuery}
+                hasMore={hasMore}
+                loading={loading}
+                onLoadMore={loadMore}
             />
         </>
     )
 }
 
-const mapStateToProps = (state: RootState) => ({
-    allArtists: state.comics.allArtists,
-})
-export default connect(mapStateToProps, { getAllArtists })(ArtistsSelector)
+export default ArtistsSelector

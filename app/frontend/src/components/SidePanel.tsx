@@ -62,24 +62,6 @@ const SidePanel: React.FC<Props> = ({
 
     return (
         <>
-            {/* Desktop sidebar — hidden on mobile, collapsible via the tab on its edge */}
-            <div className="hidden md:flex sticky top-[6rem] h-[calc(100dvh-6rem)] shrink-0">
-                <div
-                    className={`h-full bg-[#313a46] overflow-y-auto overflow-x-hidden transition-all duration-300 ${collapsed ? "w-0" : "w-[35rem]"}`}
-                >
-                    <div className="w-[35rem] h-full">{children}</div>
-                </div>
-                <button
-                    className="w-8 shrink-0 mt-4 h-14 bg-brand text-white rounded-r-md shadow-lg flex items-center justify-center text-[4.2rem] leading-none"
-                    onClick={() => setCollapsed((c) => !c)}
-                    aria-label={
-                        collapsed ? "Expand sidebar" : "Collapse sidebar"
-                    }
-                >
-                    {collapsed ? "›" : "‹"}
-                </button>
-            </div>
-
             {/* Mobile: backdrop */}
             {open && (
                 <div
@@ -88,19 +70,32 @@ const SidePanel: React.FC<Props> = ({
                 />
             )}
 
-            {/* Mobile: slide-in drawer */}
-            <div
-                className={`md:hidden overflow-y-auto fixed top-0 left-0 h-full w-[30rem] max-w-[85vw] bg-[#313a46] z-[60]
-                            transition-transform duration-300 ${open ? "translate-x-0" : "-translate-x-full"}`}
-            >
-                <button
-                    className="absolute top-4 right-4 text-white text-[2.4rem] leading-none z-10"
-                    onClick={onClose}
-                    aria-label={closeAriaLabel}
+            <div className="md:sticky md:top-[6rem] md:h-[calc(100dvh-6rem)] md:shrink-0 md:flex">
+                <div
+                    className={`fixed top-0 left-0 h-full w-[30rem] max-w-[85vw] z-[60] bg-[#313a46]
+                                overflow-y-auto overflow-x-hidden transition-all duration-300
+                                ${open ? "translate-x-0" : "-translate-x-full"}
+                                md:static md:z-auto md:translate-x-0 md:max-w-none
+                                ${collapsed ? "md:w-0" : "md:w-[35rem]"}`}
                 >
-                    ✕
+                    <button
+                        className="md:hidden absolute top-4 right-4 text-white text-[2.4rem] leading-none z-10"
+                        onClick={onClose}
+                        aria-label={closeAriaLabel}
+                    >
+                        ✕
+                    </button>
+                    <div className="w-full md:w-[35rem] h-full">{children}</div>
+                </div>
+                <button
+                    className="hidden md:flex w-8 shrink-0 mt-4 h-14 bg-brand text-white rounded-r-md shadow-lg items-center justify-center text-[4.2rem] leading-none"
+                    onClick={() => setCollapsed((c) => !c)}
+                    aria-label={
+                        collapsed ? "Expand sidebar" : "Collapse sidebar"
+                    }
+                >
+                    {collapsed ? "›" : "‹"}
                 </button>
-                {children}
             </div>
         </>
     )

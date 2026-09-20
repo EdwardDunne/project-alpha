@@ -122,7 +122,9 @@ const ManageTeamsModalContent: React.FC<Props> = ({
                                                 ),
                                             )
                                         }
-                                        initialCharacterIds={team.characters}
+                                        initialCharacters={
+                                            team.characters_data
+                                        }
                                     />
                                 </div>
                                 <div className="flex justify-end gap-2 w-[calc(100%-1rem)]">

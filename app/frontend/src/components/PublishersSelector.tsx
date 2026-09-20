@@ -27,9 +27,11 @@ const PublishersSelector: React.FC<Props> = ({
         useState<Publisher | null>(null)
 
     useEffect(() => {
-        allPublishers.length
-            ? _setPublisherOptions(allPublishers)
-            : getAllPublishers()
+        if (allPublishers.length) {
+            _setPublisherOptions(allPublishers)
+        } else {
+            getAllPublishers()
+        }
     }, [])
 
     useEffect(() => {
