@@ -12,3 +12,4 @@ remote-deploy.sh
 promote-books.sh
 promote-characters.sh
 all-marvel-characters.json
+security-scan/
