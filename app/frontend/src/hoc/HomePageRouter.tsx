@@ -14,7 +14,6 @@ import { loadUser } from "../actions/profile"
 import { connect } from "react-redux"
 import { Routes, Route } from "react-router-dom"
 import PrivateRoute from "../hoc/PrivateRoute"
-import InterviewPrepPage from "interview-prep/InterviewPrepPage"
 
 interface Props {
     checkAuthenticated: () => void
@@ -76,10 +75,6 @@ const HomePageRouter: React.FC<Props> = ({ checkAuthenticated, loadUser }) => {
                         <DashboardPage />
                     </PrivateRoute>
                 }
-            />
-            <Route
-                path="/interview-prep"
-                element={<InterviewPrepPage />}
             />
             <Route
                 path="*"
