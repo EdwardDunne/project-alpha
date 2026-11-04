@@ -1,16 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
-import { ThemeProvider } from "@mui/material"
+import React, { useEffect, useRef, useState } from "react"
 import Button from "@mui/material/Button"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import DunneWebModal from "../modals/DunneWebModal"
 import FloatingMenuButton from "../components/FloatingMenuButton"
 import SidePanel from "../components/SidePanel"
-import PublishersMultiSelector from "../components/PublishersMultiSelector"
-import CharactersMultiSelector from "../components/CharactersMultiSelector"
-import TeamsMultiSelector from "../components/TeamsMultiSelector"
-import AuthorsSelector from "../components/AuthorsSelector"
-import ArtistsSelector from "../components/ArtistsSelector"
-import FormatsMultiSelector from "../components/FormatsMultiSelector"
 import AddEditBookModalContent from "../modals/dwModalContent/AddEditBookModalContent"
 import ManagePublishersModalContent from "../modals/dwModalContent/ManagePublishersModalContent"
 import ManageCharactersModalContent from "../modals/dwModalContent/ManageCharactersModalContent"
@@ -19,20 +12,12 @@ import ManageArtistsModalContent from "../modals/dwModalContent/ManageArtistsMod
 import ManageFormatsModalContent from "../modals/dwModalContent/ManageFormatsModalContent"
 import ManageSubCategoriesModalContent from "../modals/dwModalContent/ManageSubCategoriesModalContent"
 import ManageTeamsModalContent from "../modals/dwModalContent/ManageTeamsModalContent"
-import { darkTheme } from "../App"
-import {
-    type Book,
-    Character,
-    Publisher,
-    Artist,
-    Author,
-    Team,
-    Format,
-} from "types"
-import { useDebounce } from "../hooks/useDebounce"
+import { type Book } from "types"
+import { useBookFilters } from "../hooks/useBookFilters"
+import BookFilterFields, {
+    TitleSearchInput,
+} from "../components/BookFilterFields"
 import { usePaginatedBooks } from "../hooks/usePaginatedBooks"
-import { usePersistedState } from "../hooks/usePersistedState"
-import { BooksPageFilters } from "../actions/comics"
 
 const ComicsAdmin: React.FC = () => {
     const [selectedBook, setSelectedBook] = useState<Book | null>(null)
@@ -41,65 +26,11 @@ const ComicsAdmin: React.FC = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false)
 
     const [filtersOpen, setFiltersOpen] = useState(false)
-    const [filterResetKey, setFilterResetKey] = useState(0)
 
-    const [titleSearch, setTitleSearch] = usePersistedState(
-        "comics-admin:titleSearch",
-        "",
-    )
-    const [characterFilter, setCharacterFilter] = usePersistedState<
-        Character[]
-    >("comics-admin:characterFilter", [])
-    const [publisherFilter, setPublisherFilter] = usePersistedState<
-        Publisher[]
-    >("comics-admin:publisherFilter", [])
-    const [artistFilter, setArtistFilter] = usePersistedState<Artist[]>(
-        "comics-admin:artistFilter",
-        [],
-    )
-    const [authorFilter, setAuthorFilter] = usePersistedState<Author[]>(
-        "comics-admin:authorFilter",
-        [],
-    )
-    const [teamFilter, setTeamFilter] = usePersistedState<Team[]>(
-        "comics-admin:teamFilter",
-        [],
-    )
-    const [formatFilter, setFormatFilter] = usePersistedState<Format[]>(
-        "comics-admin:formatFilter",
-        [],
-    )
-
-    const debouncedTitleSearch = useDebounce(titleSearch)
-    const debouncedPublisherFilter = useDebounce(publisherFilter)
-    const debouncedFormatFilter = useDebounce(formatFilter)
-    const debouncedCharacterFilter = useDebounce(characterFilter)
-    const debouncedArtistFilter = useDebounce(artistFilter)
-    const debouncedAuthorFilter = useDebounce(authorFilter)
-    const debouncedTeamFilter = useDebounce(teamFilter)
+    const bookFilters = useBookFilters("comics-admin")
+    const { filters } = bookFilters
 
     const scrollContainerRef = useRef<HTMLDivElement | null>(null)
-
-    const filters: BooksPageFilters = useMemo(
-        () => ({
-            title: debouncedTitleSearch || undefined,
-            publisherIds: debouncedPublisherFilter.map((p) => p.id),
-            formatIds: debouncedFormatFilter.map((f) => f.id),
-            characterIds: debouncedCharacterFilter.map((c) => c.id),
-            artistIds: debouncedArtistFilter.map((a) => a.id),
-            authorIds: debouncedAuthorFilter.map((a) => a.id),
-            teamIds: debouncedTeamFilter.map((t) => t.id),
-        }),
-        [
-            debouncedTitleSearch,
-            debouncedPublisherFilter,
-            debouncedFormatFilter,
-            debouncedCharacterFilter,
-            debouncedArtistFilter,
-            debouncedAuthorFilter,
-            debouncedTeamFilter,
-        ],
-    )
 
     const { books, loading, sentinelRef, reload } = usePaginatedBooks(
         "comics-admin",
@@ -173,16 +104,6 @@ const ComicsAdmin: React.FC = () => {
 
     const manageButtonSx = { margin: "0.2rem", fontSize: "1.4rem" }
 
-    const clearFilters = () => {
-        setPublisherFilter([])
-        setFormatFilter([])
-        setCharacterFilter([])
-        setArtistFilter([])
-        setAuthorFilter([])
-        setTeamFilter([])
-        setFilterResetKey((key) => key + 1)
-    }
-
     const sidebarContent = (
         <div className="list-none text-white w-full p-[2rem] flex flex-col h-full">
             <span
@@ -191,13 +112,7 @@ const ComicsAdmin: React.FC = () => {
             >
                 Search
             </span>
-            <input
-                className="w-full mb-2 bg-[#3f4a58] border border-gray-500 rounded px-3 py-2 text-[1.4rem] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                type="text"
-                placeholder="Search title..."
-                value={titleSearch}
-                onChange={(e) => setTitleSearch(e.target.value)}
-            />
+            <TitleSearchInput bookFilters={bookFilters} className="mb-2" />
 
             <button
                 className="w-full flex justify-center items-center gap-1 text-center p-2.5
@@ -216,48 +131,9 @@ const ComicsAdmin: React.FC = () => {
                 />
             </button>
             {filtersOpen && (
-                <ThemeProvider theme={darkTheme}>
-                    <ul className="list-none p-0">
-                        <FormatsMultiSelector
-                            key={`format-${filterResetKey}`}
-                            setFormats={setFormatFilter}
-                            initialFormatIds={formatFilter.map((f) => f.id)}
-                        />
-                        <PublishersMultiSelector
-                            key={`publishers-${filterResetKey}`}
-                            setPublishers={setPublisherFilter}
-                            initialPublisherIds={publisherFilter.map(
-                                (p) => p.id,
-                            )}
-                        />
-                        <CharactersMultiSelector
-                            key={`characters-${filterResetKey}`}
-                            setCharacters={setCharacterFilter}
-                            initialCharacters={characterFilter}
-                        />
-                        <TeamsMultiSelector
-                            key={`teams-${filterResetKey}`}
-                            setTeams={setTeamFilter}
-                            initialTeamIds={teamFilter.map((t) => t.id)}
-                        />
-                        <AuthorsSelector
-                            key={`authors-${filterResetKey}`}
-                            setAuthors={setAuthorFilter}
-                            initialAuthors={authorFilter}
-                        />
-                        <ArtistsSelector
-                            key={`artists-${filterResetKey}`}
-                            setArtists={setArtistFilter}
-                            initialArtists={artistFilter}
-                        />
-                    </ul>
-                    <button
-                        className="w-full mt-3 mb-2 px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition-colors font-semibold text-[1.4rem]"
-                        onClick={clearFilters}
-                    >
-                        Clear Filters
-                    </button>
-                </ThemeProvider>
+                <div className="mb-2">
+                    <BookFilterFields bookFilters={bookFilters} />
+                </div>
             )}
 
             <ul className="list-none p-0">

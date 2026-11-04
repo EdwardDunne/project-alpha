@@ -93,6 +93,14 @@ class BookViewSet(viewsets.ModelViewSet):
         if title:
             queryset = queryset.filter(title__icontains=title)
 
+        # Page count range - ignore anything that isn't a positive integer
+        min_pages = request.query_params.get('min_pages', '')
+        if min_pages.isdigit() and int(min_pages) > 0:
+            queryset = queryset.filter(page_count__gte=int(min_pages))
+        max_pages = request.query_params.get('max_pages', '')
+        if max_pages.isdigit() and int(max_pages) > 0:
+            queryset = queryset.filter(page_count__lte=int(max_pages))
+
         publisher_ids = request.query_params.getlist('publisher')
         if publisher_ids:
             queryset = queryset.filter(publisher__id__in=publisher_ids)
