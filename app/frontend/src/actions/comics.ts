@@ -316,6 +316,8 @@ export const BOOKS_PAGE_SIZE = 24
 
 export type BooksPageFilters = {
     title?: string
+    minPages?: number
+    maxPages?: number
     publisherIds?: number[]
     formatIds?: number[]
     characterIds?: number[]
@@ -340,6 +342,8 @@ export async function fetchBooksPage(
     params.set("page", String(page))
     params.set("page_size", String(BOOKS_PAGE_SIZE))
     if (filters.title) params.set("title", filters.title)
+    if (filters.minPages) params.set("min_pages", String(filters.minPages))
+    if (filters.maxPages) params.set("max_pages", String(filters.maxPages))
     filters.publisherIds?.forEach((id) =>
         params.append("publisher", String(id)),
     )

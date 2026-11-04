@@ -1,38 +1,23 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { connect } from "react-redux"
 import { Heart, BookOpenCheck } from "lucide-react"
 import {
-    BooksPageFilters,
     toggleWishlist,
     toggleOwned,
     getAllFormats,
     setShouldReloadBooks,
 } from "../actions/comics"
 import { usePaginatedBooks } from "../hooks/usePaginatedBooks"
-import { usePersistedState } from "../hooks/usePersistedState"
-import { ThemeProvider, Switch, FormControlLabel } from "@mui/material"
-import { darkTheme } from "../App"
-import PublishersMultiSelector from "../components/PublishersMultiSelector"
-import CharactersMultiSelector from "../components/CharactersMultiSelector"
-import ArtistsSelector from "../components/ArtistsSelector"
-import AuthorsSelector from "../components/AuthorsSelector"
-import TeamsMultiSelector from "../components/TeamsMultiSelector"
-import FormatsMultiSelector from "../components/FormatsMultiSelector"
+import { useBookFilters } from "../hooks/useBookFilters"
+import BookFilterFields, {
+    TitleSearchInput,
+} from "../components/BookFilterFields"
 import DunneWebModal from "../modals/DunneWebModal"
 import FloatingMenuButton from "../components/FloatingMenuButton"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import SidePanel from "../components/SidePanel"
-import {
-    Book,
-    Character,
-    Publisher,
-    Artist,
-    Author,
-    Team,
-    Format,
-} from "../types"
+import { Book, Format } from "../types"
 import BookModalContent from "modals/dwModalContent/BookModalContent"
-import { useDebounce } from "../hooks/useDebounce"
 import { RootState } from "../reducers"
 
 interface Props {
@@ -48,110 +33,29 @@ const ComicsPage: React.FC<Props> = ({
     shouldReloadBooks,
     getAllFormats,
 }) => {
-    const [characterFilter, setCharacterFilter] = usePersistedState<
-        Character[]
-    >("comics-public:characterFilter", [])
-    const [publisherFilter, setPublisherFilter] = usePersistedState<
-        Publisher[]
-    >("comics-public:publisherFilter", [])
-    const [artistFilter, setArtistFilter] = usePersistedState<Artist[]>(
-        "comics-public:artistFilter",
-        [],
-    )
-    const [authorFilter, setAuthorFilter] = usePersistedState<Author[]>(
-        "comics-public:authorFilter",
-        [],
-    )
-    const [teamFilter, setTeamFilter] = usePersistedState<Team[]>(
-        "comics-public:teamFilter",
-        [],
-    )
-    const [titleSearch, setTitleSearch] = usePersistedState(
-        "comics-public:titleSearch",
-        "",
-    )
-    const [wishlistOnlyFilter, setWishlistOnlyFilter] = usePersistedState(
-        "comics-public:wishlistOnlyFilter",
-        false,
-    )
-    const [ownedOnlyFilter, setOwnedOnlyFilter] = usePersistedState(
-        "comics-public:ownedOnlyFilter",
-        false,
-    )
-    // undefined = not yet resolved (still waiting on allFormats to load so
-    // we can default to ["Omnibus"]); [] = user explicitly wants no format
-    // filter. Once resolved (to either a non-empty array or []), it persists
-    // like every other filter and this distinction stops mattering.
-    const [formatFilter, setFormatFilter] = usePersistedState<
-        Format[] | undefined
-    >("comics-public:formatFilter", undefined)
+    const bookFilters = useBookFilters("comics-public", {
+        defaultFormatName: "Omnibus",
+        allFormats,
+    })
+    const { filters, wishlistedOnly, ownedOnly } = bookFilters
     const [dwModalOpen, setDwModalOpen] = useState(false)
     const [selectedBook, setSelectedBook] = useState<Book | null>(null)
     const [filterOpen, setFilterOpen] = useState(false)
-    const [filterResetKey, setFilterResetKey] = useState(0)
-
-    const debouncedTitleSearch = useDebounce(titleSearch)
-    const debouncedPublisherFilter = useDebounce(publisherFilter)
-    const debouncedFormatFilter = useDebounce(formatFilter ?? [])
-    const debouncedCharacterFilter = useDebounce(characterFilter)
-    const debouncedArtistFilter = useDebounce(artistFilter)
-    const debouncedAuthorFilter = useDebounce(authorFilter)
-    const debouncedTeamFilter = useDebounce(teamFilter)
 
     const scrollContainerRef = useRef<HTMLDivElement | null>(null)
 
     // Bootstrap the format list (FormatsMultiSelector also does this itself,
-    // but we need it here too to resolve the "Omnibus" default below).
+    // but the hook needs it to resolve the "Omnibus" default).
     useEffect(() => {
         if (allFormats.length === 0) getAllFormats()
     }, [])
-
-    // Default to ["Omnibus"] the first time this page is ever visited in
-    // this session, but only once - never override an explicit later choice
-    // (including explicitly clearing the filter, which sets it to []).
-    useEffect(() => {
-        if (formatFilter !== undefined || allFormats.length === 0) return
-        const omnibus = allFormats.find((f) => f.name === "Omnibus")
-        setFormatFilter(omnibus ? [omnibus] : [])
-    }, [allFormats, formatFilter])
-
-    const filters: BooksPageFilters = useMemo(
-        () => ({
-            title: debouncedTitleSearch || undefined,
-            publisherIds: debouncedPublisherFilter.map((p) => p.id),
-            formatIds: debouncedFormatFilter.map((f) => f.id),
-            characterIds: debouncedCharacterFilter.map((c) => c.id),
-            artistIds: debouncedArtistFilter.map((a) => a.id),
-            authorIds: debouncedAuthorFilter.map((a) => a.id),
-            teamIds: debouncedTeamFilter.map((t) => t.id),
-            wishlistedOnly: wishlistOnlyFilter,
-            ownedOnly: ownedOnlyFilter,
-        }),
-        [
-            debouncedTitleSearch,
-            debouncedPublisherFilter,
-            debouncedFormatFilter,
-            debouncedCharacterFilter,
-            debouncedArtistFilter,
-            debouncedAuthorFilter,
-            debouncedTeamFilter,
-            wishlistOnlyFilter,
-            ownedOnlyFilter,
-        ],
-    )
-
-    // Don't make first books request until formats have loaded
-    const formatFilterReady =
-        formatFilter !== undefined &&
-        JSON.stringify(debouncedFormatFilter.map((f) => f.id).sort()) ===
-            JSON.stringify(formatFilter.map((f) => f.id).sort())
 
     const { books, loading, sentinelRef, updateBook, removeBook, reload } =
         usePaginatedBooks(
             "comics-public",
             filters,
             scrollContainerRef,
-            formatFilterReady,
+            bookFilters.ready,
         )
 
     useEffect(() => {
@@ -172,11 +76,11 @@ const ComicsPage: React.FC<Props> = ({
     const matchesWishlistOwnedFilters = (
         book: Pick<Book, "is_wishlisted" | "is_owned">,
     ) => {
-        if (wishlistOnlyFilter && ownedOnlyFilter) {
+        if (wishlistedOnly && ownedOnly) {
             return book.is_wishlisted || book.is_owned
         }
-        if (wishlistOnlyFilter) return !!book.is_wishlisted
-        if (ownedOnlyFilter) return !!book.is_owned
+        if (wishlistedOnly) return !!book.is_wishlisted
+        if (ownedOnly) return !!book.is_owned
         return true
     }
 
@@ -275,111 +179,17 @@ const ComicsPage: React.FC<Props> = ({
         )
     }
 
-    const clearFilters = () => {
-        setTitleSearch("")
-        setPublisherFilter([])
-        setFormatFilter([])
-        setCharacterFilter([])
-        setArtistFilter([])
-        setAuthorFilter([])
-        setTeamFilter([])
-        setWishlistOnlyFilter(false)
-        setOwnedOnlyFilter(false)
-        setFilterResetKey((key) => key + 1)
-    }
-
     const filterPanel = (
-        <ThemeProvider theme={darkTheme}>
-            <div className="w-full p-[2rem]">
-                <span className="w-full flex justify-center items-center text-center p-2.5 font-semibold text-gray-300 uppercase tracking-wider">
-                    Filter Books
-                </span>
-                <input
-                    className="w-full mt-3 bg-[#3f4a58] border border-gray-500 rounded px-3 py-2 text-[1.4rem] text-white 
-                            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                    type="text"
-                    placeholder="Search title..."
-                    value={titleSearch}
-                    onChange={(e) => setTitleSearch(e.target.value)}
-                />
-                {isAuthenticated && (
-                    <div className="flex flex-row mt-2 text-white font-bold">
-                        <FormControlLabel
-                            sx={{
-                                "& .MuiFormControlLabel-label": {
-                                    fontSize: "1.5rem",
-                                },
-                            }}
-                            control={
-                                <Switch
-                                    checked={wishlistOnlyFilter}
-                                    onChange={(e) =>
-                                        setWishlistOnlyFilter(e.target.checked)
-                                    }
-                                    color="primary"
-                                />
-                            }
-                            label="Wishlist"
-                        />
-                        <FormControlLabel
-                            sx={{
-                                "& .MuiFormControlLabel-label": {
-                                    fontSize: "1.5rem",
-                                },
-                            }}
-                            control={
-                                <Switch
-                                    checked={ownedOnlyFilter}
-                                    onChange={(e) =>
-                                        setOwnedOnlyFilter(e.target.checked)
-                                    }
-                                    color="primary"
-                                />
-                            }
-                            label="Owned"
-                        />
-                    </div>
-                )}
-                <ul className="list-none p-0">
-                    <FormatsMultiSelector
-                        key={`format-${filterResetKey}`}
-                        setFormats={setFormatFilter}
-                        initialFormatIds={(formatFilter ?? []).map((f) => f.id)}
-                    />
-                    <PublishersMultiSelector
-                        key={`publishers-${filterResetKey}`}
-                        setPublishers={setPublisherFilter}
-                        initialPublisherIds={publisherFilter.map((p) => p.id)}
-                    />
-                    <CharactersMultiSelector
-                        key={`characters-${filterResetKey}`}
-                        setCharacters={setCharacterFilter}
-                        initialCharacters={characterFilter}
-                    />
-                    <TeamsMultiSelector
-                        key={`teams-${filterResetKey}`}
-                        setTeams={setTeamFilter}
-                        initialTeamIds={teamFilter.map((t) => t.id)}
-                    />
-                    <AuthorsSelector
-                        key={`authors-${filterResetKey}`}
-                        setAuthors={setAuthorFilter}
-                        initialAuthors={authorFilter}
-                    />
-                    <ArtistsSelector
-                        key={`artists-${filterResetKey}`}
-                        setArtists={setArtistFilter}
-                        initialArtists={artistFilter}
-                    />
-                </ul>
-                <button
-                    className="w-full mt-3 px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition-colors font-semibold text-[1.4rem]"
-                    onClick={clearFilters}
-                >
-                    Clear Filters
-                </button>
-            </div>
-        </ThemeProvider>
+        <div className="w-full p-[2rem]">
+            <span className="w-full flex justify-center items-center text-center p-2.5 font-semibold text-gray-300 uppercase tracking-wider">
+                Filter Books
+            </span>
+            <TitleSearchInput bookFilters={bookFilters} className="mt-3" />
+            <BookFilterFields
+                bookFilters={bookFilters}
+                showOwnershipToggles={!!isAuthenticated}
+            />
+        </div>
     )
 
     return (
