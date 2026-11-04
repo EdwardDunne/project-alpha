@@ -14,6 +14,9 @@ import {
 interface Props {
     setCharacters: (characters: Character[]) => void
     variant?: "standard" | "outlined" | "filled"
+    // Filter panels swap to a checkbox list on mobile; forms (the book and
+    // team modals) pass false to keep the regular selector at every size
+    mobileChecklist?: boolean
     initialCharacters?: Character[]
 }
 
@@ -21,6 +24,7 @@ const CharactersMultiSelector: React.FC<Props> = ({
     setCharacters,
     variant = "standard",
     initialCharacters,
+    mobileChecklist = true,
 }) => {
     const [selectedCharacters, setSelectedCharacters] = useState<Character[]>(
         initialCharacters ?? [],
@@ -56,7 +60,7 @@ const CharactersMultiSelector: React.FC<Props> = ({
 
     return (
         <>
-            <div className="hidden md:block mt-3">
+            <div className={`${mobileChecklist ? "hidden md:block " : ""}mt-3`}>
                 <Autocomplete
                     multiple
                     disableCloseOnSelect
@@ -118,22 +122,24 @@ const CharactersMultiSelector: React.FC<Props> = ({
                     }}
                 />
             </div>
-            <VirtualizedMobileMultiSelect
-                label="Characters"
-                options={options}
-                selected={selectedCharacters}
-                onChange={(next) => {
-                    setSelectedCharacters(next)
-                    setCharacters(next)
-                }}
-                getOptionLabel={characterLabel}
-                searchPlaceholder="Find a character..."
-                query={query}
-                onQueryChange={setQuery}
-                hasMore={hasMore}
-                loading={loading}
-                onLoadMore={loadMore}
-            />
+            {mobileChecklist && (
+                <VirtualizedMobileMultiSelect
+                    label="Characters"
+                    options={options}
+                    selected={selectedCharacters}
+                    onChange={(next) => {
+                        setSelectedCharacters(next)
+                        setCharacters(next)
+                    }}
+                    getOptionLabel={characterLabel}
+                    searchPlaceholder="Find a character..."
+                    query={query}
+                    onQueryChange={setQuery}
+                    hasMore={hasMore}
+                    loading={loading}
+                    onLoadMore={loadMore}
+                />
+            )}
         </>
     )
 }

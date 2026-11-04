@@ -13,6 +13,9 @@ import {
 interface Props {
     setArtists: (artists: Artist[]) => void
     variant?: "standard" | "outlined" | "filled"
+    // Filter panels swap to a checkbox list on mobile; forms (the book and
+    // team modals) pass false to keep the regular selector at every size
+    mobileChecklist?: boolean
     initialArtists?: Artist[]
 }
 
@@ -20,6 +23,7 @@ const ArtistsSelector: React.FC<Props> = ({
     setArtists,
     variant = "standard",
     initialArtists,
+    mobileChecklist = true,
 }) => {
     const [selectedArtists, setSelectedArtists] = useState<Artist[]>(
         initialArtists ?? [],
@@ -52,7 +56,7 @@ const ArtistsSelector: React.FC<Props> = ({
 
     return (
         <>
-            <div className="hidden md:block mt-3">
+            <div className={`${mobileChecklist ? "hidden md:block " : ""}mt-3`}>
                 <Autocomplete
                     multiple
                     disableCloseOnSelect
@@ -114,22 +118,24 @@ const ArtistsSelector: React.FC<Props> = ({
                     }}
                 />
             </div>
-            <VirtualizedMobileMultiSelect
-                label="Artists"
-                options={options}
-                selected={selectedArtists}
-                onChange={(next) => {
-                    setSelectedArtists(next)
-                    setArtists(next)
-                }}
-                getOptionLabel={(a) => a.name}
-                searchPlaceholder="Find an artist..."
-                query={query}
-                onQueryChange={setQuery}
-                hasMore={hasMore}
-                loading={loading}
-                onLoadMore={loadMore}
-            />
+            {mobileChecklist && (
+                <VirtualizedMobileMultiSelect
+                    label="Artists"
+                    options={options}
+                    selected={selectedArtists}
+                    onChange={(next) => {
+                        setSelectedArtists(next)
+                        setArtists(next)
+                    }}
+                    getOptionLabel={(a) => a.name}
+                    searchPlaceholder="Find an artist..."
+                    query={query}
+                    onQueryChange={setQuery}
+                    hasMore={hasMore}
+                    loading={loading}
+                    onLoadMore={loadMore}
+                />
+            )}
         </>
     )
 }
