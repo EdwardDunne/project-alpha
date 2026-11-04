@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
 import { connect } from "react-redux"
-import { Heart, BookOpenCheck } from "lucide-react"
 import {
     toggleWishlist,
     toggleOwned,
@@ -18,6 +17,7 @@ import FilterListIcon from "@mui/icons-material/FilterList"
 import SidePanel from "../components/SidePanel"
 import { Book, Format } from "../types"
 import BookModalContent from "modals/dwModalContent/BookModalContent"
+import WishlistOwnedButtons from "../components/WishlistOwnedButtons"
 import { RootState } from "../reducers"
 
 interface Props {
@@ -93,6 +93,10 @@ const ComicsPage: React.FC<Props> = ({
         } else {
             updateBook(book.id, { is_wishlisted: result })
         }
+        // Keep the open modal's copy of the book in sync
+        setSelectedBook((prev) =>
+            prev?.id === book.id ? { ...prev, is_wishlisted: result } : prev,
+        )
     }
 
     const handleToggleOwned = async (e: React.MouseEvent, book: Book) => {
@@ -104,6 +108,10 @@ const ComicsPage: React.FC<Props> = ({
         } else {
             updateBook(book.id, { is_owned: result })
         }
+        // Keep the open modal's copy of the book in sync
+        setSelectedBook((prev) =>
+            prev?.id === book.id ? { ...prev, is_owned: result } : prev,
+        )
     }
 
     function renderBook(book: Book) {
@@ -124,52 +132,12 @@ const ComicsPage: React.FC<Props> = ({
                         alt={book.title}
                     />
                     {isAuthenticated && (
-                        <div className="absolute top-2 right-2 flex gap-1.5">
-                            <button
-                                type="button"
-                                aria-label={
-                                    book.is_wishlisted
-                                        ? "Remove from wishlist"
-                                        : "Add to wishlist"
-                                }
-                                onClick={(e) => handleToggleWishlist(e, book)}
-                                className="p-1.5 rounded-full bg-black/80 hover:bg-black/70 transition-colors"
-                            >
-                                <Heart
-                                    size={20}
-                                    className={
-                                        book.is_wishlisted
-                                            ? "text-brand"
-                                            : "text-white"
-                                    }
-                                    fill={
-                                        book.is_wishlisted
-                                            ? "currentColor"
-                                            : "none"
-                                    }
-                                />
-                            </button>
-                            <button
-                                type="button"
-                                aria-label={
-                                    book.is_owned
-                                        ? "Remove from owned books"
-                                        : "Mark as owned"
-                                }
-                                onClick={(e) => handleToggleOwned(e, book)}
-                                className="p-1.5 rounded-full bg-black/80 hover:bg-black/70 transition-colors"
-                            >
-                                <BookOpenCheck
-                                    size={20}
-                                    strokeWidth={3}
-                                    className={
-                                        book.is_owned
-                                            ? "text-brand"
-                                            : "text-white"
-                                    }
-                                />
-                            </button>
-                        </div>
+                        <WishlistOwnedButtons
+                            book={book}
+                            onToggleWishlist={handleToggleWishlist}
+                            onToggleOwned={handleToggleOwned}
+                            className="absolute top-2 right-2"
+                        />
                     )}
                 </div>
                 <div className="h-fit text-ellipsis text-center text-[1.6rem] mt-1">
@@ -199,6 +167,12 @@ const ComicsPage: React.FC<Props> = ({
                     <BookModalContent
                         book={selectedBook}
                         setDwModalOpen={setDwModalOpen}
+                        onToggleWishlist={
+                            isAuthenticated ? handleToggleWishlist : undefined
+                        }
+                        onToggleOwned={
+                            isAuthenticated ? handleToggleOwned : undefined
+                        }
                     />
                 </DunneWebModal>
             )}

@@ -2,17 +2,34 @@ import React from "react"
 import { connect } from "react-redux"
 import { Book as BookType } from "../../types"
 import { characterLabel } from "../../utils/characterLabel"
+import WishlistOwnedButtons from "../../components/WishlistOwnedButtons"
 
 interface Props {
     setDwModalOpen: (open: boolean) => void
     book: BookType
+    // Omit (e.g. when signed out) to hide the wishlist/owned buttons
+    onToggleWishlist?: (e: React.MouseEvent, book: BookType) => void
+    onToggleOwned?: (e: React.MouseEvent, book: BookType) => void
 }
 
-const BookModalContent: React.FC<Props> = ({ book }) => {
+const BookModalContent: React.FC<Props> = ({
+    book,
+    onToggleWishlist,
+    onToggleOwned,
+}) => {
     const thumbnail_url = book.thumbnail
 
     return (
         <div className="flex flex-col md:flex-row justify-around items-center gap-6 w-full overflow-y-auto">
+            {/* Top left of the modal, mirroring the close button on the right */}
+            {onToggleWishlist && onToggleOwned && (
+                <WishlistOwnedButtons
+                    book={book}
+                    onToggleWishlist={onToggleWishlist}
+                    onToggleOwned={onToggleOwned}
+                    className="absolute top-2.5 left-2.5"
+                />
+            )}
             <div className="flex-none">
                 <img
                     className="w-32 md:w-48 rounded-[1rem]"
