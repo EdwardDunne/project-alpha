@@ -43,19 +43,13 @@ REMOVALS = [
     (DC, "Doomsday", ["Doomsday Clock"]),
     (DC, "Batman", ["Before Batman"]),
     (DC, "Superman", ["Spider-man by Michelinie"]),
-    # Right name, wrong character
+    # Right name, wrong character. Bare "Spider-Man", "Wolverine", etc. are
+    # generics now (see assign_generic_characters), so they're deliberately
+    # NOT removed from their variants' books (Miles Morales, X-23, ...).
     (MARVEL, "Thing", ["Man-Thing"]),
     (MARVEL, "Hulk", ["She-Hulk"]),
-    (MARVEL, "Ghost Rider", ["Cosmic Ghost Rider", "Ghost Rider 2099"]),
-    (MARVEL, "Wolverine", ["All-New Wolverine", "Daken", "Spider-Man By Todd McFarlane"]),
-    (MARVEL, "Captain Marvel", [
-        "Captain Marvel (2019)", "By Kelly Sue Deconnick", "Genis-Vell",
-        "Highest, Furthest, Fastest", "A Hero Is Born",
-    ]),
-    (MARVEL, "Human Torch", ["Timely's Greatest"]),
+    (MARVEL, "Wolverine", ["Spider-Man By Todd McFarlane"]),
     (MARVEL, "Doom", ["Doom 2099"]),
-    (MARVEL, "Spider-Man", ["Miles Morales", "Spider-Man 2099"]),
-    (MARVEL, "Spider-man", ["Miles Morales", "Spider-Man 2099"]),
 ]
 
 # (publisher, duplicate name, canonical name)
@@ -73,6 +67,7 @@ MERGES = [
     (MARVEL, "Leap-Frog", "Leapfrog"),
     (MARVEL, "Miracle Man", "Miracleman"),
     (MARVEL, "Star-Thief", "Star Thief"),
+    (MARVEL, "Otto Octavius", "Doctor Octopus"),
     (DC, "Constantine", "John Constantine"),
 ]
 
