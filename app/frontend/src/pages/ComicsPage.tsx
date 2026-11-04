@@ -114,6 +114,12 @@ const ComicsPage: React.FC<Props> = ({
         )
     }
 
+    // Position of the open book in the loaded list, for the modal's
+    // previous/next arrows (-1 if it's dropped out of the list)
+    const selectedIndex = selectedBook
+        ? books.findIndex((b) => b.id === selectedBook.id)
+        : -1
+
     function renderBook(book: Book) {
         return (
             <div
@@ -163,7 +169,20 @@ const ComicsPage: React.FC<Props> = ({
     return (
         <>
             {dwModalOpen && selectedBook && (
-                <DunneWebModal onClose={() => setDwModalOpen(false)}>
+                <DunneWebModal
+                    onClose={() => setDwModalOpen(false)}
+                    onPrevious={
+                        selectedIndex > 0
+                            ? () => setSelectedBook(books[selectedIndex - 1])
+                            : undefined
+                    }
+                    onNext={
+                        selectedIndex !== -1 &&
+                        selectedIndex < books.length - 1
+                            ? () => setSelectedBook(books[selectedIndex + 1])
+                            : undefined
+                    }
+                >
                     <BookModalContent
                         book={selectedBook}
                         setDwModalOpen={setDwModalOpen}
