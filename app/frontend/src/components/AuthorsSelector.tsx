@@ -13,6 +13,9 @@ import {
 interface Props {
     setAuthors: (authors: Author[]) => void
     variant?: "standard" | "outlined" | "filled"
+    // Filter panels swap to a checkbox list on mobile; forms (the book and
+    // team modals) pass false to keep the regular selector at every size
+    mobileChecklist?: boolean
     initialAuthors?: Author[]
 }
 
@@ -20,6 +23,7 @@ const AuthorsSelector: React.FC<Props> = ({
     setAuthors,
     variant = "standard",
     initialAuthors,
+    mobileChecklist = true,
 }) => {
     const [selectedAuthors, setSelectedAuthors] = useState<Author[]>(
         initialAuthors ?? [],
@@ -52,7 +56,7 @@ const AuthorsSelector: React.FC<Props> = ({
 
     return (
         <>
-            <div className="hidden md:block w-full mt-3">
+            <div className={`${mobileChecklist ? "hidden md:block " : ""}w-full mt-3`}>
                 <Autocomplete
                     multiple
                     disableCloseOnSelect
@@ -114,22 +118,24 @@ const AuthorsSelector: React.FC<Props> = ({
                     }}
                 />
             </div>
-            <VirtualizedMobileMultiSelect
-                label="Authors"
-                options={options}
-                selected={selectedAuthors}
-                onChange={(next) => {
-                    setSelectedAuthors(next)
-                    setAuthors(next)
-                }}
-                getOptionLabel={(a) => a.name}
-                searchPlaceholder="Find an author..."
-                query={query}
-                onQueryChange={setQuery}
-                hasMore={hasMore}
-                loading={loading}
-                onLoadMore={loadMore}
-            />
+            {mobileChecklist && (
+                <VirtualizedMobileMultiSelect
+                    label="Authors"
+                    options={options}
+                    selected={selectedAuthors}
+                    onChange={(next) => {
+                        setSelectedAuthors(next)
+                        setAuthors(next)
+                    }}
+                    getOptionLabel={(a) => a.name}
+                    searchPlaceholder="Find an author..."
+                    query={query}
+                    onQueryChange={setQuery}
+                    hasMore={hasMore}
+                    loading={loading}
+                    onLoadMore={loadMore}
+                />
+            )}
         </>
     )
 }

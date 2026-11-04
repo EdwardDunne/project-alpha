@@ -115,6 +115,7 @@ const ManageTeamsModalContent: React.FC<Props> = ({
                                 />
                                 <div className="w-[calc(100%-1rem)]">
                                     <CharactersMultiSelector
+                                        mobileChecklist={false}
                                         setCharacters={(characters) =>
                                             setEditingCharacters(
                                                 characters.map((c) =>
@@ -186,7 +187,10 @@ const ManageTeamsModalContent: React.FC<Props> = ({
                         onChange={onChange}
                     />
                 </div>
-                <CharactersMultiSelector setCharacters={setCharacters} />
+                <CharactersMultiSelector
+                    setCharacters={setCharacters}
+                    mobileChecklist={false}
+                />
                 <div className="flex justify-end">
                     <button
                         className="px-5 py-2 bg-brand text-white rounded hover:bg-brand-dark transition-colors font-semibold"
