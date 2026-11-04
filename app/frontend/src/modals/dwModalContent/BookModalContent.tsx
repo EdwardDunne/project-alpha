@@ -12,7 +12,7 @@ const BookModalContent: React.FC<Props> = ({ book }) => {
     const thumbnail_url = book.thumbnail
 
     return (
-        <div className="flex flex-col md:flex-row justify-around items-center gap-6 w-full">
+        <div className="flex flex-col md:flex-row justify-around items-center gap-6 w-full overflow-y-auto">
             <div className="flex-none">
                 <img
                     className="w-32 md:w-48 rounded-[1rem]"

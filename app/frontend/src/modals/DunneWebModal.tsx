@@ -26,7 +26,7 @@ const DunneWebModal: React.FC<Props> = ({ onClose, children }) => {
                 }}
             >
                 <button
-                    className="absolute top-2.5 right-2.5 pl-[0.1rem] w-9 h-9 rounded-full border-2 border-brand bg-white text-brand 
+                    className="absolute top-2.5 right-2.5 pl-[0.0rem] w-9 h-9 rounded-full border-2 border-brand bg-white text-brand 
                                 font-bold text-[2.4rem]/[3.3rem] hover:bg-brand hover:text-white transition-colors"
                     onClick={onClose}
                 >
