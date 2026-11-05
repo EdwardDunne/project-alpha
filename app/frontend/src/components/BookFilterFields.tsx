@@ -1,4 +1,5 @@
 import React from "react"
+import { X } from "lucide-react"
 import { ThemeProvider, Switch, FormControlLabel } from "@mui/material"
 import { darkTheme } from "../App"
 import { BookFiltersState } from "../hooks/useBookFilters"
@@ -27,13 +28,26 @@ export const TitleSearchInput: React.FC<{
     bookFilters: BookFiltersState
     className?: string
 }> = ({ bookFilters, className = "" }) => (
-    <input
-        className={`w-full ${inputClassName} ${className}`}
-        type="text"
-        placeholder="Search title..."
-        value={bookFilters.titleSearch}
-        onChange={(e) => bookFilters.setTitleSearch(e.target.value)}
-    />
+    <div className={`relative w-full ${className}`}>
+        <input
+            className={`w-full pr-12 ${inputClassName}`}
+            type="text"
+            placeholder="Search title..."
+            value={bookFilters.titleSearch}
+            onChange={(e) => bookFilters.setTitleSearch(e.target.value)}
+        />
+        {/* Clear button, only shown once there's something to clear */}
+        {bookFilters.titleSearch && (
+            <button
+                type="button"
+                aria-label="Clear title search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-white transition-colors"
+                onClick={() => bookFilters.setTitleSearch("")}
+            >
+                <X size={22} />
+            </button>
+        )}
+    </div>
 )
 
 // Text input with a numeric keyboard rather than type="number", so there
